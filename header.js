@@ -40,6 +40,15 @@
       if(OPRAVY_OWNERS.indexOf(who)<0) return '';
       return '<a class="'+(o.cur==='engineering'?'cur':'')+'" href="engineering.html">🏭 Engineering</a>';
     }
+    // Údržba — pilotní modul, zatím jen pro vybrané e-maily (TODO: rozšířit
+    // seznam / přejít na obecný systém modules, až bude appka hotová).
+    var UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+      'admin.test@minimo.local','technik.test@minimo.local'];
+    function udrzbaLink(){
+      var who = String(o.email||o.user||'').trim().toLowerCase();
+      if(UDRZBA_OWNERS.indexOf(who)<0) return '';
+      return '<a class="'+(o.cur==='udrzba'?'cur':'')+'" href="udrzba.html">🔧 Údržba</a>';
+    }
     return '<header class="uhdr">'
       + '<div class="uh-menuwrap">'
         + '<button class="uh-menu" id="mm-btn" aria-label="Menu modulů" title="Moduly">☰</button>'
@@ -50,6 +59,7 @@
           + link('dovolenky.html','🗓️','Plánování směn','dovolenky')
           + opravyLink()
           + engineeringLink()
+          + udrzbaLink()
           + link('nastaveni.html','⚙️','Nastavení','nastaveni')
           + '<div class="mm-sep"></div>'
           + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'

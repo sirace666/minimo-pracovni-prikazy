@@ -82,14 +82,15 @@ import { getFirestore, doc, getDoc, setDoc }
 
 /* Společný Firebase projekt pro celý portál (nakupni-pozadavky).
    Veřejné frontendové klíče – je správné je mít v kódu, zabezpečení řeší pravidla Firestore. */
+/* DOČASNĚ přepnuto na testovací projekt kvůli vývoji modulu Údržba.
+   PŘED PR DAVIDOVI VRÁTIT na config výše (nakupni-pozadavky)! */
 const firebaseConfig = {
-  apiKey: "AIzaSyDi3OVq2Al0WXFPgqhMAN9lPGuExOU80Cc",
-  authDomain: "nakupni-pozadavky.firebaseapp.com",
-  projectId: "nakupni-pozadavky",
-  storageBucket: "nakupni-pozadavky.firebasestorage.app",
-  messagingSenderId: "214674774365",
-  appId: "1:214674774365:web:7f7b51c8169b75f8acb0b4",
-  measurementId: "G-BGDMXEWBQH"
+  apiKey: "AIzaSyDXqMTTryH9mkgzA9o5PrndHRH4C_yUQLY",
+  authDomain: "minimo-pracovni-prikazy.firebaseapp.com",
+  projectId: "minimo-pracovni-prikazy",
+  storageBucket: "minimo-pracovni-prikazy.firebasestorage.app",
+  messagingSenderId: "727579407281",
+  appId: "1:727579407281:web:fb749f43e707cf4e7ec390"
 };
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
@@ -142,7 +143,7 @@ const MODULES = [
   {ico:'🗓️', nm:'Plánování směn a přítomnosti', ds:'Dovolené, nepřítomnosti a plánování směn po sekcích.', href:'dovolenky.html', active:true, key:'plan'},
   {ico:'🛠️', nm:'Externí opravy',    ds:'Požadavky na opravu dílů externí firmou.', href:'opravy.html', active:true, key:'opravy', ownerOnly:true},
   {ico:'🏭', nm:'Engineering',       ds:'Prostoje na linkách, KPI a import reportu ze Symesticu.', href:'engineering.html', active:true, key:'engineering', ownerOnly:true},
-  {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů. Připravujeme.', active:false},
+  {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů.', href:'udrzba.html', active:true, key:'udrzba', ownerOnly:true},
   {ico:'⚠️', nm:'Reklamace',         ds:'Evidence reklamací a neshod kvality. Připravujeme.', active:false},
   {ico:'⚙️', nm:'Nastavení',         ds:'Správa uživatelů, práv a modulů.', href:'nastaveni.html', active:true, key:'nastaveni'},
 ];
@@ -179,7 +180,9 @@ function loginView(){
   </form></div>`;
 }
 
-const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
+// TODO před PR Davidovi: odebrat testovací e-maily (admin.test/technik.test), zůstanou jen jeho.
+const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+  'admin.test@minimo.local','technik.test@minimo.local'];
 const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
 function appView(){
   const tiles = MODULES.filter(m=> m.ownerOnly ? isOpravyOwner() : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active

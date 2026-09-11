@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2722%27%20fill=%27%231b4b8f%27/%3E%3Ctext%20x=%2750%27%20y=%2776%27%20font-size=%2774%27%20font-family=%27Arial,sans-serif%27%20font-weight=%27bold%27%20fill=%27white%27%20text-anchor=%27middle%27%3Em%3C/text%3E%3C/svg%3E">
+<title>Údržba — YFAI minimo</title>
+<link rel="stylesheet" href="header.css">
+<style>
+  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--card:#fff;--line:#dde4ec;--text:#16233a;--muted:#6b7a90;
+    --green:#1f9254;--red:#c0392b;--amber:#b7791f;--blue:#2563a8;--radius:6px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:13px}
+  button{font-family:inherit;font-size:12px;cursor:pointer;border-radius:var(--radius);border:1px solid transparent;padding:7px 12px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  input,select,textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--text);width:100%}
+  main{padding:14px 18px 40px}
+  .btn-primary{background:var(--navy-2);color:#fff}.btn-ghost{background:#fff;border:1px solid var(--line);color:#41506b}
+  .btn-danger{background:#c0392b;color:#fff}.btn-ok{background:#1f9254;color:#fff}
+  .btn-new{background:linear-gradient(180deg,#f6821f,#e8590c);color:#fff;font-size:18px;font-weight:800;padding:15px 34px;border-radius:10px;
+    box-shadow:0 4px 14px rgba(232,89,12,.4);letter-spacing:.4px;text-transform:uppercase}
+  .newbar{margin-bottom:12px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
+  .panel>h2{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:11px 15px;font-size:14px;display:flex;align-items:center}
+  .panel>h2 .right{margin-left:auto;font-weight:500;font-size:11px;opacity:.85}
+  .notice{background:#eef4fc;border:1px solid #cfe0f5;color:#274a74;border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:12.5px}
+  .legend{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:9px 13px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .stchip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 10px;font-size:11px;cursor:pointer;color:#41506b;font-weight:600}
+  .stchip i{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.12)}
+  .stchip.on{border-color:var(--navy-2);background:#eef3fb;color:var(--navy-2)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:11px 13px;border-bottom:1px solid var(--line);background:#fafbfd}
+  .filters input,.filters select{width:auto;min-width:150px;font-size:14px}
+  .filters .grow{flex:1 1 300px;max-width:520px}
+  label.check{display:inline-flex;gap:7px;align-items:center;font-size:14px;color:#41506b;white-space:nowrap;cursor:pointer;font-weight:700}
+  label.check input{width:18px;height:18px;min-width:0;margin:0;flex:none}
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{background:#16355f;color:#fff;text-align:left;padding:9px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;cursor:pointer}
+  thead th.no-sort{cursor:default}
+  tbody td{padding:8px 10px;border-bottom:1px solid #eef1f5;vertical-align:top;background:var(--row,#fff)}
+  tbody tr{cursor:pointer}
+  tbody tr:hover td{filter:brightness(.975)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid transparent;white-space:nowrap}
+  .b-white{background:#fff;color:#41506b;border-color:#d5deea}.b-yellow{background:#fdf4c8;color:#7a5b06;border-color:#efe1a0}
+  .b-orange{background:#ffe3c2;color:#9a4f0e;border-color:#f6cfa5}.b-blue{background:#e9f1fb;color:#2563a8;border-color:#cbdff5}
+  .b-navy{background:#1b4b8f;color:#fff;border-color:#143a70}.b-green{background:#e8f6ee;color:#1f9254;border-color:#c4e6d3}
+  .b-grey{background:#eef1f5;color:#4a5a70;border-color:#dfe4ea}.b-red{background:#fdecea;color:#c0392b;border-color:#f5cfca}
+  .muted{color:var(--muted)}
+  .empty{text-align:center;color:var(--muted);padding:26px}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto;z-index:50}
+  .modal{background:#fff;border-radius:10px;width:min(760px,95vw);height:min(90vh,760px);margin:auto;box-shadow:0 18px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+  .modal>h3{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:14px 18px;font-size:17px;display:flex;align-items:center;gap:10px;flex:none}
+  .modal>h3 .x{margin-left:auto;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .modal>h3 .x:hover{background:rgba(255,255,255,.32)}
+  .mtabs{display:flex;gap:8px;margin:12px 14px 2px;padding:5px;background:#f1f4f8;border-radius:11px;flex:none}
+  .mtab{flex:1;background:#fff;border:1px solid var(--line);color:#41506b;padding:11px 12px;font-size:13px;font-weight:800;cursor:pointer;border-radius:8px;text-align:center}
+  .mtab.on{background:linear-gradient(180deg,#2f6bbf,#255a9e);color:#fff;border-color:#255a9e;box-shadow:0 3px 10px rgba(37,90,158,.35)}
+  .modalbody{flex:1 1 auto;overflow-y:auto;min-height:0}
+  .form{padding:18px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .f{display:flex;flex-direction:column;gap:4px}.f.span2{grid-column:span 2}
+  .f label{font-size:12.5px;font-weight:600;color:#41506b}
+  .f .req{color:#c0392b}
+  .f .ro{background:#f6f8fb;border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-height:36px;font-size:14px}
+  .f.invalid input,.f.invalid select,.f.invalid textarea{border-color:#c0392b;background:#fdecea}
+  .err{color:#c0392b;font-size:11px}
+  .hist{padding:14px}.hist b{display:block;margin-bottom:8px;color:#41506b}
+  .hist div{font-size:12.5px;padding:5px 2px;border-top:1px dotted var(--line)}
+  .foot{padding:12px 15px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:#fafbfd;flex-wrap:wrap;flex:none}
+  .foot .r{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .foot .msg{font-size:12px;color:var(--red);font-weight:600}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#16355f;color:#fff;padding:11px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:80;font-weight:600}
+  .toast.err{background:#c0392b}.toast.ok{background:#1f9254}
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login{background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.12);text-align:center}
+  .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:11px;font-size:14px;font-weight:700}
+  .loginerr{background:#fdecea;color:#c0392b;border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
+  @media(max-width:760px){.form{grid-template-columns:1fr}.f.span2{grid-column:span 1}.mtabs{flex-wrap:wrap}.mtab{flex:1 1 40%}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="header.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, serverTimestamp, runTransaction }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+/* TESTOVACÍ Firebase projekt (vývoj mimo Davidova data). Před PR do
+   minimo-yfai se přepne na ostrý firebaseConfig (stejný jako v ostatních
+   modulech, projekt nakupni-pozadavky). */
+const firebaseConfig = {
+  apiKey: "AIzaSyDXqMTTryH9mkgzA9o5PrndHRH4C_yUQLY",
+  authDomain: "minimo-pracovni-prikazy.firebaseapp.com",
+  projectId: "minimo-pracovni-prikazy",
+  storageBucket: "minimo-pracovni-prikazy.firebasestorage.app",
+  messagingSenderId: "727579407281",
+  appId: "1:727579407281:web:fb749f43e707cf4e7ec390"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+/* ===== Kdo modul zatím vidí — pilot (stejný vzor jako Opravy/Engineering) =====
+   TODO před PR: odebrat testovací e-maily, ponechat jen ty Davidovy. */
+const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+  'admin.test@minimo.local','technik.test@minimo.local'];
+const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
+const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com',
+  'admin.test@minimo.local'];
+const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
+const ROLE2LEVEL = {zadavatel:'basic',skladnik:'warehouse',schvalovatel:'approver',admin:'superadmin'};
+const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
+
+/* ===== Stavy a priorita ===== */
+const STATUSES = [
+  {k:'nový',         label:'nový',         cls:'b-white'},
+  {k:'rozpracováno', label:'rozpracováno', cls:'b-blue'},
+  {k:'hotovo',       label:'hotovo',       cls:'b-green'}
+];
+const ROW_TINT = {'nový':'#ffffff','rozpracováno':'#e7eefb','hotovo':'#d3f1dc'};
+const PRIORITA = [{k:'běžná',cls:'b-blue'},{k:'vysoká',cls:'b-orange'},{k:'kritická',cls:'b-red'}];
+
+/* ===== Stav aplikace ===== */
+let me=null, rows=[], users=[], editing=null, errs={}, footMsg='', modalTab='prikaz';
+let sort={col:'createdTs',dir:-1}, filters={q:'',status:'',mine:false}, toastMsg=null, toastKind='';
+let loginBusy=false, loginErr='', dataReady=false, fatal='';
+let cfg={sections:[]};
+let downOnOverlay=false;
+let unsubO=null, unsubU=null, unsubC=null;
+const sectionByName = n => (cfg.sections||[]).find(s=>s.name===n);
+
+/* ===== pomocné ===== */
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
+const badge = (v,defs)=>{const d=defs.find(x=>x.k===v);const t=(d&&d.label)?d.label:v;return `<span class="badge ${d?d.cls:'b-grey'}">${esc(t||'—')}</span>`;};
+
+/* ===== auth ===== */
+onAuthStateChanged(auth, async user=>{
+  loginBusy=false;
+  if(!user){ me=null; teardown(); render(); return; }
+  me = await loadProfile(user);
+  if(!isOwner(user.email)){ render(); return; }
+  subscribe();
+  render();
+});
+async function loadProfile(user){
+  const ref=doc(db,'users',user.uid);
+  let d={};
+  try{ const s=await getDoc(ref); if(s.exists()) d=s.data(); }catch(e){}
+  const forced=isForcedAdmin(user.email);
+  const role = forced ? 'admin' : (d.role||'zadavatel');
+  const level = d.level || ROLE2LEVEL[role] || 'basic';
+  return {uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level};
+}
+const isAdmin = () => me && me.role==='admin';
+
+function teardown(){ if(unsubO)unsubO(); if(unsubU)unsubU(); if(unsubC)unsubC(); unsubO=unsubU=unsubC=null; rows=[]; users=[]; dataReady=false; }
+function subscribe(){
+  try{
+    unsubO=onSnapshot(query(collection(db,'udrzba'),orderBy('createdTs','desc')), snap=>{
+      rows=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())); dataReady=true; if(!editing) render();
+    }, err=>{ fatal='Nemám přístup k datům: '+err.message; render(); });
+    unsubU=onSnapshot(collection(db,'users'), snap=>{
+      users=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())); if(!editing) render();
+    }, ()=>{});
+    unsubC=onSnapshot(doc(db,'meta','config'), snap=>{
+      const d=snap.data()||{}; cfg={sections:d.sections||[]}; if(!editing) render();
+    }, ()=>{});
+  }catch(e){ fatal=e.message; render(); }
+}
+
+/* ===== číslování PP-rok-XXX (transakce nad meta/config.seqUdrzba) ===== */
+async function nextNumber(){
+  const ref=doc(db,'meta','config'); const year=new Date().getFullYear();
+  const n=await runTransaction(db,async tx=>{ const s=await tx.get(ref); const seq=((s.data()||{}).seqUdrzba||0)+1; tx.update(ref,{seqUdrzba:seq}); return seq; });
+  return 'PP-'+year+'-'+String(n).padStart(3,'0');
+}
+
+/* ===== render ===== */
+function render(){
+  const app=document.getElementById('app');
+  if(!me){ app.innerHTML=loginView(); bind(); return; }
+  if(!isOwner(me.email)){ app.innerHTML=shell(`<div class="notice">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
+  if(fatal){ app.innerHTML=shell(`<div class="notice">${esc(fatal)}</div>`); bind(); return; }
+  app.innerHTML = shell(listView()) + (editing?modalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  bind();
+}
+function loginView(){
+  return `<div class="login-wrap"><form class="login" id="loginForm">
+    <h2>minimo · YFAI</h2><p class="muted" style="margin-top:0">Údržba</p>
+    ${loginErr?`<div class="loginerr">${esc(loginErr)}</div>`:''}
+    <input type="email" id="li-email" placeholder="E-mail" autocomplete="username">
+    <input type="password" id="li-pass" placeholder="Heslo" autocomplete="current-password">
+    <button type="submit" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
+  </form></div>`;
+}
+function shell(inner){
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
+  return uh + `<main>${inner}</main>`;
+}
+function visibleRows(){
+  let r=rows.slice();
+  if(filters.mine) r=r.filter(x=>x.author===me.uid || x.assignedTo===me.uid);
+  if(filters.status) r=r.filter(x=>x.status===filters.status);
+  if(filters.q){ const q=filters.q.toLowerCase(); r=r.filter(x=>[x.cislo,x.nazev,x.popis,x.linka,x.stroj,x.assignedToName].join(' ').toLowerCase().includes(q)); }
+  const c=sort.col;
+  r.sort((a,b)=>{ let x=a[c], y=b[c]; return String(x??'').localeCompare(String(y??''),'cs')*sort.dir; });
+  return r;
+}
+function th(c,l){ const on=sort.col===c; return `<th data-a="sort" data-v="${c}">${l}${on?(sort.dir>0?' ▲':' ▼'):''}</th>`; }
+function listView(){
+  if(!dataReady) return `<div class="notice">Načítám data…</div>`;
+  const rr=visibleRows();
+  const cnt=k=>rows.filter(x=>x.status===k).length;
+  return `
+  <div class="notice"><b>Údržba</b> — pilotní modul pro hlášení a evidenci oprav a údržby strojů. Zatím ho vidí jen vybraní lidé.</div>
+  <div class="newbar"><button class="btn-new" data-a="new">+ Nový pracovní příkaz</button></div>
+  <div class="panel">
+    <h2>Přehled příkazů <span class="right">${rr.length} z ${rows.length}</span></h2>
+    <div class="legend"><span style="font-weight:700;color:#41506b">Filtr stavu:</span>
+      <button class="stchip ${!filters.status?'on':''}" data-a="flt" data-v="">Vše (${rows.length})</button>
+      ${STATUSES.map(s=>`<button class="stchip ${filters.status===s.k?'on':''}" data-a="flt" data-v="${s.k}"><i style="background:${ROW_TINT[s.k]}"></i>${esc(s.label)} (${cnt(s.k)})</button>`).join('')}
+    </div>
+    <div class="filters">
+      <input class="grow" id="f-q" placeholder="Hledat v názvu, popisu, lince…" value="${esc(filters.q)}">
+      <label class="check"><input type="checkbox" id="f-mine" ${filters.mine?'checked':''}>Mé příkazy</label>
+    </div>
+    <div class="tblwrap"><table>
+      <thead><tr>${th('status','Stav')}${th('cislo','Číslo')}${th('createdTs','Vytvořeno')}${th('priorita','Priorita')}<th class="no-sort">Název</th>${th('linka','Linka / stroj')}${th('assignedToName','Přiřazeno')}${th('authorName','Zadal')}${isAdmin()?'<th class="no-sort">Smazat</th>':''}</tr></thead>
+      <tbody>${rr.length?rr.map(o=>`<tr style="--row:${ROW_TINT[o.status]||'#fff'}" data-a="open" data-v="${o._id}">
+          <td>${badge(o.status,STATUSES)}</td>
+          <td><b>${esc(o.cislo||'—')}</b></td>
+          <td>${esc(dateCz(o.created))}</td>
+          <td>${badge(o.priorita,PRIORITA)}</td>
+          <td>${esc(o.nazev||'')}</td>
+          <td>${o.linka?`<b>${esc(o.linka)}</b>${o.stroj?`<div class="muted" style="font-size:11px">${esc(o.stroj)}</div>`:''}`:'<span class="muted">—</span>'}</td>
+          <td>${o.assignedToName?esc(o.assignedToName):'<span class="muted">nepřiřazeno</span>'}</td>
+          <td>${esc(o.authorName||'—')}</td>
+          ${isAdmin()?`<td><button class="btn-danger" data-a="del" data-v="${o._id}" onclick="event.stopPropagation()" style="padding:5px 9px">Smazat</button></td>`:''}
+        </tr>`).join(''):`<tr><td colspan="8" class="empty">Žádné pracovní příkazy.</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+}
+
+/* ===== modal ===== */
+const g = id => { const el=document.getElementById(id); return el?el.value:undefined; };
+function collect(){
+  if(!editing) return;
+  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj'};
+  Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
+  const p=g('e-priorita'); if(p!==undefined) editing.priorita=p;
+  const st=g('e-status'); if(st!==undefined) editing.status=st;
+  const asg=g('e-assigned');
+  if(asg!==undefined){
+    if(!asg){ editing.assignedTo=null; editing.assignedToName=null; }
+    else{ const u=users.find(x=>x._id===asg); editing.assignedTo=asg; editing.assignedToName=u?(u.name||u.email):asg; }
+  }
+}
+function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && o.assignedTo===me.uid); }
+function modalView(){
+  const o=editing, isNew=!o._id, ed=isNew||canEditDoc(o);
+  const wrap=(id,label,inner,req=false,span=false)=>`<div class="f ${span?'span2':''} ${errs[id]?'invalid':''}"><label>${esc(label)}${req?' <span class="req">*</span>':''}</label>${inner}${errs[id]?`<span class="err">${esc(errs[id])}</span>`:''}</div>`;
+  const inp=(id,val,ph='')=>`<input id="e-${id}" value="${esc(val??'')}" placeholder="${esc(ph)}" ${ed?'':'disabled'}>`;
+  const ta=(id,val,ph='')=>`<textarea id="e-${id}" rows="3" placeholder="${esc(ph)}" ${ed?'':'disabled'}>${esc(val??'')}</textarea>`;
+  const linkaSel = `<select id="e-linka" ${ed?'':'disabled'}><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
+  const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
+  const strojSel = `<select id="e-stroj" ${ed&&sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka (bez stroje) —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
+  const assignedSel = `<select id="e-assigned" ${ed?'':'disabled'}><option value="">— nepřiřazeno —</option>${users.slice().sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs')).map(u=>`<option value="${u._id}" ${o.assignedTo===u._id?'selected':''}>${esc(u.name||u.email)}</option>`).join('')}</select>`;
+  const tabPrikaz = `<div class="form">
+    ${ed?wrap('status','Stav',`<select id="e-status">${STATUSES.map(s=>`<option value="${esc(s.k)}" ${o.status===s.k?'selected':''}>${esc(s.label)}</option>`).join('')}</select>`):`<div class="f"><label>Stav</label><div class="ro">${badge(o.status,STATUSES)}</div></div>`}
+    ${wrap('priorita','Priorita',`<select id="e-priorita" ${ed?'':'disabled'}>${PRIORITA.map(u=>`<option ${o.priorita===u.k?'selected':''}>${u.k}</option>`).join('')}</select>`,true)}
+    ${wrap('nazev','Název',inp('nazev',o.nazev,'co je potřeba udělat'),true,true)}
+    ${wrap('popis','Popis',ta('popis',o.popis,'podrobnosti, co je poškozené / co udělat'),false,true)}
+    ${wrap('linka','Linka',linkaSel)}
+    ${wrap('stroj','Stroj',strojSel)}
+    ${wrap('assigned','Přiřazeno',assignedSel,false,true)}
+  </div>`;
+  const tabHist = `<div class="hist"><b>Historie příkazu</b>${(o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>'}</div>`;
+  const tabbar = !isNew?`<div class="mtabs">
+      <button class="mtab ${modalTab==='prikaz'?'on':''}" data-a="mtab" data-v="prikaz">Příkaz</button>
+      <button class="mtab ${modalTab==='historie'?'on':''}" data-a="mtab" data-v="historie">Historie</button>
+    </div>`:'';
+  const content = (isNew||modalTab==='prikaz') ? tabPrikaz : tabHist;
+  return `<div class="overlay" data-a="close-bg"><div class="modal">
+    <h3>${isNew?'Nový pracovní příkaz':esc(o.cislo)}${!isNew?` <span style="font-weight:400;opacity:.85;font-size:12px">${esc(o.authorName||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
+    ${tabbar}
+    <div class="modalbody">${content}</div>
+    <div class="foot">
+      ${footMsg?`<span class="msg">${esc(footMsg)}</span>`:(ed?'<span class="muted">Pole s <span style="color:#c0392b">*</span> jsou povinná.</span>':'')}
+      <div class="r">
+        <button class="btn-ghost" data-a="close">${ed?'Zrušit':'Zavřít'}</button>
+        ${ed?`<button class="btn-primary" data-a="save">${isNew?'Založit':'Uložit změny'}</button>`:''}
+      </div>
+    </div>
+  </div></div>`;
+}
+function validate(){
+  errs={}; collect();
+  [['priorita','priorita'],['nazev','nazev']].forEach(([eid,f])=>{
+    const v=editing[f]; if(v===''||v===undefined||v===null) errs[eid]='Povinné pole';
+  });
+  return Object.keys(errs).length===0;
+}
+
+/* ===== zápisy ===== */
+async function createPrikaz(){
+  const cislo=await nextNumber();
+  const rec=Object.assign({},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
+    created:today(),createdTs:serverTimestamp(),hist:[`${today()} · ${me.name} · založil příkaz`]});
+  delete rec._id;
+  await addDoc(collection(db,'udrzba'),rec);
+  return cislo;
+}
+async function updatePrikaz(){
+  const id=editing._id; const old=rows.find(r=>r._id===id)||{};
+  const hist=(editing.hist||[]).slice();
+  if(old.status!==editing.status) hist.push(`${today()} · ${me.name} · stav ${old.status||''} → ${editing.status}`);
+  if(old.assignedTo!==editing.assignedTo) hist.push(`${today()} · ${me.name} · přiřazeno: ${editing.assignedToName||'nikdo'}`);
+  if(old.status===editing.status && old.assignedTo===editing.assignedTo) hist.push(`${today()} · ${me.name} · upravil příkaz`);
+  if(editing.status==='hotovo' && old.status!=='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
+  const {_id,...data}=editing; data.hist=hist;
+  await updateDoc(doc(db,'udrzba',id),data);
+}
+
+/* ===== akce ===== */
+async function act(a,v,el,ev){
+  switch(a){
+    case 'login':{ const email=(g('li-email')||'').trim(), pass=g('li-pass')||'';
+      if(!email||!pass){loginErr='Vyplň e-mail i heslo.';render();return;}
+      loginBusy=true;loginErr='';render();
+      try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); } return; }
+    case 'logout': await signOut(auth); return;
+    case 'sort': sort=(sort.col===v)?{col:v,dir:-sort.dir}:{col:v,dir:1}; break;
+    case 'flt': filters.status=(filters.status===v?'':v); break;
+    case 'new': editing={priorita:'běžná',status:'nový',hist:[]}; errs={};footMsg='';modalTab='prikaz';break;
+    case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); errs={};footMsg='';modalTab='prikaz';break;
+    case 'close': case 'close-bg':
+      if(a==='close-bg'&&(!downOnOverlay||(ev&&ev.target!==el))){ downOnOverlay=false; return; }
+      downOnOverlay=false; editing=null;errs={};footMsg='';break;
+    case 'mtab': collect(); modalTab=v; break;
+    case 'save':{ collect();
+      if(!validate()){footMsg='Doplň povinná pole.';modalTab='prikaz';render();return;}
+      try{ if(!editing._id){ const c=await createPrikaz(); editing=null; toast('Příkaz '+c+' založen.','ok'); }
+        else{ await updatePrikaz(); editing=null; toast('Změny uloženy.','ok'); } }
+      catch(e){ footMsg='Uložení selhalo: '+e.message; render(); return; } break; }
+    case 'del':{ if(!isAdmin())return; const o=rows.find(x=>x._id===v);
+      if(confirm(`Smazat pracovní příkaz ${o.cislo}?`)){ try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Smazáno.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
+  }
+  render();
+}
+function toast(msg,kind){ toastMsg=msg; toastKind=kind; render(); setTimeout(()=>{ toastMsg=null; render(); },2600); }
+function bind(){
+  const lf=document.getElementById('loginForm'); if(lf) lf.onsubmit=e=>{e.preventDefault();act('login');};
+  const lo=document.getElementById('btn-logout'); if(lo) lo.onclick=()=>act('logout');
+  const ov=document.querySelector('.overlay[data-a="close-bg"]'); if(ov) ov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===ov); });
+  document.querySelectorAll('[data-a]').forEach(el=>{ const a=el.dataset.a,v=el.dataset.v;
+    if(a==='login'||a==='logout'||a==='close-bg') return;
+    const isInput=(el.tagName==='SELECT'||el.type==='checkbox');
+    if(isInput) el.onchange=ev=>act(a,v,el,ev); else el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
+  });
+  const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
+  const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
+  const m=document.getElementById('f-mine'); if(m) m.onchange=()=>{filters.mine=m.checked;render();};
+}
+render();
+</script>
+</body>
+</html>

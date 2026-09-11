@@ -30,7 +30,10 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (signedIn()
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seq'])
-                        && request.resource.data.seq == resource.data.seq + 1);
+                        && request.resource.data.seq == resource.data.seq + 1)
+                    || (signedIn()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seqUdrzba'])
+                        && request.resource.data.seqUdrzba == resource.data.seqUdrzba + 1);
     }
 
     match /requests/{id} {
@@ -65,6 +68,19 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.author == request.auth.uid;
       allow update: if signedIn() && (canEdit() || resource.data.author == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // --- Údržba (pilotní modul — v appce zatím vidí jen vybrané e-maily, viz
+    // OWNERS v udrzba.html; stejný vzor jako u Opravy/Engineering) ---
+    match /udrzba/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+                    && request.resource.data.author == request.auth.uid
+                    && request.resource.data.status == 'nový';
+      allow update: if isAdmin()
+                    || resource.data.author == request.auth.uid
+                    || resource.data.assignedTo == request.auth.uid;
       allow delete: if isAdmin();
     }
 
