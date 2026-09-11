@@ -7,75 +7,102 @@
 <title>Údržba — YFAI minimo</title>
 <link rel="stylesheet" href="header.css">
 <style>
-  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--card:#fff;--line:#dde4ec;--text:#16233a;--muted:#6b7a90;
-    --green:#1f9254;--red:#c0392b;--amber:#b7791f;--blue:#2563a8;--radius:6px}
+  /* Barvy hlavičky/tlačítek = Davidovy (navy minimo). Karty, okno příkazu
+     a barvy stavů = styl appky Pracovní příkazy. */
+  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--surface:#fff;--border:#dde4ec;--text:#16233a;--muted:#6b7a90;
+    --ok:#15803d;--warn:#b45309;--danger:#c0392b;--radius:10px;
+    --shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06)}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:13px}
-  button{font-family:inherit;font-size:12px;cursor:pointer;border-radius:var(--radius);border:1px solid transparent;padding:7px 12px}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px}
+  main{max-width:900px;margin:0 auto;padding:16px 18px 40px}
+  button{font-family:inherit;font-size:13.5px;cursor:pointer;border-radius:8px;border:1px solid transparent;padding:0.5rem 0.9rem;background:#fff}
   button:disabled{opacity:.45;cursor:not-allowed}
-  input,select,textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--text);width:100%}
-  main{padding:14px 18px 40px}
-  .btn-primary{background:var(--navy-2);color:#fff}.btn-ghost{background:#fff;border:1px solid var(--line);color:#41506b}
-  .btn-danger{background:#c0392b;color:#fff}.btn-ok{background:#1f9254;color:#fff}
-  .btn-new{background:linear-gradient(180deg,#f6821f,#e8590c);color:#fff;font-size:18px;font-weight:800;padding:15px 34px;border-radius:10px;
-    box-shadow:0 4px 14px rgba(232,89,12,.4);letter-spacing:.4px;text-transform:uppercase}
-  .newbar{margin-bottom:12px}
-  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
-  .panel>h2{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:11px 15px;font-size:14px;display:flex;align-items:center}
-  .panel>h2 .right{margin-left:auto;font-weight:500;font-size:11px;opacity:.85}
-  .notice{background:#eef4fc;border:1px solid #cfe0f5;color:#274a74;border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:12.5px}
-  .legend{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:9px 13px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
-  .stchip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 10px;font-size:11px;cursor:pointer;color:#41506b;font-weight:600}
-  .stchip i{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.12)}
-  .stchip.on{border-color:var(--navy-2);background:#eef3fb;color:var(--navy-2)}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:11px 13px;border-bottom:1px solid var(--line);background:#fafbfd}
-  .filters input,.filters select{width:auto;min-width:150px;font-size:14px}
-  .filters .grow{flex:1 1 300px;max-width:520px}
-  label.check{display:inline-flex;gap:7px;align-items:center;font-size:14px;color:#41506b;white-space:nowrap;cursor:pointer;font-weight:700}
-  label.check input{width:18px;height:18px;min-width:0;margin:0;flex:none}
-  .tblwrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:12.5px}
-  thead th{background:#16355f;color:#fff;text-align:left;padding:9px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;cursor:pointer}
-  thead th.no-sort{cursor:default}
-  tbody td{padding:8px 10px;border-bottom:1px solid #eef1f5;vertical-align:top;background:var(--row,#fff)}
-  tbody tr{cursor:pointer}
-  tbody tr:hover td{filter:brightness(.975)}
-  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid transparent;white-space:nowrap}
-  .b-white{background:#fff;color:#41506b;border-color:#d5deea}.b-yellow{background:#fdf4c8;color:#7a5b06;border-color:#efe1a0}
-  .b-orange{background:#ffe3c2;color:#9a4f0e;border-color:#f6cfa5}.b-blue{background:#e9f1fb;color:#2563a8;border-color:#cbdff5}
-  .b-navy{background:#1b4b8f;color:#fff;border-color:#143a70}.b-green{background:#e8f6ee;color:#1f9254;border-color:#c4e6d3}
-  .b-grey{background:#eef1f5;color:#4a5a70;border-color:#dfe4ea}.b-red{background:#fdecea;color:#c0392b;border-color:#f5cfca}
-  .muted{color:var(--muted)}
-  .empty{text-align:center;color:var(--muted);padding:26px}
-  /* modal */
-  .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto;z-index:50}
-  .modal{background:#fff;border-radius:10px;width:min(760px,95vw);height:min(90vh,760px);margin:auto;box-shadow:0 18px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
-  .modal>h3{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:14px 18px;font-size:17px;display:flex;align-items:center;gap:10px;flex:none}
-  .modal>h3 .x{margin-left:auto;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .modal>h3 .x:hover{background:rgba(255,255,255,.32)}
-  .mtabs{display:flex;gap:8px;margin:12px 14px 2px;padding:5px;background:#f1f4f8;border-radius:11px;flex:none}
-  .mtab{flex:1;background:#fff;border:1px solid var(--line);color:#41506b;padding:11px 12px;font-size:13px;font-weight:800;cursor:pointer;border-radius:8px;text-align:center}
-  .mtab.on{background:linear-gradient(180deg,#2f6bbf,#255a9e);color:#fff;border-color:#255a9e;box-shadow:0 3px 10px rgba(37,90,158,.35)}
-  .modalbody{flex:1 1 auto;overflow-y:auto;min-height:0}
-  .form{padding:18px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  .f{display:flex;flex-direction:column;gap:4px}.f.span2{grid-column:span 2}
-  .f label{font-size:12.5px;font-weight:600;color:#41506b}
-  .f .req{color:#c0392b}
-  .f .ro{background:#f6f8fb;border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-height:36px;font-size:14px}
-  .f.invalid input,.f.invalid select,.f.invalid textarea{border-color:#c0392b;background:#fdecea}
-  .err{color:#c0392b;font-size:11px}
-  .hist{padding:14px}.hist b{display:block;margin-bottom:8px;color:#41506b}
-  .hist div{font-size:12.5px;padding:5px 2px;border-top:1px dotted var(--line)}
-  .foot{padding:12px 15px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:#fafbfd;flex-wrap:wrap;flex:none}
-  .foot .r{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-  .foot .msg{font-size:12px;color:var(--red);font-weight:600}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#16355f;color:#fff;padding:11px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:80;font-weight:600}
-  .toast.err{background:#c0392b}.toast.ok{background:#1f9254}
+  input,select,textarea{font-family:inherit;font-size:14px;padding:0.5rem 0.6rem;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);width:100%}
+  label{font-size:0.82rem;font-weight:600;color:var(--muted);display:block;margin-bottom:0.25rem}
+  .btn-primary{background:var(--navy-2);color:#fff;font-weight:600}
+  .btn-primary:hover{background:var(--navy-1)}
+  .btn-ghost{background:#fff;border:1px solid var(--border);color:#41506b}
+  .btn-danger{background:#fff;border:1px solid #f3c6c1;color:var(--danger)}
+  .btn-danger:hover{background:#fdecea}
+  .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  .muted{color:var(--muted);font-size:.85rem}
+  h1{font-size:1.35rem;margin:0 0 .2rem}
+  .intro{color:var(--muted);font-size:.9rem;margin:0 0 1rem}
+
+  /* --- pilhový pruh s filtry --- */
+  .toolbar{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+  .tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+  .tab{background:#fff;border:1px solid var(--border);border-radius:999px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;color:#41506b}
+  .tab.on{background:var(--navy-2);border-color:var(--navy-2);color:#fff}
+  .search{flex:1;min-width:180px;max-width:340px}
+  .check{display:inline-flex;gap:.4rem;align-items:center;font-size:.85rem;font-weight:600;color:#41506b;white-space:nowrap;cursor:pointer}
+  .check input{width:16px;height:16px;margin:0}
+
+  /* --- karty příkazů (seznam) --- */
+  .list{display:grid;gap:.6rem}
+  .order-item{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);
+    border-left:4px solid #94a3b8;border-radius:var(--radius);box-shadow:var(--shadow);padding:.85rem 1rem}
+  .order-item:hover{border-color:#b9c6d8;filter:brightness(.99)}
+  .order-item.st-nový{border-left-color:#6366f1}
+  .order-item.st-rozpracováno{border-left-color:#ea7317}
+  .order-item.st-hotovo{border-left-color:var(--ok)}
+  .oi-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+  .oi-title{margin:0 0 .25rem;font-size:1rem;font-weight:700}
+  .oi-meta{font-size:.82rem;color:var(--muted)}
+  .empty{text-align:center;color:var(--muted);padding:2.5rem 1rem;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)}
+
+  /* --- odznaky --- */
+  .badge{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+  .badge.st-nový{background:#e0e7ff;color:#3730a3}
+  .badge.st-rozpracováno{background:#fef3c7;color:var(--warn)}
+  .badge.st-hotovo{background:#dcfce7;color:var(--ok)}
+  .badge.p-běžná{background:#e9f1fb;color:#2563a8}
+  .badge.p-vysoká{background:#ffe3c2;color:#9a4f0e}
+  .badge.p-kritická{background:#fdecea;color:var(--danger)}
+
+  /* --- modal (Davidovo tělo hlavičky, náš obsah) --- */
+  .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto;z-index:50}
+  .modal{background:#fff;border-radius:var(--radius);width:100%;max-width:620px;max-height:90vh;margin:auto;
+    box-shadow:0 20px 50px rgba(15,23,42,.3);display:flex;flex-direction:column;overflow:hidden}
+  .modal-head{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:.85rem 1rem;
+    font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.6rem;flex:none}
+  .modal-head .x{margin-left:auto;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;
+    font-size:16px;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .modal-head .x:hover{background:rgba(255,255,255,.32)}
+  .modal-body{padding:1rem;overflow-y:auto}
+  .modal-foot{padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;flex:none;background:#fafbfd}
+  .modal-foot .r{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+  .msg{font-size:.8rem;color:var(--danger);font-weight:600}
+
+  /* hero = barevný pruh podle stavu, jako v Pracovních příkazech */
+  .hero{--accent:#94a3b8;margin:-1rem -1rem 0;padding:1rem;border-bottom:1px solid var(--border);border-top:3px solid var(--accent);
+    background:linear-gradient(120deg, color-mix(in srgb, var(--accent) 12%, #fff), transparent 70%), #fff}
+  .hero.st-nový{--accent:#6366f1}
+  .hero.st-rozpracováno{--accent:#ea7317}
+  .hero.st-hotovo{--accent:#15803d}
+  .hero-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.85rem}
+  .hero h2{margin:.5rem 0 0;font-size:1.1rem;line-height:1.3}
+  .hero-desc{margin:.5rem 0 0;white-space:pre-wrap;font-size:.9rem}
+  .meta{display:grid;grid-template-columns:auto 1fr;gap:.2rem .75rem;margin:.9rem 0 0;font-size:.85rem}
+  .meta dt{color:var(--muted);font-weight:600}
+  .meta dd{margin:0}
+  .sec{display:grid;gap:.5rem;padding:1rem;border-top:1px solid var(--border)}
+  .sec-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  .form-grid{display:grid;gap:.7rem}
+  .form-grid.cols2{grid-template-columns:1fr 1fr}
+  .hist{font-size:.82rem}
+  .hist div{padding:.3rem 0;border-top:1px dotted var(--border)}
+  .hist div:first-child{border-top:none}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy-1);color:#fff;padding:.6rem 1.1rem;
+    border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:80;font-weight:600;font-size:.85rem}
+  .toast.err{background:var(--danger)}.toast.ok{background:var(--ok)}
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-  .login{background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.12);text-align:center}
-  .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:11px;font-size:14px;font-weight:700}
-  .loginerr{background:#fdecea;color:#c0392b;border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
-  @media(max-width:760px){.form{grid-template-columns:1fr}.f.span2{grid-column:span 1}.mtabs{flex-wrap:wrap}.mtab{flex:1 1 40%}}
+  .login{background:#fff;border:1px solid var(--border);border-radius:14px;padding:30px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.12);text-align:center}
+  .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:.65rem;font-size:14px;font-weight:700}
+  .loginerr{background:#fdecea;color:var(--danger);border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
+  @media(max-width:640px){.form-grid.cols2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -117,16 +144,17 @@ const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wad
 
 /* ===== Stavy a priorita ===== */
 const STATUSES = [
-  {k:'nový',         label:'nový',         cls:'b-white'},
-  {k:'rozpracováno', label:'rozpracováno', cls:'b-blue'},
-  {k:'hotovo',       label:'hotovo',       cls:'b-green'}
+  {k:'nový',         label:'Nový'},
+  {k:'rozpracováno', label:'Rozpracováno'},
+  {k:'hotovo',       label:'Hotovo'}
 ];
-const ROW_TINT = {'nový':'#ffffff','rozpracováno':'#e7eefb','hotovo':'#d3f1dc'};
-const PRIORITA = [{k:'běžná',cls:'b-blue'},{k:'vysoká',cls:'b-orange'},{k:'kritická',cls:'b-red'}];
+const NEXT_STATUS = {'nový':'rozpracováno','rozpracováno':'hotovo','hotovo':null};
+const statusLabel = k => (STATUSES.find(s=>s.k===k)||{}).label || k || '';
+const PRIORITA = ['běžná','vysoká','kritická'];
 
 /* ===== Stav aplikace ===== */
-let me=null, rows=[], users=[], editing=null, errs={}, footMsg='', modalTab='prikaz';
-let sort={col:'createdTs',dir:-1}, filters={q:'',status:'',mine:false}, toastMsg=null, toastKind='';
+let me=null, rows=[], users=[], editing=null, editMode=false, errs={}, footMsg='';
+let filters={q:'',status:'',mine:false}, toastMsg=null, toastKind='';
 let loginBusy=false, loginErr='', dataReady=false, fatal='';
 let cfg={sections:[]};
 let downOnOverlay=false;
@@ -137,7 +165,6 @@ const sectionByName = n => (cfg.sections||[]).find(s=>s.name===n);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => new Date().toISOString().slice(0,10);
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
-const badge = (v,defs)=>{const d=defs.find(x=>x.k===v);const t=(d&&d.label)?d.label:v;return `<span class="badge ${d?d.cls:'b-grey'}">${esc(t||'—')}</span>`;};
 
 /* ===== auth ===== */
 onAuthStateChanged(auth, async user=>{
@@ -185,8 +212,8 @@ async function nextNumber(){
 function render(){
   const app=document.getElementById('app');
   if(!me){ app.innerHTML=loginView(); bind(); return; }
-  if(!isOwner(me.email)){ app.innerHTML=shell(`<div class="notice">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
-  if(fatal){ app.innerHTML=shell(`<div class="notice">${esc(fatal)}</div>`); bind(); return; }
+  if(!isOwner(me.email)){ app.innerHTML=shell(`<div class="empty">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
+  if(fatal){ app.innerHTML=shell(`<div class="empty">${esc(fatal)}</div>`); bind(); return; }
   app.innerHTML = shell(listView()) + (editing?modalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   bind();
 }
@@ -196,7 +223,7 @@ function loginView(){
     ${loginErr?`<div class="loginerr">${esc(loginErr)}</div>`:''}
     <input type="email" id="li-email" placeholder="E-mail" autocomplete="username">
     <input type="password" id="li-pass" placeholder="Heslo" autocomplete="current-password">
-    <button type="submit" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
+    <button type="submit" class="btn-primary" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
   </form></div>`;
 }
 function shell(inner){
@@ -208,42 +235,37 @@ function visibleRows(){
   if(filters.mine) r=r.filter(x=>x.author===me.uid || x.assignedTo===me.uid);
   if(filters.status) r=r.filter(x=>x.status===filters.status);
   if(filters.q){ const q=filters.q.toLowerCase(); r=r.filter(x=>[x.cislo,x.nazev,x.popis,x.linka,x.stroj,x.assignedToName].join(' ').toLowerCase().includes(q)); }
-  const c=sort.col;
-  r.sort((a,b)=>{ let x=a[c], y=b[c]; return String(x??'').localeCompare(String(y??''),'cs')*sort.dir; });
   return r;
 }
-function th(c,l){ const on=sort.col===c; return `<th data-a="sort" data-v="${c}">${l}${on?(sort.dir>0?' ▲':' ▼'):''}</th>`; }
 function listView(){
-  if(!dataReady) return `<div class="notice">Načítám data…</div>`;
+  if(!dataReady) return `<div class="empty">Načítám data…</div>`;
   const rr=visibleRows();
   const cnt=k=>rows.filter(x=>x.status===k).length;
   return `
-  <div class="notice"><b>Údržba</b> — pilotní modul pro hlášení a evidenci oprav a údržby strojů. Zatím ho vidí jen vybraní lidé.</div>
-  <div class="newbar"><button class="btn-new" data-a="new">+ Nový pracovní příkaz</button></div>
-  <div class="panel">
-    <h2>Přehled příkazů <span class="right">${rr.length} z ${rows.length}</span></h2>
-    <div class="legend"><span style="font-weight:700;color:#41506b">Filtr stavu:</span>
-      <button class="stchip ${!filters.status?'on':''}" data-a="flt" data-v="">Vše (${rows.length})</button>
-      ${STATUSES.map(s=>`<button class="stchip ${filters.status===s.k?'on':''}" data-a="flt" data-v="${s.k}"><i style="background:${ROW_TINT[s.k]}"></i>${esc(s.label)} (${cnt(s.k)})</button>`).join('')}
+  <h1>Údržba</h1>
+  <p class="intro">Pilotní modul pro hlášení a evidenci oprav a údržby strojů. Zatím ho vidí jen vybraní lidé.</p>
+  <div class="row" style="margin-bottom:1rem">
+    <button class="btn-primary" data-a="new">+ Nový pracovní příkaz</button>
+  </div>
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab ${!filters.status?'on':''}" data-a="flt" data-v="">Vše (${rows.length})</button>
+      ${STATUSES.map(s=>`<button class="tab ${filters.status===s.k?'on':''}" data-a="flt" data-v="${s.k}">${esc(s.label)} (${cnt(s.k)})</button>`).join('')}
     </div>
-    <div class="filters">
-      <input class="grow" id="f-q" placeholder="Hledat v názvu, popisu, lince…" value="${esc(filters.q)}">
-      <label class="check"><input type="checkbox" id="f-mine" ${filters.mine?'checked':''}>Mé příkazy</label>
-    </div>
-    <div class="tblwrap"><table>
-      <thead><tr>${th('status','Stav')}${th('cislo','Číslo')}${th('createdTs','Vytvořeno')}${th('priorita','Priorita')}<th class="no-sort">Název</th>${th('linka','Linka / stroj')}${th('assignedToName','Přiřazeno')}${th('authorName','Zadal')}${isAdmin()?'<th class="no-sort">Smazat</th>':''}</tr></thead>
-      <tbody>${rr.length?rr.map(o=>`<tr style="--row:${ROW_TINT[o.status]||'#fff'}" data-a="open" data-v="${o._id}">
-          <td>${badge(o.status,STATUSES)}</td>
-          <td><b>${esc(o.cislo||'—')}</b></td>
-          <td>${esc(dateCz(o.created))}</td>
-          <td>${badge(o.priorita,PRIORITA)}</td>
-          <td>${esc(o.nazev||'')}</td>
-          <td>${o.linka?`<b>${esc(o.linka)}</b>${o.stroj?`<div class="muted" style="font-size:11px">${esc(o.stroj)}</div>`:''}`:'<span class="muted">—</span>'}</td>
-          <td>${o.assignedToName?esc(o.assignedToName):'<span class="muted">nepřiřazeno</span>'}</td>
-          <td>${esc(o.authorName||'—')}</td>
-          ${isAdmin()?`<td><button class="btn-danger" data-a="del" data-v="${o._id}" onclick="event.stopPropagation()" style="padding:5px 9px">Smazat</button></td>`:''}
-        </tr>`).join(''):`<tr><td colspan="8" class="empty">Žádné pracovní příkazy.</td></tr>`}</tbody>
-    </table></div>
+    <input class="search" id="f-q" placeholder="Hledat…" value="${esc(filters.q)}">
+    <label class="check"><input type="checkbox" id="f-mine" ${filters.mine?'checked':''}>Mé příkazy</label>
+  </div>
+  <div class="list">
+    ${rr.length?rr.map(o=>`<button type="button" class="order-item st-${o.status}" data-a="open" data-v="${o._id}">
+        <div class="oi-top">
+          <span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
+          <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
+          <span class="spacer"></span>
+          <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
+        </div>
+        <h3 class="oi-title">${esc(o.nazev||'')}</h3>
+        <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${o.assignedToName?esc(o.assignedToName):'nepřiřazeno'} · zadal ${esc(o.authorName||'')}</div>
+      </button>`).join(''):`<div class="empty">Žádné pracovní příkazy neodpovídají filtru.</div>`}
   </div>`;
 }
 
@@ -254,7 +276,6 @@ function collect(){
   const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj'};
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita'); if(p!==undefined) editing.priorita=p;
-  const st=g('e-status'); if(st!==undefined) editing.status=st;
   const asg=g('e-assigned');
   if(asg!==undefined){
     if(!asg){ editing.assignedTo=null; editing.assignedToName=null; }
@@ -262,55 +283,92 @@ function collect(){
   }
 }
 function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && o.assignedTo===me.uid); }
-function modalView(){
-  const o=editing, isNew=!o._id, ed=isNew||canEditDoc(o);
-  const wrap=(id,label,inner,req=false,span=false)=>`<div class="f ${span?'span2':''} ${errs[id]?'invalid':''}"><label>${esc(label)}${req?' <span class="req">*</span>':''}</label>${inner}${errs[id]?`<span class="err">${esc(errs[id])}</span>`:''}</div>`;
-  const inp=(id,val,ph='')=>`<input id="e-${id}" value="${esc(val??'')}" placeholder="${esc(ph)}" ${ed?'':'disabled'}>`;
-  const ta=(id,val,ph='')=>`<textarea id="e-${id}" rows="3" placeholder="${esc(ph)}" ${ed?'':'disabled'}>${esc(val??'')}</textarea>`;
-  const linkaSel = `<select id="e-linka" ${ed?'':'disabled'}><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
+function editForm(o){
+  const linkaSel = `<select id="e-linka"><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
   const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
-  const strojSel = `<select id="e-stroj" ${ed&&sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka (bez stroje) —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
-  const assignedSel = `<select id="e-assigned" ${ed?'':'disabled'}><option value="">— nepřiřazeno —</option>${users.slice().sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs')).map(u=>`<option value="${u._id}" ${o.assignedTo===u._id?'selected':''}>${esc(u.name||u.email)}</option>`).join('')}</select>`;
-  const tabPrikaz = `<div class="form">
-    ${ed?wrap('status','Stav',`<select id="e-status">${STATUSES.map(s=>`<option value="${esc(s.k)}" ${o.status===s.k?'selected':''}>${esc(s.label)}</option>`).join('')}</select>`):`<div class="f"><label>Stav</label><div class="ro">${badge(o.status,STATUSES)}</div></div>`}
-    ${wrap('priorita','Priorita',`<select id="e-priorita" ${ed?'':'disabled'}>${PRIORITA.map(u=>`<option ${o.priorita===u.k?'selected':''}>${u.k}</option>`).join('')}</select>`,true)}
-    ${wrap('nazev','Název',inp('nazev',o.nazev,'co je potřeba udělat'),true,true)}
-    ${wrap('popis','Popis',ta('popis',o.popis,'podrobnosti, co je poškozené / co udělat'),false,true)}
-    ${wrap('linka','Linka',linkaSel)}
-    ${wrap('stroj','Stroj',strojSel)}
-    ${wrap('assigned','Přiřazeno',assignedSel,false,true)}
-  </div>`;
-  const tabHist = `<div class="hist"><b>Historie příkazu</b>${(o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>'}</div>`;
-  const tabbar = !isNew?`<div class="mtabs">
-      <button class="mtab ${modalTab==='prikaz'?'on':''}" data-a="mtab" data-v="prikaz">Příkaz</button>
-      <button class="mtab ${modalTab==='historie'?'on':''}" data-a="mtab" data-v="historie">Historie</button>
-    </div>`:'';
-  const content = (isNew||modalTab==='prikaz') ? tabPrikaz : tabHist;
-  return `<div class="overlay" data-a="close-bg"><div class="modal">
-    <h3>${isNew?'Nový pracovní příkaz':esc(o.cislo)}${!isNew?` <span style="font-weight:400;opacity:.85;font-size:12px">${esc(o.authorName||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
-    ${tabbar}
-    <div class="modalbody">${content}</div>
-    <div class="foot">
-      ${footMsg?`<span class="msg">${esc(footMsg)}</span>`:(ed?'<span class="muted">Pole s <span style="color:#c0392b">*</span> jsou povinná.</span>':'')}
-      <div class="r">
-        <button class="btn-ghost" data-a="close">${ed?'Zrušit':'Zavřít'}</button>
-        ${ed?`<button class="btn-primary" data-a="save">${isNew?'Založit':'Uložit změny'}</button>`:''}
-      </div>
+  const strojSel = `<select id="e-stroj" ${sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
+  const assignedSel = `<select id="e-assigned"><option value="">— nepřiřazeno —</option>${users.slice().sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs')).map(u=>`<option value="${u._id}" ${o.assignedTo===u._id?'selected':''}>${esc(u.name||u.email)}</option>`).join('')}</select>`;
+  return `<div class="form-grid">
+    <div ${errs.nazev?'style="color:#c0392b"':''}>
+      <label>Název ${!errs.nazev?'':'<span style="color:#c0392b">*</span>'}</label>
+      <input id="e-nazev" value="${esc(o.nazev??'')}" placeholder="co je potřeba udělat">
+      ${errs.nazev?`<div class="msg" style="margin-top:.2rem">${esc(errs.nazev)}</div>`:''}
     </div>
+    <div><label>Popis</label><textarea id="e-popis" rows="3" placeholder="podrobnosti, co je poškozené / co udělat">${esc(o.popis??'')}</textarea></div>
+    <div class="form-grid cols2">
+      <div><label>Priorita</label><select id="e-priorita">${PRIORITA.map(p=>`<option ${o.priorita===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label>Přiřazeno</label>${assignedSel}</div>
+    </div>
+    <div class="form-grid cols2">
+      <div><label>Linka</label>${linkaSel}</div>
+      <div><label>Stroj</label>${strojSel}</div>
+    </div>
+  </div>`;
+}
+function modalView(){
+  const o=editing, isNew=!o._id;
+  const showEdit = isNew || editMode;
+  const canEdit = isNew || canEditDoc(o);
+  const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
+  const next = NEXT_STATUS[o.status];
+  const body = showEdit ? `
+    <div class="hero st-${o.status||'nový'}">
+      <div class="hero-top"><span class="badge st-${o.status||'nový'}">${esc(statusLabel(o.status||'nový'))}</span><span class="spacer"></span>
+        ${!isNew?`<span class="muted">${esc(o.cislo||'')}</span>`:''}</div>
+    </div>
+    <div class="sec">${editForm(o)}</div>
+  ` : `
+    <div class="hero st-${o.status}">
+      <div class="hero-top"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
+        <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span><span class="spacer"></span>
+        <span class="muted">Vytvořil ${esc(o.authorName||'')}</span></div>
+      <div class="row" style="align-items:flex-start;margin-top:.5rem">
+        <h2 style="flex:1">${esc(o.nazev||'')}</h2>
+        ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
+      </div>
+      <p class="hero-desc">${o.popis?esc(o.popis):'<span class="muted">Bez popisu.</span>'}</p>
+      <dl class="meta">
+        <dt>Přiřazeno</dt><dd>${o.assignedToName?esc(o.assignedToName):'<span class="muted">nepřiřazeno</span>'}</dd>
+        <dt>Linka / stroj</dt><dd>${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
+        <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
+        ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
+      </dl>
+    </div>
+    ${(canEditDoc(o))?`<div class="sec">
+      <div class="sec-label">Změnit stav</div>
+      <div class="row">
+        ${next?`<button class="btn-primary" data-a="status" data-v="${next}">Označit jako: ${esc(statusLabel(next))}</button>`:''}
+        ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
+      </div>
+    </div>`:''}
+    <div class="sec">
+      <div class="sec-label">Historie</div>
+      <div class="hist">${histHtml}</div>
+    </div>
+    ${isAdmin()?`<div class="sec"><button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button></div>`:''}
+  `;
+  return `<div class="overlay" data-a="close-bg"><div class="modal">
+    <div class="modal-head">${isNew?'Nový pracovní příkaz':esc(o.cislo)}<button class="x" data-a="close">✕</button></div>
+    <div class="modal-body">${body}</div>
+    ${showEdit?`<div class="modal-foot">
+      ${footMsg?`<span class="msg">${esc(footMsg)}</span>`:'<span class="muted">Pole s <span style="color:#c0392b">*</span> jsou povinná.</span>'}
+      <div class="r">
+        <button class="btn-ghost" data-a="${isNew?'close':'cancel-edit'}">Zrušit</button>
+        <button class="btn-primary" data-a="save">${isNew?'Založit':'Uložit změny'}</button>
+      </div>
+    </div>`:''}
   </div></div>`;
 }
 function validate(){
   errs={}; collect();
-  [['priorita','priorita'],['nazev','nazev']].forEach(([eid,f])=>{
-    const v=editing[f]; if(v===''||v===undefined||v===null) errs[eid]='Povinné pole';
-  });
+  if(!editing.nazev) errs.nazev='Povinné pole';
   return Object.keys(errs).length===0;
 }
 
 /* ===== zápisy ===== */
 async function createPrikaz(){
   const cislo=await nextNumber();
-  const rec=Object.assign({},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
+  const rec=Object.assign({priorita:'běžná'},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
     created:today(),createdTs:serverTimestamp(),hist:[`${today()} · ${me.name} · založil příkaz`]});
   delete rec._id;
   await addDoc(collection(db,'udrzba'),rec);
@@ -319,12 +377,17 @@ async function createPrikaz(){
 async function updatePrikaz(){
   const id=editing._id; const old=rows.find(r=>r._id===id)||{};
   const hist=(editing.hist||[]).slice();
-  if(old.status!==editing.status) hist.push(`${today()} · ${me.name} · stav ${old.status||''} → ${editing.status}`);
   if(old.assignedTo!==editing.assignedTo) hist.push(`${today()} · ${me.name} · přiřazeno: ${editing.assignedToName||'nikdo'}`);
-  if(old.status===editing.status && old.assignedTo===editing.assignedTo) hist.push(`${today()} · ${me.name} · upravil příkaz`);
-  if(editing.status==='hotovo' && old.status!=='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
+  hist.push(`${today()} · ${me.name} · upravil příkaz`);
   const {_id,...data}=editing; data.hist=hist;
   await updateDoc(doc(db,'udrzba',id),data);
+}
+async function changeStatus(o,newStatus){
+  const hist=(o.hist||[]).slice();
+  hist.push(`${today()} · ${me.name} · stav ${o.status} → ${newStatus}`);
+  const patch={status:newStatus,hist};
+  if(newStatus==='hotovo'){ patch.doneAt=today(); patch.doneByName=me.name; }
+  await updateDoc(doc(db,'udrzba',o._id),patch);
 }
 
 /* ===== akce ===== */
@@ -335,19 +398,25 @@ async function act(a,v,el,ev){
       loginBusy=true;loginErr='';render();
       try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); } return; }
     case 'logout': await signOut(auth); return;
-    case 'sort': sort=(sort.col===v)?{col:v,dir:-sort.dir}:{col:v,dir:1}; break;
     case 'flt': filters.status=(filters.status===v?'':v); break;
-    case 'new': editing={priorita:'běžná',status:'nový',hist:[]}; errs={};footMsg='';modalTab='prikaz';break;
-    case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); errs={};footMsg='';modalTab='prikaz';break;
+    case 'new': editing={priorita:'běžná',status:'nový',hist:[]}; editMode=false; errs={};footMsg='';break;
+    case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';break;
+    case 'edit': collect(); editMode=true; break;
+    case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
     case 'close': case 'close-bg':
       if(a==='close-bg'&&(!downOnOverlay||(ev&&ev.target!==el))){ downOnOverlay=false; return; }
-      downOnOverlay=false; editing=null;errs={};footMsg='';break;
-    case 'mtab': collect(); modalTab=v; break;
+      downOnOverlay=false; editing=null;editMode=false;errs={};footMsg='';break;
     case 'save':{ collect();
-      if(!validate()){footMsg='Doplň povinná pole.';modalTab='prikaz';render();return;}
+      if(!validate()){footMsg='Doplň povinná pole.';render();return;}
       try{ if(!editing._id){ const c=await createPrikaz(); editing=null; toast('Příkaz '+c+' založen.','ok'); }
-        else{ await updatePrikaz(); editing=null; toast('Změny uloženy.','ok'); } }
+        else{ await updatePrikaz(); editMode=false; toast('Změny uloženy.','ok'); } }
       catch(e){ footMsg='Uložení selhalo: '+e.message; render(); return; } break; }
+    case 'status':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
+      try{ await changeStatus(o,v);
+        editing.hist=(editing.hist||[]).concat(`${today()} · ${me.name} · stav ${editing.status} → ${v}`);
+        editing.status=v;
+        if(v==='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
+        toast('Stav změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'del':{ if(!isAdmin())return; const o=rows.find(x=>x._id===v);
       if(confirm(`Smazat pracovní příkaz ${o.cislo}?`)){ try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Smazáno.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
   }
@@ -360,8 +429,7 @@ function bind(){
   const ov=document.querySelector('.overlay[data-a="close-bg"]'); if(ov) ov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===ov); });
   document.querySelectorAll('[data-a]').forEach(el=>{ const a=el.dataset.a,v=el.dataset.v;
     if(a==='login'||a==='logout'||a==='close-bg') return;
-    const isInput=(el.tagName==='SELECT'||el.type==='checkbox');
-    if(isInput) el.onchange=ev=>act(a,v,el,ev); else el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
+    el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
   });
   const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
   const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
