@@ -4,6 +4,11 @@
    ============================================================ */
 .uhdr{background:linear-gradient(90deg,#0f2f5f,#1b4b8f);color:#fff;padding:9px 16px;
   display:flex;align-items:center;gap:14px;min-height:66px;position:relative;z-index:60}
+/* .uh-brandgroup (menu+logo) a .uh-topright (foto+jméno+Odhlásit) jsou na
+   širokém panelu jen průchozí obálky — jejich obsah teče do .uhdr úplně
+   stejně, jako by tyhle obálky vůbec nebyly. Existují kvůli mobilu (viz
+   media query níže), kde se z nich stanou skutečné mřížkové buňky. */
+.uh-brandgroup,.uh-topright{display:contents}
 .uh-menuwrap{position:relative;flex:none}
 .uh-menu{background:#e9edf3;color:#16233a;border:1px solid #cfd8e6;width:48px;height:48px;
   border-radius:12px;font-size:22px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
@@ -14,8 +19,7 @@
 .uh-title{line-height:1.15;flex:none}
 .uh-title b{font-size:18px;font-weight:800;display:block;letter-spacing:-.2px}
 .uh-title span{font-size:12px;opacity:.82}
-.uh-right{margin-left:auto;display:flex;align-items:center;gap:20px}
-.uh-idbox{display:flex;align-items:center;gap:10px}
+.uh-idbox{display:flex;align-items:center;gap:10px;margin-right:6px}
 .uh-clock{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.18);border-radius:12px;
   padding:6px 15px;text-align:center;flex:none;width:210px}
 /* Na širším panelu hodiny nepatří ani k logu, ani k profilu — vycentrované
@@ -37,9 +41,10 @@
 .uh-user:hover{background:rgba(255,255,255,.12)}
 .uh-user .n{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .uh-user .l{font-size:11px;opacity:.85;white-space:nowrap}
-/* Přepínač jazyka — zpátky v hlavičce, ale malý a před fotkou, ať nesplývá
-   s profilem/odhlásit (viz .uh-right gap níže, který mu dá odstup). */
-.uh-lang{display:flex;gap:4px;flex:none;margin-right:6px;padding-right:12px;border-right:1px solid rgba(255,255,255,.22)}
+/* Jazyk — na širokém panelu úplně vlevo od foto+jméno+Odhlásit (to celé
+   dohromady tlačí .uh-lang svým margin-left:auto k pravému okraji). */
+.uh-lang{display:flex;gap:4px;flex:none;margin-left:auto;margin-right:2px;
+  padding-right:12px;border-right:1px solid rgba(255,255,255,.22)}
 .uh-lang button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:6px;
   padding:2px;cursor:pointer;line-height:0;opacity:.55;filter:grayscale(.5)}
 .uh-lang button:hover{opacity:.8}
@@ -61,22 +66,27 @@
   padding:15px 16px;font-size:17px;font-weight:700;color:#41506b;cursor:pointer}
 .mm-panel .mm-view:hover{background:#eaeef4}
 
-/* ---- mobil ---- */
+/* ---- mobil ----
+   Mřížka o 2 sloupcích × 2 řádcích:
+     [menu+logo]           [foto+jméno+Odhlásit]
+     [hodiny, na střed]    [vlajky]
+   Levý sloupec je „auto" široký — jeho šířku určuje širší z dvojice
+   menu+logo / hodiny, takže hodiny vyjdou vycentrované přímo pod
+   menu+logem, ne pod celou šířkou panelu. */
 @media(max-width:700px){
-  .uhdr{padding:7px 10px;gap:8px;min-height:0;flex-wrap:wrap}
+  .uhdr{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;
+    row-gap:6px;column-gap:8px;padding:7px 10px;min-height:0}
   .uh-title{display:none}
+  .uh-brandgroup{display:flex;align-items:center;gap:8px;grid-row:1;grid-column:1}
   .uh-brand{padding:5px 8px}
   .uh-brand svg{height:32px}
   .uh-menu{width:42px;height:42px;font-size:20px}
-  /* Řádek 1: menu+logo vlevo, hodiny schválně přitažené k pravému okraji.
-     Řádek 2 (zalomený .uh-right) přes celou šířku stejným způsobem:
-     fotka+jméno vlevo, jazyk+odhlásit vpravo — ne náhodně nalepené vlevo. */
-  .uh-clock{margin-left:auto;width:94px;min-width:0;padding:4px 8px}
-  /* Na mobilu vlajky+jméno+Odhlásit celé u sebe, zarovnané doprava
-     (ne rozhozené na oba okraje jako na širokém panelu). */
-  .uh-right{width:100%;margin-left:0;justify-content:flex-end;gap:10px}
+  .uh-topright{display:flex;align-items:center;gap:8px;grid-row:1;grid-column:2;justify-self:end}
+  .uh-clock{grid-row:2;grid-column:1;justify-self:center;margin:0;width:94px;min-width:0;padding:4px 8px}
   .uh-clock .t{font-size:17px;letter-spacing:.5px}
   .uh-clock .d{display:none}
+  .uh-lang{grid-row:2;grid-column:2;justify-self:end;margin:0;padding-right:0;border-right:none}
+  .uh-idbox{margin-right:0}
   .uh-avatar{width:26px;height:26px;font-size:10px}
   .uh-user{max-width:100px}
   .uh-user .n{font-size:11px}

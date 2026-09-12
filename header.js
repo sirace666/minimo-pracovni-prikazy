@@ -78,34 +78,36 @@
       return '<a class="'+(o.cur==='udrzba'?'cur':'')+'" href="udrzba.html">🔧 Údržba</a>';
     }
     return '<header class="uhdr">'
-      + '<div class="uh-menuwrap">'
-        + '<button class="uh-menu" id="mm-btn" aria-label="Menu modulů" title="Moduly">☰</button>'
-        + '<nav class="mm-panel" id="mm-panel" hidden>'
-          + '<div class="mm-h">Přepnout modul</div>'
-          + link('index.html','🏠','Hlavní stránka','portal')
-          + link('nakup.html','🛒','Nákupní požadavky','nakup')
-          + link('dovolenky.html','🗓️','Plánování směn','dovolenky')
-          + opravyLink()
-          + engineeringLink()
-          + udrzbaLink()
-          + link('nastaveni.html','⚙️','Nastavení','nastaveni')
-          + '<div class="mm-sep"></div>'
-          + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
-        + '</nav>'
+      + '<div class="uh-brandgroup">'
+        + '<div class="uh-menuwrap">'
+          + '<button class="uh-menu" id="mm-btn" aria-label="Menu modulů" title="Moduly">☰</button>'
+          + '<nav class="mm-panel" id="mm-panel" hidden>'
+            + '<div class="mm-h">Přepnout modul</div>'
+            + link('index.html','🏠','Hlavní stránka','portal')
+            + link('nakup.html','🛒','Nákupní požadavky','nakup')
+            + link('dovolenky.html','🗓️','Plánování směn','dovolenky')
+            + opravyLink()
+            + engineeringLink()
+            + udrzbaLink()
+            + link('nastaveni.html','⚙️','Nastavení','nastaveni')
+            + '<div class="mm-sep"></div>'
+            + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
+          + '</nav>'
+        + '</div>'
+        + '<div class="uh-brand">'+LOGO+'</div>'
       + '</div>'
-      + '<div class="uh-brand">'+LOGO+'</div>'
       + '<div class="uh-title"><b>minimo · YFAI</b><span>'+(o.module||'')+'</span></div>'
-      + '<div class="uh-clock" id="uh-clock"><div class="t">--:--:--</div><div class="d">—</div></div>'
-      + '<div class="uh-right">'
+      + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
+        + '<button data-lang="en" title="English">'+GB+'</button></div>'
+      + '<div class="uh-topright">'
         + '<div class="uh-idbox">'
-          + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
-            + '<button data-lang="en" title="English">'+GB+'</button></div>'
           + '<a class="uh-avatar" href="profil.html" title="Můj profil">'
             + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
           + '<a class="uh-user" href="profil.html" title="Můj profil"><div class="n">'+esc(displayName(o))+'</div><div class="l">'+(o.level||'')+'</div></a>'
         + '</div>'
         + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
       + '</div>'
+      + '<div class="uh-clock" id="uh-clock"><div class="t">--:--:--</div><div class="d">—</div></div>'
     + '</header>';
   };
 
