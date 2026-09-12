@@ -53,6 +53,13 @@
 .uh-logout{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;
   border-radius:20px;font-size:12px;padding:8px 15px;cursor:pointer;flex:none;font-weight:600}
 .uh-logout:hover{background:rgba(255,255,255,.26)}
+/* Na širším panelu je Odhlásit stejná „dlaždice" jako tlačítko menu (☰) —
+   světlý čtvereček se zaoblenými rohy a tmavým textem, ne průhledná pilulka. */
+@media(min-width:701px){
+  .uh-logout{height:48px;padding:0 20px;background:#e9edf3;border:1px solid #cfd8e6;color:#16233a;
+    border-radius:12px;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .uh-logout:hover{background:#dbe3ef}
+}
 
 /* rozbalovací menu modulů (kotva u tlačítka ☰) */
 .mm-panel{position:absolute;top:64px;left:0;z-index:200;background:#fff;border:1px solid #dde4ec;border-radius:14px;
