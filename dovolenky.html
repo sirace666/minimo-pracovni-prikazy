@@ -851,7 +851,7 @@ function tabBar(){
 }
 
 function headerView(){
-  return window.uheaderHTML ? window.uheaderHTML({module:'Plánování směn a přítomnosti',cur:'dovolenky',user:esc(me.email),level:'',logoutAttr:'id="btn-logout"',modules:allowedMods(myDoc&&myDoc.modules, levelOf(myDoc))}) : '';
+  return window.uheaderHTML ? window.uheaderHTML({module:'Plánování směn a přítomnosti',cur:'dovolenky',user:esc(me.email),level:'',photoURL:(myDoc&&myDoc.photoURL)||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myDoc&&myDoc.modules, levelOf(myDoc))}) : '';
 }
 
 function formPanel(){

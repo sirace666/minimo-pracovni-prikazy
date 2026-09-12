@@ -599,7 +599,7 @@ async function loadProfile(user){
     // doplň/oprav e-mail v profilu podle přihlašovacího e-mailu (dřív se u některých neuložil)
     if(user.email && d.email!==user.email){ try{ await updateDoc(ref,{email:user.email}); }catch(e){} }
     const level = (d.level && LEVEL_RANK[d.level]) ? d.level : (ROLE2LEVEL[role]||'basic');
-    return {uid:user.uid, email:user.email, name:d.name||user.email, role, team:d.team||'—', level, modules:d.modules||{}};
+    return {uid:user.uid, email:user.email, name:d.name||user.email, role, team:d.team||'—', level, modules:d.modules||{}, photoURL:d.photoURL||''};
   }
   // první uživatel v systému = admin; účty ze seznamu taky; ostatní zadavatelé
   const anyUsers = await getDocs(collection(db,'users'));
@@ -704,7 +704,7 @@ function loginView(){
 
 /* ---------- shell ---------- */
 function shell(){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nákupní požadavky',cur:'nakup',user:esc(me.name),email:esc(me.email),level:esc(me.team+' · '+P().label),logoutAttr:'data-a="logout"',modules:allowedMods(me&&me.modules,(me&&me.level)||'basic')}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nákupní požadavky',cur:'nakup',user:esc(me.name),email:esc(me.email),level:esc(me.team+' · '+P().label),photoURL:me.photoURL||'',logoutAttr:'data-a="logout"',modules:allowedMods(me&&me.modules,(me&&me.level)||'basic')}) : '';
   return `
   ${uh}
   <div class="tabbar">

@@ -20,6 +20,12 @@
 .uh-clock .t{font-size:25px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.05;
   white-space:nowrap}
 .uh-clock .d{font-size:11px;opacity:.82;margin-top:1px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.uh-avatar{width:34px;height:34px;border-radius:50%;flex:none;overflow:hidden;
+  background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+  color:#fff;text-decoration:none}
+.uh-avatar:hover{background:rgba(255,255,255,.34)}
+.uh-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .uh-user{text-align:right;line-height:1.25;flex:none;max-width:230px}
 .uh-user .n{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .uh-user .l{font-size:11px;opacity:.85;white-space:nowrap}
@@ -55,6 +61,7 @@
   .uh-clock{width:94px;min-width:0;padding:4px 8px}
   .uh-clock .t{font-size:17px;letter-spacing:.5px}
   .uh-clock .d{display:none}
+  .uh-avatar{width:26px;height:26px;font-size:10px}
   .uh-user{max-width:100px}
   .uh-user .n{font-size:11px}
   .uh-user .l{font-size:10px}

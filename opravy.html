@@ -190,7 +190,7 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';
-  return {uid:user.uid, email:user.email, name:d.name||user.email, role, level, phone:d.phone||'', team:d.team||'—'};
+  return {uid:user.uid, email:user.email, name:d.name||user.email, role, level, phone:d.phone||'', team:d.team||'—', photoURL:d.photoURL||''};
 }
 function teardown(){ if(unsubO)unsubO(); if(unsubR)unsubR(); if(unsubC)unsubC(); unsubO=unsubR=unsubC=null; rows=[]; reqRows=[]; dataReady=false; }
 function subscribe(){
@@ -239,7 +239,7 @@ function loginView(){
   </form></div>`;
 }
 function shell(inner){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Externí opravy',cur:'opravy',user:esc(me.email),level:(P().label||''),logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni','opravy']}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Externí opravy',cur:'opravy',user:esc(me.email),level:(P().label||''),photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni','opravy']}) : '';
   return uh + `<main>${inner}</main>`;
 }
 function visibleRows(){

@@ -14,6 +14,13 @@
     + 'font-weight="700" font-size="42" letter-spacing="1" textLength="246" lengthAdjust="spacingAndGlyphs">minimo</text></svg>';
   var CZ = '<svg viewBox="0 0 60 40" width="24" height="16"><rect width="60" height="20" fill="#fff"/>'
     + '<rect y="20" width="60" height="20" fill="#d7141a"/><path d="M0 0 30 20 0 40Z" fill="#11457e"/></svg>';
+  // Iniciály z e-mailu/jména (jan.novak@… → "JN") — použije se, když u
+  // uživatele není nahraná profilová fotka.
+  function initialsOf(s){
+    s = String(s||'').split('@')[0].replace(/[._-]+/g,' ').trim();
+    var p = s.split(/\s+/);
+    return ((p[0]?p[0][0]:'')+(p[1]?p[1][0]:'')).toUpperCase() || '?';
+  }
   var GB = '<svg viewBox="0 0 60 40" width="24" height="16"><rect width="60" height="40" fill="#012169"/>'
     + '<path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>'
     + '<path d="M0 0 60 40M60 0 0 40" stroke="#c8102e" stroke-width="4"/>'
@@ -72,6 +79,8 @@
       + '<div class="uh-title"><b>minimo · YFAI</b><span>'+(o.module||'')+'</span></div>'
       + '<div class="uh-right">'
         + '<div class="uh-clock" id="uh-clock"><div class="t">--:--:--</div><div class="d">—</div></div>'
+        + '<a class="uh-avatar" href="profil.html" title="Můj profil">'
+          + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
         + '<div class="uh-user"><div class="n">'+(o.user||'')+'</div><div class="l">'+(o.level||'')+'</div></div>'
         + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
           + '<button data-lang="en" title="English">'+GB+'</button></div>'

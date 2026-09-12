@@ -306,6 +306,7 @@ onAuthStateChanged(auth, async (user)=>{
     const snap=await getDoc(doc(db,'users',user.uid));
     const d=snap.exists()?snap.data():null;
     myLevel=levelOf(d); myModules=(d&&d.modules)||{};
+    me.photoURL=(d&&d.photoURL)||'';
   }catch(e){ myLevel='basic'; myModules={}; }
   if(myAccess()!=='none'){ subscribe(); loadEngcfg(); }
   ready=true; render();
@@ -440,7 +441,7 @@ function view(){
   </div>`).join('');
 
   const lvlLabel=(LEVEL_BY[myLevel]||LEVEL_BY.basic).label;
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nastavení',cur:'nastaveni',user:esc(me.email),level:lvlLabel,logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel)}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nastavení',cur:'nastaveni',user:esc(me.email),level:lvlLabel,photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel)}) : '';
   const roNote = rw ? '' : `<p style="margin:0 0 12px;font-size:12px;color:#b7791f;background:#fff6e6;border:1px solid #f0dfb8;border-radius:8px;padding:9px 11px">
         👁️ Máte modul Nastavení <b>jen pro čtení</b> – uživatele vidíte, ale nemůžete je upravovat ani mazat.</p>`;
   return `${uh}

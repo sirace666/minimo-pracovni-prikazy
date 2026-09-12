@@ -25,9 +25,11 @@
   .muted{color:var(--muted);font-size:.85rem}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:.9rem}
   .f{margin-bottom:.8rem}
-  .head{display:flex;gap:1rem;align-items:center}
+  .head{display:flex;gap:1.1rem;align-items:flex-start}
   .avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--navy-2);color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;flex:none}
+  .avatar-col{display:flex;flex-direction:column;align-items:center;gap:.45rem;flex:none}
+  .btn-ghost.small{font-size:.78rem;padding:.35rem .7rem}
   .msg{font-size:.82rem;border-radius:8px;padding:.5rem .7rem;margin-bottom:.7rem}
   .msg.ok{background:#e8f6ee;color:var(--ok)}
   .msg.err{background:#fdecea;color:var(--danger)}
@@ -97,7 +99,7 @@ onAuthStateChanged(auth, async user=>{
 function render(){
   const app=document.getElementById('app');
   if(!me){ app.innerHTML=loginView(); bind(); return; }
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Můj profil',cur:'profil',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Můj profil',cur:'profil',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
   app.innerHTML = uh + `<main>${body()}</main>`;
   bind();
 }
@@ -119,10 +121,16 @@ function body(){
   <h1>Můj profil</h1>
   <div class="card">
     <div class="head">
-      ${avatarHtml(72)}
+      <div class="avatar-col">
+        ${avatarHtml(84)}
+        <input type="file" id="f-photo" accept="image/*" hidden>
+        <button type="button" class="btn-ghost small" id="btn-photo" ${photoBusy?'disabled':''}>${photoBusy?'Nahrávám…':(me.photoURL?'Změnit fotku':'Nahrát fotku')}</button>
+      </div>
       <div>
         <strong style="font-size:1.05rem">${esc(me.name)}</strong><br>
         <span class="muted">${esc(me.email)} · ${esc(LEVEL_LABEL[me.level]||'')}</span>
+        ${photoErr?`<div class="msg err" style="margin-top:.5rem">${esc(photoErr)}</div>`:''}
+        <p class="muted" style="margin:.5rem 0 0">Fotka se ořízne na čtverec a zmenší. Max 3 MB.</p>
       </div>
     </div>
   </div>
@@ -134,19 +142,6 @@ function body(){
     <div class="f"><input id="f-name" value="${esc(nameVal)}" ${nameBusy?'disabled':''}></div>
     <button type="submit" class="btn-primary" ${nameBusy?'disabled':''}>${nameBusy?'Ukládám…':'Uložit'}</button>
   </form>
-
-  <div class="card">
-    <h2>Profilová fotka</h2>
-    ${photoErr?`<div class="msg err">${esc(photoErr)}</div>`:''}
-    <div class="head">
-      ${avatarHtml(72)}
-      <div class="row">
-        <input type="file" id="f-photo" accept="image/*" hidden>
-        <button type="button" class="btn-ghost" id="btn-photo" ${photoBusy?'disabled':''}>${photoBusy?'Nahrávám…':(me.photoURL?'Změnit fotku':'Nahrát fotku')}</button>
-      </div>
-    </div>
-    <p class="muted" style="margin:.6rem 0 0">Obrázek se ořízne na čtverec a zmenší. Max 3 MB.</p>
-  </div>
 
   <form class="card" id="pwForm">
     <h2>Změna hesla</h2>
