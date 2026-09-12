@@ -25,11 +25,12 @@
   padding:6px 15px;text-align:center;flex:none;width:210px}
 /* Na širším panelu hodiny nepatří ani k logu, ani k profilu — vycentrované
    uprostřed hlavičky, nezávisle na šířce obou stran (.uhdr má position:relative).
-   Menu tam má taky jiný (sklo) vzhled — viz .uh-menu níž ve stejné media query. */
+   Menu tam nemá box vůbec — jen ikona, kruh se objeví až při najetí myší
+   (stejná myšlenka jako Odhlásit/avatar — box mají jen hodiny a vlajky). */
 @media(min-width:701px){
   .uh-clock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-  .uh-menu{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:14px}
-  .uh-menu:hover{background:rgba(255,255,255,.22)}
+  .uh-menu{background:transparent;border:none;color:#fff;width:40px;height:40px;border-radius:10px}
+  .uh-menu:hover{background:rgba(255,255,255,.12)}
 }
 .uh-clock .t{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.6px;line-height:1.05;
   white-space:nowrap}
@@ -54,13 +55,13 @@
 .uh-lang button:hover{opacity:.8}
 .uh-lang button.on{opacity:1;filter:none;background:rgba(255,255,255,.3);border-color:#fff}
 .uh-lang svg{display:block;border-radius:2px}
-/* Jen ikona (dveře+šipka) místo textu — kulaté tlačítko stejného stylu jako
-   dřívější pilulka, jen bez textu netřeba širokého tvaru. Ikona je SVG se
+/* Jen ikona (dveře+šipka), žádný trvalý kroužek okolo — kruh se objeví až
+   při najetí myší (stejná myšlenka jako menu). Ikona je SVG se
    stroke:currentColor, takže se barevně sama přizpůsobí tlačítku. */
-.uh-logout{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;
+.uh-logout{background:transparent;border:none;color:#fff;
   border-radius:50%;width:34px;height:34px;padding:0;line-height:1;cursor:pointer;
   flex:none;display:flex;align-items:center;justify-content:center}
-.uh-logout:hover{background:rgba(255,255,255,.26)}
+.uh-logout:hover{background:rgba(255,255,255,.14)}
 .uh-logout svg{display:block;width:18px;height:18px}
 
 /* rozbalovací menu modulů (kotva u tlačítka menu) */

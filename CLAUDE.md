@@ -238,24 +238,29 @@ protože:
 - **PC hlavička sjednocená (2026-09-12)** — Martinovi přišla nesourodá
   („nic k sobě nesedí, každé písmo jiné"). Prošli jsme spolu 6 variant
   v samostatném mockupu (`_mockup-header.html`, needitovaný náhled, smazaný
-  po dohodě) a nasadili **Variantu F**:
+  po dohodě). Zkoušeli jsme napřed Variantu F (menu jako skleněná dlaždice),
+  pak přepnuto na **Variantu C — Minimalistická** (aktuální stav):
   - **Menu i Odhlásit mají stejnou rodinu ikon** — `MENU_ICON`/`LOGOUT_ICON`
     v `header.js`, obě inline SVG s `stroke="currentColor"` (ne textový znak
     ☰, který vypadal jinak než kreslené ikony).
-  - **Menu na širokém panelu (`min-width:701px`)** je skleněná dlaždice
-    (`rgba(255,255,255,.14)`, zaoblení 14px, bílá ikona) — na mobilu
-    zůstává původní světlá neprůhledná dlaždice, beze změny.
-  - **Odhlásit na širokém panelu už NENÍ dlaždice** (to bylo mezikrok,
-    zrušeno) — je to holé kolečko stejné jako na mobilu (`rgba(255,255,255,.16)`,
-    ikona probleskne až při hoveru). Avatar+jméno taky bez boxu — celá pravá
-    strana je „lehká", jen hodiny a vlajky mají viditelný rámeček.
+  - **Menu na širokém panelu (`min-width:701px`) NEMÁ box vůbec** — jen
+    ikona přímo na navy, kruh (`rgba(255,255,255,.12)`, 40×40, zaoblení 10px)
+    se objeví až při najetí myší. Na mobilu zůstává původní světlá
+    neprůhledná dlaždice, beze změny (řeší to samostatná media query výš).
+  - **Odhlásit nemá žádný trvalý kroužek ani box — nikde, mobil i PC**
+    (Martinovo výslovné doladění): `background:transparent`, kruh
+    (`rgba(255,255,255,.14)`) se objeví jen při hoveru, stejná myšlenka jako
+    menu. Avatar+jméno taky bez boxu — celá pravá strana je „lehká", jen
+    hodiny a vlajky mají viditelný rámeček.
   - **Hodiny a vlajky** mají box, co měly už předtím (beze změny) — jen
     text hodin zúžený na váhu 700 (bylo 800) a menší, ať sedí ke zbytku.
   - **Typografie sjednocená na max. váhu 700** — `.uh-title b` (bylo 800),
     `.uh-clock .t` (bylo 800) — necháváme jen jednu úroveň „tučně", ne tři
     různé.
-  - Mobilní grid layout (viz media query níž) se touhle úpravou vůbec
-    nedotkl — jen ikona menu je teď SVG místo textového znaku i tam.
+  - Mobilní grid layout (viz media query níž) se touhle úpravou nedotkl —
+    jen ikona menu je teď SVG místo textového znaku i tam, a Odhlásit ztratil
+    trvalý kroužek stejně jako na PC (viz výš, je to base pravidlo, ne
+    media-query specifické).
 - **`index.html`** — dlaždice Údržba zapnutá (`ownerOnly:true`, pilotní
   režim), `photoURL`/`firstName`/`lastName` doplněny do `me`.
 - **`nakup.html`, `dovolenky.html`, `opravy.html`, `engineering.html`,
