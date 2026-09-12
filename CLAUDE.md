@@ -204,21 +204,32 @@ protože:
   (nový → rozpracováno → hotovo, přiřazení, linka/stroj ze sdíleného
   `meta/config.sections`, historie, číslo `PP-rok-XXX` přes transakci na
   `meta/config.seqUdrzba`).
-- **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno, heslo,
-  fotka), dostupná úplně odkudkoliv v Minimu přes ☰ menu.
-- **`header.js` / `header.css`** — přidán odkaz na Profil (vždy viditelný,
-  ne podle práv k modulu) a **profilová fotka/iniciály v hlavičce**
-  (`uheaderHTML` teď bere navíc `photoURL`).
+- **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
+  ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
+  fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
+- **`header.js` / `header.css`** — **profilová fotka/iniciály v hlavičce**
+  (`uheaderHTML` bere navíc `photoURL`), `.uh-user` je teď odkaz na profil.
+  **Zkrácené jméno v hlavičce** ("P. Vill") — `shortName()`/`splitEmailName()`
+  v `header.js`: dokud si člověk jméno/příjmení sám neupraví v Profilu,
+  odvodí se automaticky z přihlašovacího e-mailu (`jmeno.prijmeni@…` — tímhle
+  vzorem se budou přihlašovat všichni, firemní e-mail to už v sobě má).
+  Vlajky jazyka jsou přímo v hlavičce, uvnitř `.uh-idbox` před fotkou
+  (zkoušeli jsme je i v menu, Martinovi se to líbilo víc takhle).
 - **`index.html`** — dlaždice Údržba zapnutá (`ownerOnly:true`, pilotní
-  režim), `photoURL` doplněn do `me`.
+  režim), `photoURL`/`firstName`/`lastName` doplněny do `me`.
 - **`nakup.html`, `dovolenky.html`, `opravy.html`, `engineering.html`,
   `nastaveni.html`** — JINAK BEZE ZMĚNY (je to čistě Davidův kód, řídí se
-  Davidovou částí výše), jen přidán `photoURL` do `me`/`myDoc` a do volání
+  Davidovou částí výše), jen přidán `photoURL`/`firstName`/`lastName` do
+  `me`/`myDoc` a do volání
   `uheaderHTML(...)`, ať se fotka v hlavičce zobrazí i tady. Nic dalšího
   v nich neupravovat bez výslovného důvodu.
 - **`firestore.rules`** — přidán blok pro `udrzba`, čítač `seqUdrzba`
   v `meta/config`, a `users/{uid}` update rozšířen, ať si každý smí sám
-  upravit `name`/`photoURL` (dřív jen admin).
+  upravit `name`/`firstName`/`lastName`/`photoURL` (dřív jen admin).
+  **Nové pole `users/{uid}.firstName`/`.lastName`** (vedle stávajícího
+  `.name`, který se dál drží v sync jako `firstName+' '+lastName` — všude
+  jinde v appce (Zadal, Přiřazeno, task owneři…) se pořád čte jen `.name`,
+  takže nic jiného nebylo potřeba měnit).
 - **`storage.rules`** — **NOVÝ soubor, David ho v repu nemá** (spravuje si
   Storage pravidla jen v konzoli). Obsahuje jeho současná pravidla
   (`nabidky/`, `tasky/`) + nová cesta `avatars/{uid}` pro profilovky.
