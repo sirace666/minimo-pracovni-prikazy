@@ -72,6 +72,11 @@
           + '<div class="mm-sep"></div>'
           + link('profil.html','👤','Můj profil','profil')
           + '<div class="mm-sep"></div>'
+          + '<div class="mm-h">Jazyk</div>'
+          + '<div class="uh-lang mm-lang">'
+            + '<button data-lang="cs"><span class="f">'+CZ+'</span> Čeština</button>'
+            + '<button data-lang="en"><span class="f">'+GB+'</span> English</button>'
+          + '</div>'
           + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
         + '</nav>'
       + '</div>'
@@ -84,11 +89,7 @@
             + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
           + '<div class="uh-user"><div class="n">'+(o.user||'')+'</div><div class="l">'+(o.level||'')+'</div></div>'
         + '</div>'
-        + '<div class="uh-actions">'
-          + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
-          + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
-            + '<button data-lang="en" title="English">'+GB+'</button></div>'
-        + '</div>'
+        + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
       + '</div>'
     + '</header>';
   };
