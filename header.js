@@ -51,8 +51,9 @@
   window.uheaderHTML = function(o){
     o = o || {};
     function link(href, ico, label, key){
-      // o.modules (pole klíčů) omezí, které moduly se v menu ukážou; „portal" je vždy vidět
-      if(o.modules && key!=='portal' && o.modules.indexOf(key)<0) return '';
+      // o.modules (pole klíčů) omezí, které moduly se v menu ukážou; „portal"
+      // a „instalace" jsou vždy vidět (nejsou vázané na oprávnění k modulu)
+      if(o.modules && key!=='portal' && key!=='instalace' && o.modules.indexOf(key)<0) return '';
       return '<a class="'+(o.cur===key?'cur':'')+'" href="'+href+'">'+ico+' '+label+'</a>';
     }
     // Externí opravy zatím vidí v menu jen správce (podle e-mailu)
@@ -90,6 +91,7 @@
             + engineeringLink()
             + udrzbaLink()
             + link('nastaveni.html','⚙️','Nastavení','nastaveni')
+            + link('instalace.html','📲','Instalace','instalace')
             + '<div class="mm-sep"></div>'
             + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
           + '</nav>'

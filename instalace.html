@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2722%27%20fill=%27%231b4b8f%27/%3E%3Ctext%20x=%2750%27%20y=%2776%27%20font-size=%2774%27%20font-family=%27Arial,sans-serif%27%20font-weight=%27bold%27%20fill=%27white%27%20text-anchor=%27middle%27%3Em%3C/text%3E%3C/svg%3E">
+<title>Instalace — YFAI minimo</title>
+<link rel="stylesheet" href="header.css">
+<style>
+  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--surface:#fff;--border:#dde4ec;--text:#16233a;--muted:#6b7a90;
+    --ok:#15803d;--danger:#c0392b;--radius:10px;--shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px}
+  main{max-width:560px;margin:0 auto;padding:16px 18px 40px}
+  h1{font-size:1.35rem;margin:0 0 1rem}
+  h2{font-size:1rem;margin:0 0 .8rem}
+  button{font-family:inherit;font-size:13.5px;cursor:pointer;border-radius:8px;border:1px solid transparent;padding:.55rem 1rem;background:#fff}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  input{font-family:inherit;font-size:14px;padding:.55rem .6rem;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);width:100%}
+  .btn-primary{background:var(--navy-2);color:#fff;font-weight:600}
+  .btn-primary:hover{background:var(--navy-1)}
+  .muted{color:var(--muted);font-size:.85rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:.9rem}
+  .msg{font-size:.82rem;border-radius:8px;padding:.5rem .7rem;margin-bottom:.7rem}
+  .msg.ok{background:#e8f6ee;color:var(--ok)}
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login{background:#fff;border:1px solid var(--border);border-radius:14px;padding:30px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.12);text-align:center}
+  .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:.65rem;font-size:14px;font-weight:700}
+  .loginerr{background:#fdecea;color:var(--danger);border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
+
+  /* ---- Instalace appky (návod) ---- */
+  .install-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+  .install-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+  .install-tab{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:999px;
+    padding:.35rem .85rem;font-size:.85rem;cursor:pointer}
+  .install-tab.is-active{background:var(--navy-2);border-color:var(--navy-2);color:#fff;font-weight:600}
+  .install-steps{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+  .install-step{display:flex;gap:.7rem;align-items:flex-start;line-height:1.4}
+  .install-step-n{flex-shrink:0;width:1.5rem;height:1.5rem;border-radius:999px;background:var(--navy-2);color:#fff;
+    font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="header.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, getDoc }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+/* TESTOVACÍ Firebase projekt (vývoj mimo Davidova data). Před PR do
+   minimo-yfai se přepne na ostrý firebaseConfig (stejný jako v ostatních
+   modulech, projekt nakupni-pozadavky). */
+const firebaseConfig = {
+  apiKey: "AIzaSyDXqMTTryH9mkgzA9o5PrndHRH4C_yUQLY",
+  authDomain: "minimo-pracovni-prikazy.firebaseapp.com",
+  projectId: "minimo-pracovni-prikazy",
+  storageBucket: "minimo-pracovni-prikazy.firebasestorage.app",
+  messagingSenderId: "727579407281",
+  appId: "1:727579407281:web:fb749f43e707cf4e7ec390"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+const ROLE2LEVEL = {zadavatel:'basic',skladnik:'warehouse',schvalovatel:'approver',admin:'superadmin'};
+const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
+const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com','admin.test@minimo.local'];
+const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
+
+let me=null, loginBusy=false, loginErr='';
+
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- detekce platformy + zachycení nativního instalačního promptu.
+   Bez manifestu appky (minimo zatím nemá PWA manifest/service worker) tenhle
+   event nenaskočí — proto níž nabízíme i ruční návod přes menu prohlížeče,
+   který funguje vždy. Až manifest přibude, tlačítko "Nainstalovat" naskočí
+   samo, beze změny týhle stránky. ---------- */
+function detectPlatform(){
+  const ua = navigator.userAgent;
+  if(/iphone|ipad|ipod/i.test(ua)) return 'ios';
+  if(navigator.platform==='MacIntel' && navigator.maxTouchPoints>1) return 'ios';
+  if(/android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+}
+let platform = detectPlatform();
+let installed = isStandalone();
+let installable = false;
+let justInstalled = false;
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e; installable=true; render();
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredPrompt=null; installable=false; installed=true; justInstalled=true; render();
+});
+
+onAuthStateChanged(auth, async user=>{
+  loginBusy=false;
+  if(!user){ me=null; render(); return; }
+  const ref=doc(db,'users',user.uid);
+  let d={}; try{ const s=await getDoc(ref); if(s.exists()) d=s.data(); }catch(e){}
+  const forced=isForcedAdmin(user.email);
+  const role = forced ? 'admin' : (d.role||'zadavatel');
+  const level = d.level || ROLE2LEVEL[role] || 'basic';
+  me={uid:user.uid, email:user.email, level, photoURL:d.photoURL||'', firstName:d.firstName||'', lastName:d.lastName||''};
+  render();
+});
+
+function render(){
+  const app=document.getElementById('app');
+  if(!me){ app.innerHTML=loginView(); bind(); return; }
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Instalace',cur:'instalace',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
+  app.innerHTML = uh + `<main>${body()}</main>`;
+  bind();
+}
+function loginView(){
+  return `<div class="login-wrap"><form class="login" id="loginForm">
+    <h2>minimo · YFAI</h2><p class="muted" style="margin-top:0">Instalace appky</p>
+    ${loginErr?`<div class="loginerr">${esc(loginErr)}</div>`:''}
+    <input type="email" id="li-email" placeholder="E-mail" autocomplete="username">
+    <input type="password" id="li-pass" placeholder="Heslo" autocomplete="current-password">
+    <button type="submit" class="btn-primary" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
+  </form></div>`;
+}
+
+const PLATFORM_LABEL = {android:'Android', ios:'iPhone / iPad', desktop:'Počítač (Windows / Mac)'};
+
+function step(n, html){ return `<li class="install-step"><span class="install-step-n">${n}</span><span>${html}</span></li>`; }
+
+function androidGuide(){
+  return `<ol class="install-steps">
+    ${step(1,'Otevři portál v prohlížeči <strong>Chrome</strong> (ne z odkazu ve zprávě nebo jiné appce — musí to být samotný Chrome).')}
+    ${step(2,'Klepni na <strong>⋮</strong> (tři tečky) vpravo nahoře.')}
+    ${step(3,'Vyber <strong>„Přidat na plochu"</strong> (na některých telefonech <strong>„Instalovat aplikaci"</strong>).')}
+    ${step(4,'Potvrď <strong>Přidat</strong>.')}
+    ${step(5,'Na ploše se objeví ikona <strong>minimo</strong> — spouštěj portál odsud.')}
+  </ol>`;
+}
+function iosGuide(){
+  return `<ol class="install-steps">
+    ${step(1,'Otevři portál v <strong>Safari</strong> (na iPhonu/iPadu to musí být Safari, jiné prohlížeče přidání na plochu neumí).')}
+    ${step(2,'Klepni na ikonu <strong>Sdílet</strong> (čtvereček se šipkou nahoru) ve spodní liště.')}
+    ${step(3,'Sroluj dolů a vyber <strong>„Přidat na plochu"</strong>.')}
+    ${step(4,'Vpravo nahoře klepni na <strong>Přidat</strong>.')}
+    ${step(5,'Spouštěj portál z ikony na ploše.')}
+  </ol>`;
+}
+function desktopGuide(){
+  return `<ol class="install-steps">
+    ${step(1,'Otevři portál v <strong>Chrome</strong> nebo <strong>Edge</strong>.')}
+    ${step(2,'Klikni na <strong>⋮</strong> vpravo nahoře → <strong>Další nástroje</strong> → <strong>„Vytvořit zástupce…"</strong>.')}
+    ${step(3,'Zaškrtni <strong>„Otevřít jako okno"</strong> a potvrď <strong>Vytvořit</strong>.')}
+    ${step(4,'Zástupce se objeví na ploše / v nabídce Start — otevírá portál v samostatném okně bez adresního řádku.')}
+  </ol>`;
+}
+const GUIDES = {android:androidGuide, ios:iosGuide, desktop:desktopGuide};
+
+function body(){
+  return `
+  <h1>Instalace appky</h1>
+  <p class="muted" style="margin-top:-.5rem">Portál <strong>minimo · YFAI</strong> si můžeš přidat na plochu nebo do
+    nabídky programů jako zástupce — pak ho spustíš jedním klepnutím, bez zadávání adresy do prohlížeče.</p>
+
+  ${installed ? `
+    <div class="card">
+      <div class="msg ok">Appka už běží v samostatném okně. 🎉</div>
+      ${justInstalled ? '<p class="muted" style="margin-bottom:0">Příště ji spouštěj z ikony na ploše / v nabídce programů.</p>' : ''}
+    </div>
+  ` : (installable ? `
+    <div class="card install-cta">
+      <div>
+        <strong>Rychlá instalace</strong>
+        <p class="muted" style="margin:.15rem 0 0">Tvůj prohlížeč instalaci podporuje přímo.</p>
+      </div>
+      <button type="button" class="btn-primary" id="btn-install">Nainstalovat</button>
+    </div>
+  ` : '')}
+
+  <div class="card">
+    <div class="install-tabs">
+      ${Object.keys(PLATFORM_LABEL).map(p=>`<button type="button" class="install-tab${p===platform?' is-active':''}" data-platform="${p}">${PLATFORM_LABEL[p]}</button>`).join('')}
+    </div>
+    ${GUIDES[platform]()}
+  </div>
+
+  <p class="muted">Tlačítko „Nainstalovat" nabídne jen prohlížeč, který to umí přímo — návod podle zařízení
+    výše ale funguje vždycky.</p>
+  `;
+}
+
+function bind(){
+  const lf=document.getElementById('loginForm');
+  if(lf) lf.onsubmit=async e=>{ e.preventDefault();
+    const email=(document.getElementById('li-email').value||'').trim(), pass=document.getElementById('li-pass').value||'';
+    if(!email||!pass){ loginErr='Vyplň e-mail i heslo.'; render(); return; }
+    loginBusy=true; loginErr=''; render();
+    try{ await signInWithEmailAndPassword(auth,email,pass); }
+    catch(err){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); }
+  };
+  const lo=document.getElementById('btn-logout'); if(lo) lo.onclick=()=>signOut(auth);
+  if(!me) return;
+
+  document.querySelectorAll('.install-tab').forEach(b=>{
+    b.onclick=()=>{ platform=b.getAttribute('data-platform'); render(); };
+  });
+  const bi=document.getElementById('btn-install');
+  if(bi) bi.onclick=async ()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const {outcome} = await deferredPrompt.userChoice;
+    deferredPrompt=null; installable=false;
+    if(outcome==='accepted') justInstalled=true;
+    render();
+  };
+}
+render();
+</script>
+</body>
+</html>

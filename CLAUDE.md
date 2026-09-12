@@ -207,6 +207,16 @@ protože:
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
+- **`instalace.html`** — nová **sdílená** stránka s návodem na přidání
+  portálu na plochu (Android/iPhone/PC), portovaná z `InstallPage.tsx` +
+  `pwaInstall.ts` appky Pracovní příkazy. Na rozdíl od Profilu **v ☰ menu JE**
+  (Martinovo přání), viditelná vždy (`link()` v `header.js` má bypass pro
+  klíč `'instalace'`, stejně jako pro `'portal'`, ať ji vidí i stránky
+  s omezeným `modules` seznamem). Zachytává `beforeinstallprompt`/
+  `appinstalled`, ale tlačítko „Nainstalovat" nenaskočí, dokud minimo nemá
+  PWA manifest/service worker (nemá ho zatím žádná stránka portálu) — proto
+  je hlavní obsah ruční návod přes menu prohlížeče (funguje vždy už teď).
+  Až manifest přibude, tlačítko naskočí samo bez zásahu do týhle stránky.
 - **`header.js` / `header.css`** — **profilová fotka/iniciály v hlavičce**
   (`uheaderHTML` bere navíc `photoURL`), `.uh-user` je teď odkaz na profil.
   **Zkrácené jméno v hlavičce** ("P. Vill") — `shortName()`/`splitEmailName()`
@@ -309,8 +319,8 @@ tady). Před otevřením PR:
    David to musí ručně publikovat v konzoli, stejně jako to sám dělá
    (viz jeho `firestore-pravidla-pridat.txt`), protože Storage rules v repu
    nedrží.
-4. PR obsahuje jen: `udrzba.html`, `profil.html`, diff v `header.js` +
-   `header.css` + `index.html` + `firestore.rules` — NIC z
+4. PR obsahuje jen: `udrzba.html`, `profil.html`, `instalace.html`, diff v
+   `header.js` + `header.css` + `index.html` + `firestore.rules` — NIC z
    nakup/dovolenky/opravy/engineering/nastaveni krom té jedné řádky
    s `photoURL`.
 
