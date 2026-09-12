@@ -72,7 +72,9 @@
      Řádek 2 (zalomený .uh-right) přes celou šířku stejným způsobem:
      fotka+jméno vlevo, jazyk+odhlásit vpravo — ne náhodně nalepené vlevo. */
   .uh-clock{margin-left:auto;width:94px;min-width:0;padding:4px 8px}
-  .uh-right{width:100%;margin-left:0;justify-content:space-between;gap:8px}
+  /* Na mobilu vlajky+jméno+Odhlásit celé u sebe, zarovnané doprava
+     (ne rozhozené na oba okraje jako na širokém panelu). */
+  .uh-right{width:100%;margin-left:0;justify-content:flex-end;gap:10px}
   .uh-clock .t{font-size:17px;letter-spacing:.5px}
   .uh-clock .d{display:none}
   .uh-avatar{width:26px;height:26px;font-size:10px}
