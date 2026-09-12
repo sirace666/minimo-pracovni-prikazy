@@ -14,6 +14,11 @@
     + 'font-weight="700" font-size="42" letter-spacing="1" textLength="246" lengthAdjust="spacingAndGlyphs">minimo</text></svg>';
   var CZ = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="20" fill="#fff"/>'
     + '<rect y="20" width="60" height="20" fill="#d7141a"/><path d="M0 0 30 20 0 40Z" fill="#11457e"/></svg>';
+  // Ikona odhlášení (dveře + šipka ven) — obrys, barva přes currentColor,
+  // takže se sama přizpůsobí (bílá na mobilu, tmavá na PC dlaždici).
+  var LOGOUT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '
+    + 'stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>'
+    + '<polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
   // displayName() skládá jméno z firstName/lastName, které volající stránky
   // nemusí (na rozdíl od ostatních polí) předem escapovat — udělá se to tady.
   function esc(s){ return String(s??'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -107,7 +112,7 @@
             + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
           + '<a class="uh-user" href="profil.html" title="Můj profil"><div class="n">'+esc(displayName(o))+'</div><div class="l">'+(o.level||'')+'</div></a>'
         + '</div>'
-        + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
+        + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+' title="Odhlásit" aria-label="Odhlásit">'+LOGOUT_ICON+'</button>'
       + '</div>'
       + '<div class="uh-clock" id="uh-clock"><div class="t">--:--:--</div><div class="d">—</div></div>'
     + '</header>';

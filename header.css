@@ -50,15 +50,21 @@
 .uh-lang button:hover{opacity:.8}
 .uh-lang button.on{opacity:1;filter:none;background:rgba(255,255,255,.3);border-color:#fff}
 .uh-lang svg{display:block;border-radius:2px}
+/* Jen ikona (dveře+šipka) místo textu — kulaté tlačítko stejného stylu jako
+   dřívější pilulka, jen bez textu netřeba širokého tvaru. Ikona je SVG se
+   stroke:currentColor, takže se barevně sama přizpůsobí tlačítku. */
 .uh-logout{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;
-  border-radius:20px;font-size:12px;padding:8px 15px;cursor:pointer;flex:none;font-weight:600}
+  border-radius:50%;width:34px;height:34px;padding:0;line-height:1;cursor:pointer;
+  flex:none;display:flex;align-items:center;justify-content:center}
 .uh-logout:hover{background:rgba(255,255,255,.26)}
+.uh-logout svg{display:block;width:18px;height:18px}
 /* Na širším panelu je Odhlásit stejná „dlaždice" jako tlačítko menu (☰) —
-   světlý čtvereček se zaoblenými rohy a tmavým textem, ne průhledná pilulka. */
+   světlý čtvereček se zaoblenými rohy, ne kolečko na navy pozadí. */
 @media(min-width:701px){
-  .uh-logout{height:48px;padding:0 20px;background:#e9edf3;border:1px solid #cfd8e6;color:#16233a;
-    border-radius:12px;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .uh-logout{width:48px;height:48px;background:#e9edf3;border:1px solid #cfd8e6;color:#16233a;
+    border-radius:12px}
   .uh-logout:hover{background:#dbe3ef}
+  .uh-logout svg{width:22px;height:22px}
 }
 
 /* rozbalovací menu modulů (kotva u tlačítka ☰) */
@@ -98,7 +104,8 @@
   .uh-user{max-width:100px}
   .uh-user .n{font-size:11px}
   .uh-user .l{font-size:10px}
-  .uh-logout{padding:6px 10px;font-size:11px}
+  .uh-logout{width:26px;height:26px}
+  .uh-logout svg{width:14px;height:14px}
   .mm-panel{top:58px;min-width:0;width:calc(100vw - 20px);max-width:360px}
   .mm-panel a{font-size:18px;padding:15px 14px}
 }
