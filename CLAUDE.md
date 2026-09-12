@@ -303,6 +303,17 @@ tady). Před otevřením PR:
    nakup/dovolenky/opravy/engineering/nastaveni krom té jedné řádky
    s `photoURL`.
 
+## Verzování (na Martinovo přání, stejně jako appka Pracovní příkazy)
+
+I když je tohle „jen" pracovní fork, po každé smysluplné dávce změn
+(ne po každém drobném commitu) udělej i tady tag + GitHub Release —
+Martin to chce mít stejně přehledné jako u appky Pracovní příkazy:
+1. Zvyš `VERSION` (semver — PATCH oprava, MINOR nová věc, MAJOR zásadní
+   změna; zatím 0.x).
+2. `git tag -a vX.Y.Z -m "…"` a `git push origin main --tags`.
+3. `gh release create vX.Y.Z --title "…" --notes "…"` (repo
+   `sirace666/minimo-pracovni-prikazy`).
+
 ## Kde je víc kontextu
 
 - `..\..\Firabase Davida\` — přečtená struktura Davidova Firestore/Auth/
