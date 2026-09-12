@@ -25,7 +25,7 @@ service cloud.firestore {
       // dalšího (role, level, positions, perms, modules…) jen admin.
       allow update: if isAdmin()
                     || (signedIn() && request.auth.uid == uid
-                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL','updatedAt']));
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','firstName','lastName','photoURL','updatedAt']));
       allow delete: if isAdmin();
     }
 

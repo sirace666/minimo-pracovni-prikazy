@@ -182,7 +182,7 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';
-  return {uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||''};
+  return {uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||'', firstName:d.firstName||'', lastName:d.lastName||''};
 }
 const isAdmin = () => me && me.role==='admin';
 
@@ -227,7 +227,7 @@ function loginView(){
   </form></div>`;
 }
 function shell(inner){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
   return uh + `<main>${inner}</main>`;
 }
 function visibleRows(){

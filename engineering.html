@@ -950,7 +950,7 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   return {uid:user.uid, email:user.email, name:d.name||user.email, role,
-          level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||''};
+          level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||'', firstName: d.firstName||'', lastName: d.lastName||''};
 }
 
 /* ===== načítání dat ===== */
@@ -2532,7 +2532,7 @@ function render(){
 }
 function shell(inner){
   const uh = window.uheaderHTML ? window.uheaderHTML({module:'Engineering', cur:'engineering',
-    user:esc(me.email), level:(LEVEL_LABEL[me.level]||''), photoURL:me.photoURL||'', logoutAttr:'id="btn-logout"',
+    user:esc(me.email), level:(LEVEL_LABEL[me.level]||''), photoURL:me.photoURL||'', firstName:me.firstName||'', lastName:me.lastName||'', logoutAttr:'id="btn-logout"',
     modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering']}) : '';
   return uh + `<main>${inner}</main>`;
 }

@@ -14,12 +14,31 @@
     + 'font-weight="700" font-size="42" letter-spacing="1" textLength="246" lengthAdjust="spacingAndGlyphs">minimo</text></svg>';
   var CZ = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="20" fill="#fff"/>'
     + '<rect y="20" width="60" height="20" fill="#d7141a"/><path d="M0 0 30 20 0 40Z" fill="#11457e"/></svg>';
+  // shortName() skládá jméno z firstName/lastName, které volající stránky
+  // nemusí (na rozdíl od ostatních polí) předem escapovat — udělá se to tady.
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   // Iniciály z e-mailu/jména (jan.novak@… → "JN") — použije se, když u
   // uživatele není nahraná profilová fotka.
   function initialsOf(s){
     s = String(s||'').split('@')[0].replace(/[._-]+/g,' ').trim();
     var p = s.split(/\s+/);
     return ((p[0]?p[0][0]:'')+(p[1]?p[1][0]:'')).toUpperCase() || '?';
+  }
+  function cap(w){ return w ? w[0].toUpperCase()+w.slice(1).toLowerCase() : ''; }
+  // Přihlašuje se jen firemním e-mailem tvaru jmeno.prijmeni@… — z něj se
+  // dá jméno/příjmení odvodit, dokud si ho člověk sám neupraví v Profilu.
+  function splitEmailName(email){
+    var local = String(email||'').split('@')[0];
+    var parts = local.split(/[._-]+/).filter(Boolean);
+    if(parts.length>=2) return {first:cap(parts[0]), last:cap(parts[parts.length-1])};
+    return {first:'', last:cap(parts[0]||local)};
+  }
+  // "M. Smrz" — z uloženého jména/příjmení (jakmile si ho v Profilu upraví),
+  // jinak automaticky odvozené z e-mailu.
+  function shortName(o){
+    var f = String(o.firstName||'').trim(), l = String(o.lastName||'').trim();
+    if(!f && !l){ var d = splitEmailName(o.email||o.user); f=d.first; l=d.last; }
+    return (f ? f[0].toUpperCase()+'. ' : '') + l;
   }
   var GB = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="40" fill="#012169"/>'
     + '<path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>'
@@ -30,9 +49,8 @@
   window.uheaderHTML = function(o){
     o = o || {};
     function link(href, ico, label, key){
-      // o.modules (pole klíčů) omezí, které moduly se v menu ukážou; „portal" a
-      // „profil" (Můj profil — týká se každého, bez ohledu na práva k modulům) jsou vždy vidět
-      if(o.modules && key!=='portal' && key!=='profil' && o.modules.indexOf(key)<0) return '';
+      // o.modules (pole klíčů) omezí, které moduly se v menu ukážou; „portal" je vždy vidět
+      if(o.modules && key!=='portal' && o.modules.indexOf(key)<0) return '';
       return '<a class="'+(o.cur===key?'cur':'')+'" href="'+href+'">'+ico+' '+label+'</a>';
     }
     // Externí opravy zatím vidí v menu jen správce (podle e-mailu)
@@ -70,8 +88,6 @@
           + udrzbaLink()
           + link('nastaveni.html','⚙️','Nastavení','nastaveni')
           + '<div class="mm-sep"></div>'
-          + link('profil.html','👤','Můj profil','profil')
-          + '<div class="mm-sep"></div>'
           + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
         + '</nav>'
       + '</div>'
@@ -84,7 +100,7 @@
             + '<button data-lang="en" title="English">'+GB+'</button></div>'
           + '<a class="uh-avatar" href="profil.html" title="Můj profil">'
             + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
-          + '<div class="uh-user"><div class="n">'+(o.user||'')+'</div><div class="l">'+(o.level||'')+'</div></div>'
+          + '<a class="uh-user" href="profil.html" title="Můj profil"><div class="n">'+esc(shortName(o))+'</div><div class="l">'+(o.level||'')+'</div></a>'
         + '</div>'
         + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
       + '</div>'

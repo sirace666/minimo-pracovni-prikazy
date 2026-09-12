@@ -74,13 +74,22 @@ const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@y
 const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
 
 let me=null, prof=null, fbUser=null;
-let nameVal='', nameBusy=false, nameMsg='', nameErr='';
+let firstVal='', lastVal='', nameBusy=false, nameMsg='', nameErr='';
 let photoBusy=false, photoErr='';
 let curPw='', newPw='', newPw2='', pwBusy=false, pwMsg='', pwErr='';
 let loginBusy=false, loginErr='';
 
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function initials(name){ const p=String(name||'').trim().split(/\s+/); return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||'?'; }
+function cap(w){ return w ? w[0].toUpperCase()+w.slice(1).toLowerCase() : ''; }
+// Přihlašuje se jen firemním e-mailem tvaru jmeno.prijmeni@… — dokud si
+// člověk jméno/příjmení sám neupraví, nabídne se odvozené odsud.
+function splitEmailName(email){
+  const local = String(email||'').split('@')[0];
+  const parts = local.split(/[._-]+/).filter(Boolean);
+  if(parts.length>=2) return {first:cap(parts[0]), last:cap(parts[parts.length-1])};
+  return {first:'', last:cap(parts[0]||local)};
+}
 
 onAuthStateChanged(auth, async user=>{
   loginBusy=false; fbUser=user;
@@ -90,16 +99,19 @@ onAuthStateChanged(auth, async user=>{
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';
-  me={uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||''};
+  const hasCustomName = d.firstName || d.lastName;
+  const derived = hasCustomName ? {first:d.firstName||'', last:d.lastName||''} : splitEmailName(user.email);
+  me={uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||'',
+    firstName:derived.first, lastName:derived.last};
   prof=d;
-  nameVal=me.name;
+  firstVal=me.firstName; lastVal=me.lastName;
   render();
 });
 
 function render(){
   const app=document.getElementById('app');
   if(!me){ app.innerHTML=loginView(); bind(); return; }
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Můj profil',cur:'profil',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Můj profil',cur:'profil',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
   app.innerHTML = uh + `<main>${body()}</main>`;
   bind();
 }
@@ -112,9 +124,10 @@ function loginView(){
     <button type="submit" class="btn-primary" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
   </form></div>`;
 }
+const fullName = () => [me.firstName, me.lastName].filter(Boolean).join(' ') || me.name;
 function avatarHtml(size){
   if(me.photoURL) return `<img class="avatar" style="width:${size}px;height:${size}px" src="${esc(me.photoURL)}" alt="">`;
-  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.4}px">${esc(initials(me.name))}</div>`;
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.4}px">${esc(initials(fullName()))}</div>`;
 }
 function body(){
   return `
@@ -127,7 +140,7 @@ function body(){
         <button type="button" class="btn-ghost small" id="btn-photo" ${photoBusy?'disabled':''}>${photoBusy?'Nahrávám…':(me.photoURL?'Změnit fotku':'Nahrát fotku')}</button>
       </div>
       <div>
-        <strong style="font-size:1.05rem">${esc(me.name)}</strong><br>
+        <strong style="font-size:1.05rem">${esc(fullName())}</strong><br>
         <span class="muted">${esc(me.email)} · ${esc(LEVEL_LABEL[me.level]||'')}</span>
         ${photoErr?`<div class="msg err" style="margin-top:.5rem">${esc(photoErr)}</div>`:''}
         <p class="muted" style="margin:.5rem 0 0">Fotka se ořízne na čtverec a zmenší. Max 3 MB.</p>
@@ -137,9 +150,14 @@ function body(){
 
   <form class="card" id="nameForm">
     <h2>Jméno a příjmení</h2>
+    <p class="muted" style="margin:-.4rem 0 .8rem">V hlavičce se ukazuje zkráceně (např. „M. Smrz"). Dokud tohle
+      neupravíš, odvozuje se automaticky z přihlašovacího e-mailu.</p>
     ${nameErr?`<div class="msg err">${esc(nameErr)}</div>`:''}
     ${nameMsg?`<div class="msg ok">${esc(nameMsg)}</div>`:''}
-    <div class="f"><input id="f-name" value="${esc(nameVal)}" ${nameBusy?'disabled':''}></div>
+    <div class="row" style="align-items:flex-start">
+      <div class="f" style="flex:1;min-width:160px"><label>Jméno</label><input id="f-first" value="${esc(firstVal)}" ${nameBusy?'disabled':''}></div>
+      <div class="f" style="flex:1;min-width:160px"><label>Příjmení</label><input id="f-last" value="${esc(lastVal)}" ${nameBusy?'disabled':''}></div>
+    </div>
     <button type="submit" class="btn-primary" ${nameBusy?'disabled':''}>${nameBusy?'Ukládám…':'Uložit'}</button>
   </form>
 
@@ -202,16 +220,23 @@ function bind(){
 
   const nf=document.getElementById('nameForm');
   if(nf) nf.onsubmit=async e=>{ e.preventDefault();
-    const v=(document.getElementById('f-name').value||'').trim();
+    const first=(document.getElementById('f-first').value||'').trim();
+    const last=(document.getElementById('f-last').value||'').trim();
     nameErr=''; nameMsg='';
-    if(!v){ nameErr='Jméno nesmí být prázdné.'; render(); return; }
+    if(!first && !last){ nameErr='Vyplň aspoň jméno nebo příjmení.'; render(); return; }
     nameBusy=true; render();
-    try{ await updateDoc(doc(db,'users',me.uid),{name:v, updatedAt:serverTimestamp()}); me.name=v; nameVal=v; nameMsg='Jméno uloženo.'; }
+    try{
+      const full=[first,last].filter(Boolean).join(' ');
+      await updateDoc(doc(db,'users',me.uid),{firstName:first, lastName:last, name:full, updatedAt:serverTimestamp()});
+      me.firstName=first; me.lastName=last; me.name=full; firstVal=first; lastVal=last;
+      nameMsg='Uloženo.';
+    }
     catch(err){ nameErr='Uložení selhalo: '+err.message; }
     nameBusy=false; render();
   };
-  const nameInput=document.getElementById('f-name');
-  if(nameInput) nameInput.oninput=()=>{ nameVal=nameInput.value; nameMsg=''; };
+  const fi1=document.getElementById('f-first'), fi2=document.getElementById('f-last');
+  if(fi1) fi1.oninput=()=>{ firstVal=fi1.value; nameMsg=''; };
+  if(fi2) fi2.oninput=()=>{ lastVal=fi2.value; nameMsg=''; };
 
   const pf=document.getElementById('btn-photo');
   if(pf) pf.onclick=()=>document.getElementById('f-photo').click();

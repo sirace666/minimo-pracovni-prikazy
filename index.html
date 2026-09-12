@@ -156,7 +156,7 @@ onAuthStateChanged(auth, async (user)=>{
   loginBusy=false;
   if(!user){ me=null; myLevel='basic'; render(); return; }
   const d=await ensureUserDoc(user);
-  me={email:user.email, photoURL:(d&&d.photoURL)||''};
+  me={email:user.email, photoURL:(d&&d.photoURL)||'', firstName:(d&&d.firstName)||'', lastName:(d&&d.lastName)||''};
   myLevel=levelOf(d);
   myModules=(d && d.modules) || {};
   render();
@@ -199,7 +199,7 @@ function appView(){
          <span class="badge">Připravujeme</span>
        </div>`).join('');
   const LEVEL_LABEL={basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel)}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel)}) : '';
   return `${uh}
   <main>
     <div class="intro"><h2>Vyberte aplikaci</h2><p>Přihlášení platí pro všechny moduly současně.</p></div>
