@@ -17,6 +17,11 @@
 .uh-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 .uh-clock{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.18);border-radius:12px;
   padding:6px 15px;text-align:center;flex:none;width:210px}
+/* Na širším panelu hodiny nepatří ani k logu, ani k profilu — vycentrované
+   uprostřed hlavičky, nezávisle na šířce obou stran (.uhdr má position:relative). */
+@media(min-width:701px){
+  .uh-clock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+}
 .uh-clock .t{font-size:25px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.05;
   white-space:nowrap}
 .uh-clock .d{font-size:11px;opacity:.82;margin-top:1px;white-space:nowrap;font-variant-numeric:tabular-nums}
