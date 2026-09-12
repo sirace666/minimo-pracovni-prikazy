@@ -174,3 +174,129 @@ Opatření ukazuje `hotovo/celkem` a značku `P!`, když chybí preventivní opa
 ## Když si nejsi jistý
 Radši se zeptej v PR nebo navrhni variantu, než abys přepsal něco z výše
 uvedeného seznamu „nesmí se rozbít“.
+
+---
+
+# DODATEK — tohle NENÍ Davidův text, čti dál (vývoj na forku)
+
+> Vše výše je Davidův původní `CLAUDE.md` pro appku samotnou — **neměň ho,
+> nepřepisuj, jen čti**. Tahle část je náš dodatek pro tenhle konkrétní
+> **fork** (`sirace666/minimo-pracovni-prikazy`), kde s Martinem stavíme
+> nové věci pro Davida. Kdykoliv sem přijde jiná/nová Claude Code session,
+> ať čte i tohle, ne jen tu Davidovu část nahoře.
+
+## Co je tohle za repo a proč existuje
+
+Martin má editora do Davidova Firebase (`nakupni-pozadavky`) a přístup na
+jeho GitHub. Domluvili jsme se, že appku **Pracovní příkazy** (samostatný
+React/Vite projekt v `..\pracovni-prikazy\`, vedle tohohle) přetavíme do
+nového modulu **„Údržba"** přímo uvnitř Davidova portálu minimo · YFAI,
+protože:
+- Údržba je dlaždice, kterou tam David už měl připravenou (`index.html`,
+  původně `active:false` → teď `active:true`).
+- Jedno přihlášení pro celý portál — appka nemusí řešit vlastní auth.
+- Musí to zapadnout do jeho tech stacku (viz Davidova část výše — žádný
+  build, vanilla HTML/JS/CSS).
+
+## Co jsme tady postavili
+
+- **`udrzba.html`** — nový modul, pracovní příkazy na opravy/údržbu strojů
+  (nový → rozpracováno → hotovo, přiřazení, linka/stroj ze sdíleného
+  `meta/config.sections`, historie, číslo `PP-rok-XXX` přes transakci na
+  `meta/config.seqUdrzba`).
+- **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno, heslo,
+  fotka), dostupná úplně odkudkoliv v Minimu přes ☰ menu.
+- **`header.js` / `header.css`** — přidán odkaz na Profil (vždy viditelný,
+  ne podle práv k modulu) a **profilová fotka/iniciály v hlavičce**
+  (`uheaderHTML` teď bere navíc `photoURL`).
+- **`index.html`** — dlaždice Údržba zapnutá (`ownerOnly:true`, pilotní
+  režim), `photoURL` doplněn do `me`.
+- **`nakup.html`, `dovolenky.html`, `opravy.html`, `engineering.html`,
+  `nastaveni.html`** — JINAK BEZE ZMĚNY (je to čistě Davidův kód, řídí se
+  Davidovou částí výše), jen přidán `photoURL` do `me`/`myDoc` a do volání
+  `uheaderHTML(...)`, ať se fotka v hlavičce zobrazí i tady. Nic dalšího
+  v nich neupravovat bez výslovného důvodu.
+- **`firestore.rules`** — přidán blok pro `udrzba`, čítač `seqUdrzba`
+  v `meta/config`, a `users/{uid}` update rozšířen, ať si každý smí sám
+  upravit `name`/`photoURL` (dřív jen admin).
+- **`storage.rules`** — **NOVÝ soubor, David ho v repu nemá** (spravuje si
+  Storage pravidla jen v konzoli). Obsahuje jeho současná pravidla
+  (`nabidky/`, `tasky/`) + nová cesta `avatars/{uid}` pro profilovky.
+
+## Návrhová rozhodnutí (ať se neřeší znovu)
+
+- **Appka nemá vlastní registraci/přihlášení/hierarchii/profil-jako-appku**
+  — to všechno řeší portál (`index.html` = login, `nastaveni.html` = správa
+  lidí a práv). Údržba se do toho jen zapojuje, nestaví si to znovu.
+- **Sdílená hlavička zůstává stylově Davidova** (navy pruh, logo, ☰ menu) —
+  neměnit vzhled/chování `header.js` mimo to, co si vyžádal Martin.
+- **Obsah stránek (seznam, okno příkazu) je navržený ve stylu appky
+  Pracovní příkazy** (karty s barevným okrajem podle stavu, barevná
+  hlavička okna podle stavu, sekce Změnit stav/Historie) — NE v Davidově
+  hutném tabulkovém stylu (`opravy.html`). Tohle byla výslovná žádost
+  Martina, drž se toho i u dalších obrazovek.
+- **Přístup do Údržby (i zatím do Profilu?) = pilotní whitelist e-mailů**
+  (`OWNERS`/`ADMIN_EMAILS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js`,
+  `OPRAVY_OWNERS` v `index.html`) — stejný vzor, jaký David použil pro
+  rozjezd Opravy/Engineering. Až appku schválí, přechod na obecný systém
+  `users.modules.udrzba` (read/write/none) je otevřená otázka, ne hotová věc.
+
+## Git remotes — DŮLEŽITÉ než začneš cokoliv upravovat
+
+```
+origin   = https://github.com/sirace666/minimo-pracovni-prikazy.git  (náš fork, sem pushovat)
+upstream = https://github.com/varhandavid19-lgtm/minimo-yfai.git      (Davidův originál)
+```
+
+David appku dál vyvíjí (má i svoje Claude Code sezení napojené přes GitHub).
+**Před jakoukoli novou prací nejdřív `git fetch upstream` a srovnej `main`**
+s jeho aktuálním stavem, ať se nepracuje na zastaralém kódu a pozdější PR
+je malý a čistý.
+
+## Testovací Firebase projekt — NENÍ Davidův
+
+- Projekt **`minimo-pracovni-prikazy`**, účet `sirace666@gmail.com`, plán
+  **Blaze** (kvůli Storage/fotkám; stejný billing „My Billing Account" jako
+  appka Pracovní příkazy).
+- `firebase.json` + `.firebaserc` v tomhle repu cílí na tenhle testovací
+  projekt — `firebase deploy --only firestore:rules` /
+  `firebase deploy --only storage:rules` (pozor, `--only firestore:rules,storage:rules`
+  dohromady občas hlásilo chybu, radši zvlášť).
+- Testovací účty (Firebase Auth, jen v tomhle projektu):
+  `admin.test@minimo.local` (role `admin`), `technik.test@minimo.local`
+  (běžný pilotní uživatel, `assignedTo` test dat). Hesla viz historie
+  konverzace s Martinem / dají se kdykoliv resetovat v konzoli
+  (Authentication → Users).
+- **Nikdy nemíchat s Davidovým `nakupni-pozadavky`** — ten má opravdová
+  data 39 lidí z Yanfengu. Do něj se sahá jen na čtení (přes
+  `martin.smrz.osobni@gmail.com`, který tam má Editor roli), nikdy na zápis
+  bez výslovného schválení Martina.
+
+## Než appku pošleme Davidovi (Pull Request) — checklist
+
+Do jeho repa **nemáme** práva zápisu, takže vždy jde o Pull Request
+z tohoto forku, ne přímý push (na rozdíl od toho, co má David napsané výše
+pro sebe — „commituj rovnou do main" platí pro NĚJ v JEHO repu, ne pro nás
+tady). Před otevřením PR:
+
+1. Odebrat testovací e-maily — hledej `TODO před PR` v `udrzba.html`,
+   `header.js`, `index.html` (`OWNERS`/`ADMIN_EMAILS`/`UDRZBA_OWNERS`/
+   `OPRAVY_OWNERS`) a nechat jen Davidovy skutečné e-maily.
+2. Přepnout `firebaseConfig` v `index.html`, `udrzba.html`, `profil.html`
+   zpátky na ostrý projekt `nakupni-pozadavky` (config je vidět v
+   Davidových nezměněných souborech, např. `nakup.html`).
+3. Připravit textový dodatek pro `storage.rules` (blok `avatars/{uid}`) —
+   David to musí ručně publikovat v konzoli, stejně jako to sám dělá
+   (viz jeho `firestore-pravidla-pridat.txt`), protože Storage rules v repu
+   nedrží.
+4. PR obsahuje jen: `udrzba.html`, `profil.html`, diff v `header.js` +
+   `header.css` + `index.html` + `firestore.rules` — NIC z
+   nakup/dovolenky/opravy/engineering/nastaveni krom té jedné řádky
+   s `photoURL`.
+
+## Kde je víc kontextu
+
+- `..\..\Firabase Davida\` — přečtená struktura Davidova Firestore/Auth/
+  Storage (read-only průzkum).
+- `..\..\Github Davida\` — needitované kopie jeho repozitářů (`minimo-yfai`
+  = živý, `Nakupni-pozadavky`/`Dovolenky` = archiv, nepoužívat).
