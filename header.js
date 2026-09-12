@@ -85,9 +85,9 @@
           + '<div class="uh-user"><div class="n">'+(o.user||'')+'</div><div class="l">'+(o.level||'')+'</div></div>'
         + '</div>'
         + '<div class="uh-actions">'
+          + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
           + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
             + '<button data-lang="en" title="English">'+GB+'</button></div>'
-          + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
         + '</div>'
       + '</div>'
     + '</header>';
