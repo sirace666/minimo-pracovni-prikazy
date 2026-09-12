@@ -14,7 +14,7 @@
     + 'font-weight="700" font-size="42" letter-spacing="1" textLength="246" lengthAdjust="spacingAndGlyphs">minimo</text></svg>';
   var CZ = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="20" fill="#fff"/>'
     + '<rect y="20" width="60" height="20" fill="#d7141a"/><path d="M0 0 30 20 0 40Z" fill="#11457e"/></svg>';
-  // shortName() skládá jméno z firstName/lastName, které volající stránky
+  // displayName() skládá jméno z firstName/lastName, které volající stránky
   // nemusí (na rozdíl od ostatních polí) předem escapovat — udělá se to tady.
   function esc(s){ return String(s??'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   // Iniciály z e-mailu/jména (jan.novak@… → "JN") — použije se, když u
@@ -33,12 +33,14 @@
     if(parts.length>=2) return {first:cap(parts[0]), last:cap(parts[parts.length-1])};
     return {first:'', last:cap(parts[0]||local)};
   }
-  // "M. Smrz" — z uloženého jména/příjmení (jakmile si ho v Profilu upraví),
-  // jinak automaticky odvozené z e-mailu.
-  function shortName(o){
+  // "Martin Smrz" — z uloženého jména/příjmení (jakmile si ho v Profilu
+  // upraví), jinak automaticky odvozené z e-mailu. cap() se použije i na
+  // uložené hodnoty — první písmeno velké, zbytek malá, ať uživatel napíše
+  // do Profilu cokoliv.
+  function displayName(o){
     var f = String(o.firstName||'').trim(), l = String(o.lastName||'').trim();
     if(!f && !l){ var d = splitEmailName(o.email||o.user); f=d.first; l=d.last; }
-    return (f ? f[0].toUpperCase()+'. ' : '') + l;
+    return [cap(f), cap(l)].filter(Boolean).join(' ');
   }
   var GB = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="40" fill="#012169"/>'
     + '<path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>'
@@ -100,7 +102,7 @@
             + '<button data-lang="en" title="English">'+GB+'</button></div>'
           + '<a class="uh-avatar" href="profil.html" title="Můj profil">'
             + (o.photoURL ? '<img src="'+o.photoURL+'" alt="">' : initialsOf(o.user)) + '</a>'
-          + '<a class="uh-user" href="profil.html" title="Můj profil"><div class="n">'+esc(shortName(o))+'</div><div class="l">'+(o.level||'')+'</div></a>'
+          + '<a class="uh-user" href="profil.html" title="Můj profil"><div class="n">'+esc(displayName(o))+'</div><div class="l">'+(o.level||'')+'</div></a>'
         + '</div>'
         + '<button class="uh-logout" '+(o.logoutAttr||'id="btn-logout"')+'>Odhlásit</button>'
       + '</div>'

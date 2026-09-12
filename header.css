@@ -39,7 +39,7 @@
 .uh-user .l{font-size:11px;opacity:.85;white-space:nowrap}
 /* Přepínač jazyka — zpátky v hlavičce, ale malý a před fotkou, ať nesplývá
    s profilem/odhlásit (viz .uh-right gap níže, který mu dá odstup). */
-.uh-lang{display:flex;gap:4px;flex:none}
+.uh-lang{display:flex;gap:4px;flex:none;margin-right:6px;padding-right:12px;border-right:1px solid rgba(255,255,255,.22)}
 .uh-lang button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:6px;
   padding:2px;cursor:pointer;line-height:0;opacity:.55;filter:grayscale(.5)}
 .uh-lang button:hover{opacity:.8}
