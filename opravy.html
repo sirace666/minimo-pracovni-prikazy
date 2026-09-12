@@ -96,13 +96,15 @@ import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, delet
   onSnapshot, query, orderBy, serverTimestamp, runTransaction }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
+/* DOČASNĚ přepnuto na testovací projekt kvůli vývoji modulu Údržba.
+   PŘED PR DAVIDOVI VRÁTIT na nakupni-pozadavky (config viz CLAUDE.md dodatek)! */
 const firebaseConfig = {
-  apiKey: "AIzaSyDi3OVq2Al0WXFPgqhMAN9lPGuExOU80Cc",
-  authDomain: "nakupni-pozadavky.firebaseapp.com",
-  projectId: "nakupni-pozadavky",
-  storageBucket: "nakupni-pozadavky.firebasestorage.app",
-  messagingSenderId: "214674774365",
-  appId: "1:214674774365:web:7f7b51c8169b75f8acb0b4"
+  apiKey: "AIzaSyDXqMTTryH9mkgzA9o5PrndHRH4C_yUQLY",
+  authDomain: "minimo-pracovni-prikazy.firebaseapp.com",
+  projectId: "minimo-pracovni-prikazy",
+  storageBucket: "minimo-pracovni-prikazy.firebasestorage.app",
+  messagingSenderId: "727579407281",
+  appId: "1:727579407281:web:fb749f43e707cf4e7ec390"
 };
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);

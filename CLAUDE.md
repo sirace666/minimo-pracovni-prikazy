@@ -282,9 +282,18 @@ tady). Před otevřením PR:
 1. Odebrat testovací e-maily — hledej `TODO před PR` v `udrzba.html`,
    `header.js`, `index.html` (`OWNERS`/`ADMIN_EMAILS`/`UDRZBA_OWNERS`/
    `OPRAVY_OWNERS`) a nechat jen Davidovy skutečné e-maily.
-2. Přepnout `firebaseConfig` v `index.html`, `udrzba.html`, `profil.html`
-   zpátky na ostrý projekt `nakupni-pozadavky` (config je vidět v
-   Davidových nezměněných souborech, např. `nakup.html`).
+2. **Přepnout `firebaseConfig` zpátky na ostrý projekt `nakupni-pozadavky`
+   — VE VŠECH 8 SOUBORECH**, ne jen v našich dvou novejch. Od
+   2026-09-12 (na Martinovo přání) míří na testovací projekt
+   `minimo-pracovni-prikazy` i Davidovy PŮVODNÍ moduly, aby šlo celé
+   Minimo lokálně proklikat s testovacími účty:
+   `index.html`, `udrzba.html`, `profil.html`, `nakup.html`,
+   `dovolenky.html`, `opravy.html`, `engineering.html`, `nastaveni.html`.
+   Hledej komentář `DOČASNĚ přepnuto` — je u configu v každém z nich.
+   Ostrý config (`nakupni-pozadavky`, apiKey `AIzaSyDi3OVq2Al0WXFPgqhMAN9lPGuExOU80Cc`)
+   je zapsaný výš v `03-firestore-data-nakupni-pozadavky.md` a
+   `10-hosting-infra.md` v `..\..\Firabase Davida\`, nebo prostě
+   `git show upstream/main:nakup.html` pro kterýkoli soubor.
 3. Připravit textový dodatek pro `storage.rules` (blok `avatars/{uid}`) —
    David to musí ručně publikovat v konzoli, stejně jako to sám dělá
    (viz jeho `firestore-pravidla-pridat.txt`), protože Storage rules v repu
