@@ -243,24 +243,24 @@ protože:
   - **Menu i Odhlásit mají stejnou rodinu ikon** — `MENU_ICON`/`LOGOUT_ICON`
     v `header.js`, obě inline SVG s `stroke="currentColor"` (ne textový znak
     ☰, který vypadal jinak než kreslené ikony).
-  - **Menu na širokém panelu (`min-width:701px`) NEMÁ box vůbec** — jen
-    ikona přímo na navy, kruh (`rgba(255,255,255,.12)`, 40×40, zaoblení 10px)
-    se objeví až při najetí myší. Na mobilu zůstává původní světlá
-    neprůhledná dlaždice, beze změny (řeší to samostatná media query výš).
-  - **Odhlásit nemá žádný trvalý kroužek ani box — nikde, mobil i PC**
-    (Martinovo výslovné doladění): `background:transparent`, kruh
-    (`rgba(255,255,255,.14)`) se objeví jen při hoveru, stejná myšlenka jako
-    menu. Avatar+jméno taky bez boxu — celá pravá strana je „lehká", jen
-    hodiny a vlajky mají viditelný rámeček.
-  - **Hodiny a vlajky** mají box, co měly už předtím (beze změny) — jen
-    text hodin zúžený na váhu 700 (bylo 800) a menší, ať sedí ke zbytku.
+  - **Menu i Odhlásit nemají žádný box ani trvalý kroužek — NIKDE, mobil
+    i PC** (base pravidlo `.uh-menu`/`.uh-logout` v `header.css`, ne
+    media-query specifické): `background:transparent`, kruh
+    (`rgba(255,255,255,.12)`/`.14`) se objeví jen při hoveru. Jen VELIKOST
+    tlačítka menu se liší (42×42 mobil / 40×40 PC, řeší media queries).
+    Avatar+jméno taky bez boxu — celá pravá strana je „lehká", jen hodiny
+    a vlajky mají viditelný rámeček.
+  - **Hodiny a vlajky** mají box, co měly už předtím (beze změny na PC) —
+    jen text hodin zúžený na váhu 700 (bylo 800) a menší, ať sedí ke zbytku.
   - **Typografie sjednocená na max. váhu 700** — `.uh-title b` (bylo 800),
     `.uh-clock .t` (bylo 800) — necháváme jen jednu úroveň „tučně", ne tři
     různé.
-  - Mobilní grid layout (viz media query níž) se touhle úpravou nedotkl —
-    jen ikona menu je teď SVG místo textového znaku i tam, a Odhlásit ztratil
-    trvalý kroužek stejně jako na PC (viz výš, je to base pravidlo, ne
-    media-query specifické).
+  - **Hodiny na mobilu úplně pryč** (`.uh-clock{display:none}` v mobilní
+    media query — element zůstává v DOM, `tick()` dál běží, jen se
+    neukazuje) — Martinovo rozhodnutí, na mobilu zabíraly zbytečně místo.
+    Mobilní grid teď má jen 2 řádky: **řádek 1** = menu+logo vlevo,
+    foto+jméno+Odhlásit vpravo; **řádek 2** = jen vlajky vpravo (sloupec 1
+    v řádku 2 zůstává prázdný, grid to zvládne bez placeholderu).
 - **`index.html`** — dlaždice Údržba zapnutá (`ownerOnly:true`, pilotní
   režim), `photoURL`/`firstName`/`lastName` doplněny do `me`.
 - **`nakup.html`, `dovolenky.html`, `opravy.html`, `engineering.html`,
