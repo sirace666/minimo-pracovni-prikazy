@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2722%27%20fill=%27%231b4b8f%27/%3E%3Ctext%20x=%2750%27%20y=%2776%27%20font-size=%2774%27%20font-family=%27Arial,sans-serif%27%20font-weight=%27bold%27%20fill=%27white%27%20text-anchor=%27middle%27%3Em%3C/text%3E%3C/svg%3E">
+<title>Můj profil — YFAI minimo</title>
+<link rel="stylesheet" href="header.css">
+<style>
+  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--surface:#fff;--border:#dde4ec;--text:#16233a;--muted:#6b7a90;
+    --ok:#15803d;--danger:#c0392b;--radius:10px;--shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px}
+  main{max-width:560px;margin:0 auto;padding:16px 18px 40px}
+  h1{font-size:1.35rem;margin:0 0 1rem}
+  h2{font-size:1rem;margin:0 0 .8rem}
+  button{font-family:inherit;font-size:13.5px;cursor:pointer;border-radius:8px;border:1px solid transparent;padding:.55rem 1rem;background:#fff}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  input{font-family:inherit;font-size:14px;padding:.55rem .6rem;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);width:100%}
+  label{font-size:.82rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.25rem}
+  .btn-primary{background:var(--navy-2);color:#fff;font-weight:600}
+  .btn-primary:hover{background:var(--navy-1)}
+  .btn-ghost{background:#fff;border:1px solid var(--border);color:#41506b}
+  .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .muted{color:var(--muted);font-size:.85rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:.9rem}
+  .f{margin-bottom:.8rem}
+  .head{display:flex;gap:1rem;align-items:center}
+  .avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--navy-2);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;flex:none}
+  .msg{font-size:.82rem;border-radius:8px;padding:.5rem .7rem;margin-bottom:.7rem}
+  .msg.ok{background:#e8f6ee;color:var(--ok)}
+  .msg.err{background:#fdecea;color:var(--danger)}
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login{background:#fff;border:1px solid var(--border);border-radius:14px;padding:30px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.12);text-align:center}
+  .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:.65rem;font-size:14px;font-weight:700}
+  .loginerr{background:#fdecea;color:var(--danger);border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="header.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { getStorage, ref as sref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+/* TESTOVACÍ Firebase projekt (vývoj mimo Davidova data). Před PR do
+   minimo-yfai se přepne na ostrý firebaseConfig (stejný jako v ostatních
+   modulech, projekt nakupni-pozadavky). */
+const firebaseConfig = {
+  apiKey: "AIzaSyDXqMTTryH9mkgzA9o5PrndHRH4C_yUQLY",
+  authDomain: "minimo-pracovni-prikazy.firebaseapp.com",
+  projectId: "minimo-pracovni-prikazy",
+  storageBucket: "minimo-pracovni-prikazy.firebasestorage.app",
+  messagingSenderId: "727579407281",
+  appId: "1:727579407281:web:fb749f43e707cf4e7ec390"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const storage = getStorage(fbApp);
+
+const ROLE2LEVEL = {zadavatel:'basic',skladnik:'warehouse',schvalovatel:'approver',admin:'superadmin'};
+const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
+const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com','admin.test@minimo.local'];
+const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
+
+let me=null, prof=null, fbUser=null;
+let nameVal='', nameBusy=false, nameMsg='', nameErr='';
+let photoBusy=false, photoErr='';
+let curPw='', newPw='', newPw2='', pwBusy=false, pwMsg='', pwErr='';
+let loginBusy=false, loginErr='';
+
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function initials(name){ const p=String(name||'').trim().split(/\s+/); return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||'?'; }
+
+onAuthStateChanged(auth, async user=>{
+  loginBusy=false; fbUser=user;
+  if(!user){ me=null; prof=null; render(); return; }
+  const ref=doc(db,'users',user.uid);
+  let d={}; try{ const s=await getDoc(ref); if(s.exists()) d=s.data(); }catch(e){}
+  const forced=isForcedAdmin(user.email);
+  const role = forced ? 'admin' : (d.role||'zadavatel');
+  const level = d.level || ROLE2LEVEL[role] || 'basic';
+  me={uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||''};
+  prof=d;
+  nameVal=me.name;
+  render();
+});
+
+function render(){
+  const app=document.getElementById('app');
+  if(!me){ app.innerHTML=loginView(); bind(); return; }
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Můj profil',cur:'profil',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',logoutAttr:'id="btn-logout"',modules:['portal']}) : '';
+  app.innerHTML = uh + `<main>${body()}</main>`;
+  bind();
+}
+function loginView(){
+  return `<div class="login-wrap"><form class="login" id="loginForm">
+    <h2>minimo · YFAI</h2><p class="muted" style="margin-top:0">Můj profil</p>
+    ${loginErr?`<div class="loginerr">${esc(loginErr)}</div>`:''}
+    <input type="email" id="li-email" placeholder="E-mail" autocomplete="username">
+    <input type="password" id="li-pass" placeholder="Heslo" autocomplete="current-password">
+    <button type="submit" class="btn-primary" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
+  </form></div>`;
+}
+function avatarHtml(size){
+  if(me.photoURL) return `<img class="avatar" style="width:${size}px;height:${size}px" src="${esc(me.photoURL)}" alt="">`;
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.4}px">${esc(initials(me.name))}</div>`;
+}
+function body(){
+  return `
+  <h1>Můj profil</h1>
+  <div class="card">
+    <div class="head">
+      ${avatarHtml(72)}
+      <div>
+        <strong style="font-size:1.05rem">${esc(me.name)}</strong><br>
+        <span class="muted">${esc(me.email)} · ${esc(LEVEL_LABEL[me.level]||'')}</span>
+      </div>
+    </div>
+  </div>
+
+  <form class="card" id="nameForm">
+    <h2>Jméno a příjmení</h2>
+    ${nameErr?`<div class="msg err">${esc(nameErr)}</div>`:''}
+    ${nameMsg?`<div class="msg ok">${esc(nameMsg)}</div>`:''}
+    <div class="f"><input id="f-name" value="${esc(nameVal)}" ${nameBusy?'disabled':''}></div>
+    <button type="submit" class="btn-primary" ${nameBusy?'disabled':''}>${nameBusy?'Ukládám…':'Uložit'}</button>
+  </form>
+
+  <div class="card">
+    <h2>Profilová fotka</h2>
+    ${photoErr?`<div class="msg err">${esc(photoErr)}</div>`:''}
+    <div class="head">
+      ${avatarHtml(72)}
+      <div class="row">
+        <input type="file" id="f-photo" accept="image/*" hidden>
+        <button type="button" class="btn-ghost" id="btn-photo" ${photoBusy?'disabled':''}>${photoBusy?'Nahrávám…':(me.photoURL?'Změnit fotku':'Nahrát fotku')}</button>
+      </div>
+    </div>
+    <p class="muted" style="margin:.6rem 0 0">Obrázek se ořízne na čtverec a zmenší. Max 3 MB.</p>
+  </div>
+
+  <form class="card" id="pwForm">
+    <h2>Změna hesla</h2>
+    ${pwErr?`<div class="msg err">${esc(pwErr)}</div>`:''}
+    ${pwMsg?`<div class="msg ok">${esc(pwMsg)}</div>`:''}
+    <div class="f"><label>Současné heslo</label><input type="password" id="f-curpw" autocomplete="current-password" ${pwBusy?'disabled':''}></div>
+    <div class="f"><label>Nové heslo</label><input type="password" id="f-newpw" autocomplete="new-password" ${pwBusy?'disabled':''}></div>
+    <div class="f"><label>Nové heslo znovu</label><input type="password" id="f-newpw2" autocomplete="new-password" ${pwBusy?'disabled':''}></div>
+    <button type="submit" class="btn-primary" ${pwBusy?'disabled':''}>${pwBusy?'Měním…':'Změnit heslo'}</button>
+  </form>
+  `;
+}
+
+/* ---------- fotka: ořez na čtverec + zmenšení na 400 px, JPEG ---------- */
+function loadImg(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Soubor není platný obrázek.')); };
+    img.src=url;
+  });
+}
+async function resizeSquare(file){
+  const SIZE=400;
+  const bitmap = await createImageBitmap(file).catch(()=>null);
+  const src = bitmap || await loadImg(file);
+  const w = src.width, h = src.height;
+  const side = Math.min(w,h), sx=(w-side)/2, sy=(h-side)/2;
+  const canvas=document.createElement('canvas'); canvas.width=SIZE; canvas.height=SIZE;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(src, sx, sy, side, side, 0, 0, SIZE, SIZE);
+  if(bitmap) bitmap.close();
+  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Nepodařilo se zpracovat obrázek.')),'image/jpeg',0.85));
+}
+async function uploadPhoto(file){
+  if(!file.type.startsWith('image/')) throw new Error('Vyber obrázek (JPG, PNG…).');
+  if(file.size>3*1024*1024) throw new Error('Soubor je větší než 3 MB.');
+  const blob=await resizeSquare(file);
+  const path='avatars/'+me.uid;
+  const s=sref(storage,path);
+  await uploadBytes(s,blob,{contentType:'image/jpeg'});
+  const url=(await getDownloadURL(s))+'&v='+Date.now();
+  await updateDoc(doc(db,'users',me.uid),{photoURL:url, updatedAt:serverTimestamp()});
+  me.photoURL=url;
+}
+
+function bind(){
+  const lf=document.getElementById('loginForm');
+  if(lf) lf.onsubmit=async e=>{ e.preventDefault();
+    const email=(document.getElementById('li-email').value||'').trim(), pass=document.getElementById('li-pass').value||'';
+    if(!email||!pass){ loginErr='Vyplň e-mail i heslo.'; render(); return; }
+    loginBusy=true; loginErr=''; render();
+    try{ await signInWithEmailAndPassword(auth,email,pass); }
+    catch(err){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); }
+  };
+  const lo=document.getElementById('btn-logout'); if(lo) lo.onclick=()=>signOut(auth);
+  if(!me) return;
+
+  const nf=document.getElementById('nameForm');
+  if(nf) nf.onsubmit=async e=>{ e.preventDefault();
+    const v=(document.getElementById('f-name').value||'').trim();
+    nameErr=''; nameMsg='';
+    if(!v){ nameErr='Jméno nesmí být prázdné.'; render(); return; }
+    nameBusy=true; render();
+    try{ await updateDoc(doc(db,'users',me.uid),{name:v, updatedAt:serverTimestamp()}); me.name=v; nameVal=v; nameMsg='Jméno uloženo.'; }
+    catch(err){ nameErr='Uložení selhalo: '+err.message; }
+    nameBusy=false; render();
+  };
+  const nameInput=document.getElementById('f-name');
+  if(nameInput) nameInput.oninput=()=>{ nameVal=nameInput.value; nameMsg=''; };
+
+  const pf=document.getElementById('btn-photo');
+  if(pf) pf.onclick=()=>document.getElementById('f-photo').click();
+  const fi=document.getElementById('f-photo');
+  if(fi) fi.onchange=async ()=>{
+    const file=fi.files && fi.files[0]; if(!file) return;
+    photoErr=''; photoBusy=true; render();
+    try{ await uploadPhoto(file); }
+    catch(err){ photoErr=err.message; }
+    photoBusy=false; render();
+  };
+
+  const pwf=document.getElementById('pwForm');
+  if(pwf) pwf.onsubmit=async e=>{ e.preventDefault();
+    const cur=document.getElementById('f-curpw').value||'';
+    const n1=document.getElementById('f-newpw').value||'';
+    const n2=document.getElementById('f-newpw2').value||'';
+    pwErr=''; pwMsg='';
+    if(n1.length<6){ pwErr='Nové heslo musí mít alespoň 6 znaků.'; render(); return; }
+    if(n1!==n2){ pwErr='Nová hesla se neshodují.'; render(); return; }
+    pwBusy=true; render();
+    try{
+      const cred=EmailAuthProvider.credential(fbUser.email, cur);
+      await reauthenticateWithCredential(fbUser, cred);
+      await updatePassword(fbUser, n1);
+      pwMsg='Heslo změněno.'; curPw=newPw=newPw2='';
+    }catch(err){
+      pwErr = err.code==='auth/wrong-password'||err.code==='auth/invalid-credential' ? 'Současné heslo není správně.' : 'Změna selhala: '+err.message;
+    }
+    pwBusy=false; render();
+  };
+}
+render();
+</script>
+</body>
+</html>
