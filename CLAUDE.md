@@ -217,6 +217,16 @@ protože:
   PWA manifest/service worker (nemá ho zatím žádná stránka portálu) — proto
   je hlavní obsah ruční návod přes menu prohlížeče (funguje vždy už teď).
   Až manifest přibude, tlačítko naskočí samo bez zásahu do týhle stránky.
+  Text/kroky/karta „Oznámení" na konci jsou schválně **1:1 podle originálu**
+  (`InstallPage.tsx` appky Pracovní příkazy, Martin poslal screenshot) — jen
+  s „minimo" místo „Pracovní příkazy" a bez slibu fungujících push oznámení
+  (viz `profil.html` níž).
+- **`profil.html`** — karta **„Upozornění"** na konci (stejný text/vzhled
+  jako `PushSettings.tsx` v appce Pracovní příkazy: popis + badge + tlačítko
+  + checkbox zvuku), ale **schválně needitovatelná** — badge „Připravujeme"
+  místo stavu zapnuto/vypnuto, tlačítko i checkbox `disabled`. Push
+  notifikace (FCM/Cloud Functions) pro minimo zatím nejsou naportované,
+  tohle je jen vizuální příprava na to, až budou (Martinovo přání).
 - **`header.js` / `header.css`** — **profilová fotka/iniciály v hlavičce**
   (`uheaderHTML` bere navíc `photoURL`), `.uh-user` je teď odkaz na profil.
   **Zkrácené jméno v hlavičce** ("P. Vill") — `shortName()`/`splitEmailName()`

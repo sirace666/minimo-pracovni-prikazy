@@ -155,18 +155,19 @@ function iosGuide(){
 function desktopGuide(){
   return `<ol class="install-steps">
     ${step(1,'Otevři portál v <strong>Chrome</strong> nebo <strong>Edge</strong>.')}
-    ${step(2,'Klikni na <strong>⋮</strong> vpravo nahoře → <strong>Další nástroje</strong> → <strong>„Vytvořit zástupce…"</strong>.')}
-    ${step(3,'Zaškrtni <strong>„Otevřít jako okno"</strong> a potvrď <strong>Vytvořit</strong>.')}
-    ${step(4,'Zástupce se objeví na ploše / v nabídce Start — otevírá portál v samostatném okně bez adresního řádku.')}
+    ${step(2,'V pravé části adresního řádku klikni na ikonu <strong>instalace</strong> (monitor se šipkou dolů). Nebo použij menu <strong>⋮</strong> → <strong>„Instalovat minimo…"</strong>.')}
+    ${step(3,'Potvrď <strong>Instalovat</strong>.')}
+    ${step(4,'Appka se otevře ve vlastním okně a přidá se mezi programy (jde ji připnout na hlavní panel / do Docku).')}
   </ol>`;
 }
 const GUIDES = {android:androidGuide, ios:iosGuide, desktop:desktopGuide};
 
 function body(){
   return `
-  <h1>Instalace appky</h1>
-  <p class="muted" style="margin-top:-.5rem">Portál <strong>minimo · YFAI</strong> si můžeš přidat na plochu nebo do
-    nabídky programů jako zástupce — pak ho spustíš jedním klepnutím, bez zadávání adresy do prohlížeče.</p>
+  <h1>Instalace aplikace</h1>
+  <p class="muted" style="margin-top:-.5rem">Portál <strong>minimo · YFAI</strong> je <strong>PWA</strong> — jde ho
+    nainstalovat na plochu jako běžnou appku. Získáš tím ikonu a celoobrazovkový režim, appku pak spustíš jedním
+    klepnutím, bez zadávání adresy do prohlížeče.</p>
 
   ${installed ? `
     <div class="card">
@@ -190,8 +191,11 @@ function body(){
     ${GUIDES[platform]()}
   </div>
 
-  <p class="muted">Tlačítko „Nainstalovat" nabídne jen prohlížeč, který to umí přímo — návod podle zařízení
-    výše ale funguje vždycky.</p>
+  <div class="card">
+    <h2 style="margin-top:0">Oznámení</h2>
+    <p class="muted" style="margin-bottom:0">Push oznámení (nový příkaz, schválení, hotovo…) pro minimo zatím
+      <strong>připravujeme</strong> — najdeš je v <strong>Profilu → Upozornění</strong>, až budou hotová.</p>
+  </div>
   `;
 }
 
