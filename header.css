@@ -68,24 +68,24 @@
 
 /* ---- mobil ----
    Mřížka o 2 sloupcích × 2 řádcích:
-     [menu+logo]           [foto+jméno+Odhlásit]
-     [hodiny, na střed]    [vlajky]
+     [hodiny, přes celou šířku menu+loga]   [vlajky]
+     [menu+logo]                            [foto+jméno+Odhlásit]
    Levý sloupec je „auto" široký — jeho šířku určuje širší z dvojice
-   menu+logo / hodiny, takže hodiny vyjdou vycentrované přímo pod
-   menu+logem, ne pod celou šířkou panelu. */
+   menu+logo / hodiny; hodiny mají justify-self:stretch, takže se
+   roztáhnou přesně na tuhle šířku (na úroveň menu+loga pod nimi). */
 @media(max-width:700px){
   .uhdr{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;
     row-gap:6px;column-gap:8px;padding:7px 10px;min-height:0}
   .uh-title{display:none}
-  .uh-brandgroup{display:flex;align-items:center;gap:8px;grid-row:1;grid-column:1}
+  .uh-brandgroup{display:flex;align-items:center;gap:8px;grid-row:2;grid-column:1}
   .uh-brand{padding:5px 8px}
   .uh-brand svg{height:32px}
   .uh-menu{width:42px;height:42px;font-size:20px}
-  .uh-topright{display:flex;align-items:center;gap:8px;grid-row:1;grid-column:2;justify-self:end}
-  .uh-clock{grid-row:2;grid-column:1;justify-self:center;margin:0;width:94px;min-width:0;padding:4px 8px}
+  .uh-topright{display:flex;align-items:center;gap:8px;grid-row:2;grid-column:2;justify-self:end}
+  .uh-clock{grid-row:1;grid-column:1;justify-self:stretch;margin:0;width:auto;min-width:0;padding:4px 8px}
   .uh-clock .t{font-size:17px;letter-spacing:.5px}
   .uh-clock .d{display:none}
-  .uh-lang{grid-row:2;grid-column:2;justify-self:end;margin:0;padding-right:0;border-right:none}
+  .uh-lang{grid-row:1;grid-column:2;justify-self:end;margin:0;padding-right:0;border-right:none}
   .uh-idbox{margin-right:0}
   .uh-avatar{width:26px;height:26px;font-size:10px}
   .uh-user{max-width:100px}
