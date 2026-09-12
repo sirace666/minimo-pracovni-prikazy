@@ -15,6 +15,9 @@
 .uh-title b{font-size:18px;font-weight:800;display:block;letter-spacing:-.2px}
 .uh-title span{font-size:12px;opacity:.82}
 .uh-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+/* Na širokém panelu jsou to jen průchozí obálky (žádný vliv na layout);
+   na mobilu se z nich stanou dvě skutečné skupiny, viz media query níže. */
+.uh-idbox,.uh-actions{display:contents}
 .uh-clock{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.18);border-radius:12px;
   padding:6px 15px;text-align:center;flex:none;width:210px}
 /* Na širším panelu hodiny nepatří ani k logu, ani k profilu — vycentrované
@@ -62,8 +65,12 @@
   .uh-brand{padding:5px 8px}
   .uh-brand svg{height:32px}
   .uh-menu{width:42px;height:42px;font-size:20px}
-  .uh-right{gap:8px}
-  .uh-clock{width:94px;min-width:0;padding:4px 8px}
+  /* Řádek 1: menu+logo vlevo, hodiny schválně přitažené k pravému okraji.
+     Řádek 2 (zalomený .uh-right) přes celou šířku stejným způsobem:
+     fotka+jméno vlevo, jazyk+odhlásit vpravo — ne náhodně nalepené vlevo. */
+  .uh-clock{margin-left:auto;width:94px;min-width:0;padding:4px 8px}
+  .uh-right{width:100%;margin-left:0;justify-content:space-between;gap:8px}
+  .uh-idbox,.uh-actions{display:flex;align-items:center;gap:8px}
   .uh-clock .t{font-size:17px;letter-spacing:.5px}
   .uh-clock .d{display:none}
   .uh-avatar{width:26px;height:26px;font-size:10px}
