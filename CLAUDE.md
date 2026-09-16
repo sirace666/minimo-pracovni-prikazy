@@ -371,15 +371,22 @@ Martin to chce mít stejně přehledné jako u appky Pracovní příkazy:
 3. `gh release create vX.Y.Z --title "…" --notes "…"` (repo
    `sirace666/minimo-pracovni-prikazy`).
 
-## Dokumentace pro Davida (`docs/pro-davida.md`)
+## Dokumentace pro Davida (`docs/pro-davida.md`) — JEN NA DISKU, není v gitu
 
-Martinova příprava na rozhovor s Davidem — lidsky čitelný výtah **bez
-technických detailů** (na rozdíl od tohohle `CLAUDE.md`, který je technický
-kontext pro Claude). Dvě sekce: co se změnilo v rozcestníku (index.html) a
-co je nového v Údržbě (celý modul, o kterém David zatím neví). **Po každé
-smysluplné dávce práce doplň i tenhle soubor** (krátce, pár vět, ne
-seznam commitů) — Martin ho pak použije, až appku bude Davidovi ukazovat/
-posílat. Po zápisu si ho vždy znovu přečti, ať víš, že se to uložilo.
+Martinova příprava na popis Pull Requestu pro Davida — lidsky čitelný výtah
+**bez technických detailů** (na rozdíl od tohohle `CLAUDE.md`, který je
+technický kontext pro Claude). Dvě sekce: co se změnilo v rozcestníku
+(index.html) a co je nového v Údržbě (celý modul, o kterém David zatím
+neví). Skončí jako `gh pr create --body-file docs/pro-davida.md`, takže
+patří jednou natrvalo do popisu PR na GitHubu, ne zdvojeně i sem —
+proto je v `.gitignore` a **NEcommituje se**.
+
+**Pokud soubor v repu chybí** (např. po čerstvém `git clone` na jiném
+počítači), založ ho znovu podle stejné šablony (dvě sekce výš). **Po
+každé smysluplné dávce práce ho doplň** (krátce, pár vět, ne seznam
+commitů), i když se necommituje — Martin ho použije, až appku bude
+Davidovi ukazovat/posílat. Po zápisu si ho vždy znovu přečti, ať víš,
+že se to uložilo.
 
 ## Kde je víc kontextu
 
