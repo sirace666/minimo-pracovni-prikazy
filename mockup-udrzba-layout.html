@@ -38,16 +38,22 @@
   .oi-meta{font-size:.82rem;color:var(--muted)}
   .spacer{flex:1}
 
-  /* ============ Desktop rozvržení v2 ============ */
+  /* ============ Desktop rozvržení v2 ============
+     Řádek 1 = identita stránky + hlavní akce (patří k sobě, oba „o celé stránce").
+     Řádek 2 = dva způsoby, jak si seznam zúžit — záložky (druh poruchy) vlevo,
+     hledání (volný text) vpravo. Necháváme mezi nimi jasně vidět mezeru
+     (padding-top + linku), ať je vidět, že je to dvě různé skupiny, ne bordel. */
   .wrap{max-width:1400px;margin:0 auto;padding:18px}
-  .topbar{display:flex;align-items:center;gap:1rem;margin-bottom:.9rem;flex-wrap:wrap}
-  .topbar h1{margin:0;font-size:1.35rem;flex:none}
-  .topbar .search{flex:1;max-width:320px}
+  .pagehead{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+  .pagehead h1{margin:0;font-size:1.4rem}
 
-  .typetabs{display:flex;gap:.5rem;margin-bottom:1.1rem;flex-wrap:wrap}
+  .filterbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    margin-bottom:1.2rem;padding-top:1rem;border-top:1px solid var(--border)}
+  .typetabs{display:flex;gap:.5rem;flex-wrap:wrap}
   .typetab{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.6rem 1.1rem;font-weight:700;font-size:.88rem;color:#41506b}
   .typetab.on{background:var(--navy-2);border-color:var(--navy-2);color:#fff}
   .typetab.em.on{background:var(--danger);border-color:var(--danger)}
+  .filterbar .search{max-width:260px}
 
   .board{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
   .sidebar{position:sticky;top:18px;display:grid;gap:1.1rem;background:#fff;border:1px solid var(--border);
@@ -101,17 +107,18 @@
   (funkčně stejné, jen sbalené — filtry přes tlačítko, ne trvalý panel).</p>
 
 <div class="wrap">
-  <div class="topbar">
+  <div class="pagehead">
     <h1>Údržba</h1>
-    <input class="search" placeholder="Hledat…">
-    <span class="spacer"></span>
     <button class="btn-primary">+ Nový pracovní příkaz</button>
   </div>
 
-  <div class="typetabs">
-    <button class="typetab on">Vše (5)</button>
-    <button class="typetab">Standardní · CM (3)</button>
-    <button class="typetab em">Havarijní · EM (2)</button>
+  <div class="filterbar">
+    <div class="typetabs">
+      <button class="typetab on">Vše (5)</button>
+      <button class="typetab">Standardní · CM (3)</button>
+      <button class="typetab em">Havarijní · EM (2)</button>
+    </div>
+    <input class="search" placeholder="Hledat…">
   </div>
 
   <div class="board">
