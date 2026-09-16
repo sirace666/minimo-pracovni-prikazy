@@ -371,6 +371,16 @@ Martin to chce mít stejně přehledné jako u appky Pracovní příkazy:
 3. `gh release create vX.Y.Z --title "…" --notes "…"` (repo
    `sirace666/minimo-pracovni-prikazy`).
 
+## Dokumentace pro Davida (`docs/pro-davida.md`)
+
+Martinova příprava na rozhovor s Davidem — lidsky čitelný výtah **bez
+technických detailů** (na rozdíl od tohohle `CLAUDE.md`, který je technický
+kontext pro Claude). Dvě sekce: co se změnilo v rozcestníku (index.html) a
+co je nového v Údržbě (celý modul, o kterém David zatím neví). **Po každé
+smysluplné dávce práce doplň i tenhle soubor** (krátce, pár vět, ne
+seznam commitů) — Martin ho pak použije, až appku bude Davidovi ukazovat/
+posílat. Po zápisu si ho vždy znovu přečti, ať víš, že se to uložilo.
+
 ## Kde je víc kontextu
 
 - `..\..\Firabase Davida\` — přečtená struktura Davidova Firestore/Auth/
