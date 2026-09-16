@@ -107,7 +107,7 @@
             + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
           + '</nav>'
         + '</div>'
-        + '<div class="uh-brand">'+LOGO+'</div>'
+        + '<a class="uh-brand" href="index.html" title="Hlavní stránka">'+LOGO+'</a>'
       + '</div>'
       + '<div class="uh-title"><b>minimo · YFAI</b><span>'+(o.module||'')+'</span></div>'
       + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'

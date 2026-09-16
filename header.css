@@ -18,7 +18,7 @@
 .uh-menu:hover{background:rgba(255,255,255,.12)}
 .uh-menu svg{display:block;width:22px;height:22px}
 .uh-brand{background:#fff;border-radius:8px;padding:6px 11px;display:flex;align-items:center;
-  box-shadow:0 2px 8px rgba(0,0,0,.22);flex:none}
+  box-shadow:0 2px 8px rgba(0,0,0,.22);flex:none;text-decoration:none;cursor:pointer}
 .uh-brand svg{display:block;height:42px;width:auto}
 .uh-title{line-height:1.15;flex:none}
 .uh-title b{font-size:17px;font-weight:700;display:block;letter-spacing:-.2px}
