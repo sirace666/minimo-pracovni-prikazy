@@ -1,3 +1,8 @@
 # Martinova příprava na PR/rozhovor s Davidem — jen lokální, nechceme
 # to natrvalo v historii repa (skončí to jako popis PR na GitHubu).
 docs/pro-davida.md
+
+# Rozpracovaný návrh rozvržení Údržby — jen lokální náhled (přes ngrok
+# tunel), dokud se nedomluvíme na finální podobě a nepřepíše se ostrý
+# udrzba.html. Pak se tenhle soubor smaže úplně.
+mockup-udrzba-layout.html
