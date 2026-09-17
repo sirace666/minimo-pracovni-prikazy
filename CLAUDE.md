@@ -204,6 +204,25 @@ protože:
   (nový → rozpracováno → hotovo, přiřazení, linka/stroj ze sdíleného
   `meta/config.sections`, historie, číslo `PP-rok-XXX` přes transakci na
   `meta/config.seqUdrzba`).
+- **`udrzba.html` — nové rozvržení pro PC (2026-09-17)**, podle needitovaného
+  mockupu `mockup-udrzba-layout.html` (smazaný, jakmile bylo rozvržení
+  přeneseno sem — sloužil jen jako needitovaný náhled). Řádek 1 = název
+  stránky + „+ Nový pracovní příkaz" (patří k sobě, obojí „o celé stránce").
+  Řádek 2 = záložky **Vše/Standardní·CM/Havarijní·EM** vlevo (aktivní EM
+  červeně) + hledání vpravo — dva různé způsoby zúžení seznamu, schválně
+  oddělené. Pod tím `.board` = 200px levý panel (`.sidebar`, jen klikací
+  filtry: „Moje příkazy" + Stav) + široký seznam vpravo, žádný detailní
+  panel (klik na kartu otevře stejné modální okno jako dřív). Na mobilu
+  (`@media max-width:700px`) se `.board` zjednoduší na 1 sloupec (sidebar
+  nad seznamem, bez skrývání) — jednodušší než animovaný „☰ Filtry" toggle
+  z mockupu, ale funkční; případně dodělat později, až/pokud bude vadit.
+  **Nové pole `udrzba/{id}.typ`** (`'CM'`|`'EM'`, výchozí `'CM'` přes
+  `typOf()` helper — starší příkazy bez pole `typ` se tak počítají jako CM,
+  nezmizí z filtrů) — vybírá se ve formuláři (`e-typ` select „Druh poruchy"),
+  zobrazuje se jako badge všude vedle stavu/priority. Počty na záložkách typu
+  a v sidebar seznamu Stavů se navzájem respektují (přepínač typu přepočítá
+  čísla u stavů a naopak), ale hledání/„Moje" platí na obě strany stejně —
+  viz `baseRows()`/`visibleRows()` v `udrzba.html`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
