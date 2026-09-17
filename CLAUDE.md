@@ -229,10 +229,14 @@ protože:
   tohle je jen vizuální příprava na to, až budou (Martinovo přání).
 - **`header.js` / `header.css`** — **profilová fotka/iniciály v hlavičce**
   (`uheaderHTML` bere navíc `photoURL`), `.uh-user` je teď odkaz na profil.
-  **Zkrácené jméno v hlavičce** ("P. Vill") — `shortName()`/`splitEmailName()`
-  v `header.js`: dokud si člověk jméno/příjmení sám neupraví v Profilu,
-  odvodí se automaticky z přihlašovacího e-mailu (`jmeno.prijmeni@…` — tímhle
-  vzorem se budou přihlašovat všichni, firemní e-mail to už v sobě má).
+  **Celé jméno v hlavičce** ("Martin Smrž") — `displayName()`/`splitEmailName()`
+  v `header.js` (`displayName` byla dřív `shortName()` a vracela zkratku typu
+  "P. Vill" — na Martinovo přání přepsáno na celé jméno+příjmení, commit
+  `774f27a`). Dokud si člověk jméno/příjmení sám neupraví v Profilu, odvodí
+  se automaticky z přihlašovacího e-mailu (`jmeno.prijmeni@…` — tímhle vzorem
+  se budou přihlašovat všichni, firemní e-mail to už v sobě má). `cap()`
+  velké první písmeno, zbytek malá, na obou slovech, ať uživatel do
+  e-mailu/Profilu napíše cokoliv.
   Vlajky jazyka jsou přímo v hlavičce, uvnitř `.uh-idbox` před fotkou
   (zkoušeli jsme je i v menu, Martinovi se to líbilo víc takhle).
 - **PC hlavička sjednocená (2026-09-12)** — Martinovi přišla nesourodá
