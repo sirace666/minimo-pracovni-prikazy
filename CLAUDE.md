@@ -409,6 +409,15 @@ commitů), i když se necommituje — Martin ho použije, až appku bude
 Davidovi ukazovat/posílat. Po zápisu si ho vždy znovu přečti, ať víš,
 že se to uložilo.
 
+**Důležité — týká se i sekce "Co jsme tady postavili" výš v tomhle
+dodatku:** když upravíš kód, na který se `docs/pro-davida.md` nebo
+"Co jsme tady postavili" odkazují, **zkontroluj a oprav i ten text**, ne
+jen přidej nový řádek na konec. 2026-09-17 si Martin sám všiml, že oba
+soubory pořád popisovaly starou zkrácenou podobu jména v hlavičce
+("M. Smrž"), ačkoliv kód dávno (commit `774f27a`) přešel na celé jméno
+("Martin Smrž") — dokumentace tím zůstala zavádějící, i když nikdo nic
+nezapomněl zapsat.
+
 ## Kde je víc kontextu
 
 - `..\..\Firabase Davida\` — přečtená struktura Davidova Firestore/Auth/
