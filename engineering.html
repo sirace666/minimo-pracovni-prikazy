@@ -283,8 +283,10 @@ const storage = getStorage(fbApp);   // úložiště na přílohy tasků (stejn�
    Záložka Scrap na ni jen odkazuje — data se tady nepočítají. */
 const SCRAP_URL = 'https://uhanm056.github.io/Quality-loss-report-Scrap/';
 
-/* ===== Kdo modul zatím vidí (jen David) — stejně jako u Externích oprav ===== */
-const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
+/* ===== Kdo modul zatím vidí (jen David) — stejně jako u Externích oprav =====
+   TODO před PR Davidovi: odebrat testovací e-mail admin.test. */
+const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+  'admin.test@minimo.local'];
 const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
 /* Stejný seznam jako isEmailAdmin v firestore.rules — kdyby se lišily, správci by
    se v aplikaci nabídl import, který by mu server zamítl (nebo naopak). */

@@ -269,6 +269,23 @@ protože:
   `me`/`myDoc` a do volání
   `uheaderHTML(...)`, ať se fotka v hlavičce zobrazí i tady. Nic dalšího
   v nich neupravovat bez výslovného důvodu.
+- **Admin (`admin.test@minimo.local`) má přístup naprosto všude (2026-09-17)**
+  — Martinovo přání. `admin.test` doplněn do `OPRAVY_OWNERS` v `header.js`
+  (menu) i do vlastních `OWNERS` v `opravy.html`/`engineering.html` (dřív
+  tam byl jen v `index.html`, takže dlaždici viděl, ale po kliknutí narazil
+  na „nemáte přístup"). Na straně dat (`firestore.rules`) žádná změna
+  nebyla potřeba — `isAdmin()` už uznává `myRole()=='admin'`, stačilo mít
+  to správně v `users/{uid}.role`, viz úklid Firestore níž.
+- **Úklid testovacích profilů ve Firestore (2026-09-17)** — po dřívějším
+  smazání+znovuzaložení účtů `admin.test`/`technik.test` (kvůli resetu
+  hesla) zůstaly ve `users` kolekci **osiřelé staré dokumenty** (pod starým
+  UID) se správně nastavenými daty (`level:superadmin`, `positions`,
+  fotka…), zatímco nové dokumenty (pod aktuálním UID) měly jen prázdné
+  výchozí hodnoty — vypadalo to jako „2× admin, 2× technik". Staré a nové
+  sloučeny (hodnoty přenesené na aktuální UID), osiřelé dokumenty smazány.
+  **Ponaučení pro příště:** při resetu hesla přes smazání+založení účtu se
+  **musí totéž udělat i v Firestore** (jinak zůstane duplicitní/osiřelý
+  profil) — příště radši zkusit heslo změnit jinak, ať se UID nemění.
 - **`firestore.rules`** — přidán blok pro `udrzba`, čítač `seqUdrzba`
   v `meta/config`, a `users/{uid}` update rozšířen, ať si každý smí sám
   upravit `name`/`firstName`/`lastName`/`photoURL` (dřív jen admin).

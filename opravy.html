@@ -110,8 +110,10 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
-/* ===== Kdo modul zatím vidí (jen David) ===== */
-const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
+/* ===== Kdo modul zatím vidí (jen David) =====
+   TODO před PR Davidovi: odebrat testovací e-mail admin.test. */
+const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+  'admin.test@minimo.local'];
 const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
 
 /* ===== Role / práva ===== */

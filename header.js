@@ -68,7 +68,9 @@
       return '<a class="'+(o.cur===key?'cur':'')+'" href="'+href+'">'+ico+' '+label+'</a>';
     }
     // Externí opravy zatím vidí v menu jen správce (podle e-mailu)
-    var OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
+    // TODO před PR Davidovi: odebrat testovací e-mail admin.test.
+    var OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+      'admin.test@minimo.local'];
     function opravyLink(){
       var who = String(o.email||o.user||'').trim().toLowerCase();
       if(OPRAVY_OWNERS.indexOf(who)<0) return '';
