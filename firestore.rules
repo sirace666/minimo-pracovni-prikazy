@@ -6,14 +6,27 @@ service cloud.firestore {
     function myRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
+    // nastaveni.html od zavedení „levelů" (Basic…Super Admin) ukládá i
+    // odvozenou starou `role` (LEVEL2ROLE), ale kdo měl `level` nastavený
+    // jinudy (bootstrap/testovací účet, ruční zápis v konzoli) než přes
+    // tenhle formulář, může mít `role` nesedící s `level` — proto se admin
+    // pozná i přímo podle `level`, ne jen podle `role`.
+    function myLevel() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.level;
+    }
     // Správci podle e-mailu – platí i kdyby v databázi neměli roli „admin"
     // (drží se shodně s klientem, aby server nezamítal úpravy plnoprávnému správci).
+    // admin.test@minimo.local = testovací superadmin účet pro tenhle
+    // testovací Firebase projekt (TODO před PR Davidovi: odebrat).
     function isEmailAdmin() {
       return signedIn() && request.auth.token.email in [
-        'varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com','varhandavid19@gmail.com'
+        'varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com','varhandavid19@gmail.com',
+        'admin.test@minimo.local'
       ];
     }
-    function isAdmin()        { return isEmailAdmin() || (signedIn() && myRole() == 'admin'); }
+    function isAdmin() {
+      return isEmailAdmin() || (signedIn() && (myRole() == 'admin' || myLevel() in ['wadmin','superadmin']));
+    }
     function isSklad()        { return signedIn() && myRole() == 'skladnik'; }
     function isSchvalovatel() { return signedIn() && myRole() == 'schvalovatel'; }
     function canEdit()        { return isAdmin() || isSklad(); }

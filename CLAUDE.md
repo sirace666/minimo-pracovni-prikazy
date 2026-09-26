@@ -383,9 +383,20 @@ protože:
   — Martinovo přání. `admin.test` doplněn do `OPRAVY_OWNERS` v `header.js`
   (menu) i do vlastních `OWNERS` v `opravy.html`/`engineering.html` (dřív
   tam byl jen v `index.html`, takže dlaždici viděl, ale po kliknutí narazil
-  na „nemáte přístup"). Na straně dat (`firestore.rules`) žádná změna
-  nebyla potřeba — `isAdmin()` už uznává `myRole()=='admin'`, stačilo mít
-  to správně v `users/{uid}.role`, viz úklid Firestore níž.
+  na „nemáte přístup").
+  **Oprava (2026-09-26) — tvrzení výš o `firestore.rules` bylo nepřesné:**
+  žádná změna tehdy nebyla potřeba jen proto, že `users/{uid}.role` shodou
+  okolností sedělo. Ve skutečnosti `isAdmin()` v pravidlech kontrolovala
+  jen starou `role=='admin'`, zatímco `nastaveni.html` mezitím přešlo na
+  nové `level` (Basic…Super Admin, `LEVEL2ROLE` je jen most na starou roli
+  pro appku Nákupů) — kdykoliv měl někdo `level` nastavený jinudy než přes
+  formulář v Nastavení (bootstrap, ruční zápis v konzoli), `role` mu
+  nesedělo a `nastaveni.html` mu při ukládání práv (i sám sobě) vracelo
+  „Nepodařilo se uložit: Missing or insufficient permissions." Opraveno:
+  `isAdmin()` teď uznává i `myLevel() in ['wadmin','superadmin']`, plus
+  `admin.test@minimo.local` přidán natvrdo do `isEmailAdmin()` (stejná
+  logika jako `OPRAVY_OWNERS` výš, jen na úrovni dat) — TODO před PR
+  Davidovi: tenhle e-mail z `isEmailAdmin()` zase odebrat.
 - **Úklid testovacích profilů ve Firestore (2026-09-17)** — po dřívějším
   smazání+znovuzaložení účtů `admin.test`/`technik.test` (kvůli resetu
   hesla) zůstaly ve `users` kolekci **osiřelé staré dokumenty** (pod starým
