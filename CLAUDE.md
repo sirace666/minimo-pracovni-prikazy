@@ -300,6 +300,19 @@ protože:
     kliknutím mimo něj — `document.addEventListener('click',...)`
     registrovaný JEDNOU mimo `bind()` (v `bind()` by se při každém
     `render()` násobil), stejný princip jako `#mm-panel` v `header.js`.
+- **Typ (CM/EM) jako dvě tlačítka vedle sebe, ne pod sebou (2026-09-26)**
+  — na Martinovo přání, na dvou místech:
+  - **Filtr** — `filterGroup()` má nový volitelný 5. parametr `horiz`
+    (`filterGroup('typ',...,countTyp,true)`), přidá `.checklist` třídu
+    `row` (`flex-direction:row`). Pod kapotou úplně stejný checkbox/
+    `data-flt` mechanismus jako předtím — kombinovatelné (CM i EM
+    zaškrtnuté zároveň = vidíš obojí, stejně jako nic nezaškrtnuté),
+    mění se jen vzhled na dvě "dlaždice" vedle sebe.
+  - **Formulář** (`editForm()`) — `<select id="e-typ">` nahrazen dvěma
+    `<button data-a="set-typ" data-v="CM|EM">` (přesně jedno vždy
+    aktivní, jako přepínač). Nový `case 'set-typ'` v `act()` rovnou
+    mění `editing.typ` (stejný vzorec jako `nd-set`), `collect()` už
+    `#e-typ` nečte (odstraněno, bylo by to mrtvé).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

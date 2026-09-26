@@ -110,6 +110,16 @@
   .filter-check:has(input:checked) .fc-box::after{content:'✓'}
   .filter-check:has(input:checked) .count{background:rgba(255,255,255,.2);color:#fff}
 
+  /* --- Typ (CM/EM): dvě tlačítka vedle sebe místo řádků pod sebou —
+     jen 2 pevné hodnoty, dává smysl je mít jako "přepínače" vedle sebe.
+     Pořád stejný .filter-check/checkbox pod kapotou (kombinovatelné). --- */
+  .checklist.row{flex-direction:row;gap:6px}
+  .checklist.row .filter-check{flex:1;flex-direction:column;justify-content:center;text-align:center;
+    height:52px;padding:6px 4px;gap:2px}
+  .checklist.row .fc-box{display:none}
+  .checklist.row .fc-label{flex:none;white-space:normal;line-height:1.2;font-size:12.5px}
+  .checklist.row .count{position:absolute;top:5px;right:5px}
+
   /* --- filtr Linka: zavřené tlačítko + panel s hledáním (může jich časem
      být hodně, na rozdíl od pevných seznamů Typ/Stav/Priorita/Obor) --- */
   .linka-wrap{position:relative}
@@ -141,6 +151,14 @@
   .ps-ticks{display:flex;justify-content:space-between;margin-top:2px}
   .ps-tick{font-size:11px;font-weight:700;color:var(--muted)}
   .ps-tick.on{color:var(--c,var(--accent));font-weight:800}
+
+  /* --- Druh poruchy ve formuláři: dvě tlačítka vedle sebe (jedno z nich
+     vždy aktivní), místo rozbalovacího seznamu --- */
+  .typ-toggle{display:flex;gap:6px}
+  .typ-btn{flex:1;height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;
+    font-family:inherit;font-weight:700;font-size:13px;color:var(--text);cursor:pointer}
+  .typ-btn:hover{border-color:var(--accent)}
+  .typ-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   @media(max-width:700px){
     .pagehead{grid-template-columns:1fr}
     .viewtile{min-width:0}
@@ -445,14 +463,14 @@ function extraBadges(o){
   if(o.nd) html+=`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`;
   return html;
 }
-function filterGroup(dim,title,opts,countFn){
+function filterGroup(dim,title,opts,countFn,horiz){
   const selCount=filters[dim].length;
   return `<div class="filtergroup">
     <div class="filtergroup-head">
       <span class="sidebar-title">${esc(title.toUpperCase())}</span>
       ${selCount?`<span class="filtergroup-sel">· ${selCount}</span>`:''}
     </div>
-    <div class="checklist">
+    <div class="checklist${horiz?' row':''}">
       ${opts.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${countFn(o.k)}</span></label>`).join('')}
     </div>
   </div>`;
@@ -521,7 +539,7 @@ function listView(){
         <span class="sidebar-title">FILTRY</span>
         ${totalActive?`<span class="sidebar-count">${totalActive}</span><button type="button" class="clear-filters" data-a="clear-filters">Zrušit</button>`:''}
       </div>
-      ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}],countTyp)}
+      ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}],countTyp,true)}
       ${filterGroup('stav','Stav',STAV_FILTER_OPTS,countStav)}
       ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})),countPriorita)}
       ${filterGroup('obor','Obor',OBOR,countObor)}
@@ -561,7 +579,6 @@ function collect(){
   const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj'};
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita-range'); if(p!==undefined) editing.priorita=PRIORITA[+p]||PRIORITA[PRIORITA.indexOf('běžná')];
-  const t=g('e-typ'); if(t!==undefined) editing.typ=t;
   if(document.getElementById('e-obor-'+OBOR[0].k)){
     editing.obor = OBOR.map(x=>x.k).filter(k=>{ const el=document.getElementById('e-obor-'+k); return el && el.checked; });
   }
@@ -585,10 +602,12 @@ function editForm(o){
       ${errs.nazev?`<div class="msg" style="margin-top:.2rem">${esc(errs.nazev)}</div>`:''}
     </div>
     <div><label>Popis</label><textarea id="e-popis" rows="3" placeholder="podrobnosti, co je poškozené / co udělat">${esc(o.popis??'')}</textarea></div>
-    <div><label>Druh poruchy</label><select id="e-typ">
-      <option value="CM" ${typOf(o)==='CM'?'selected':''}>Standardní (CM)</option>
-      <option value="EM" ${typOf(o)==='EM'?'selected':''}>Havarijní (EM)</option>
-    </select></div>
+    <div><label>Druh poruchy</label>
+      <div class="typ-toggle">
+        <button type="button" class="typ-btn ${typOf(o)==='CM'?'on':''}" data-a="set-typ" data-v="CM">Standardní (CM)</button>
+        <button type="button" class="typ-btn ${typOf(o)==='EM'?'on':''}" data-a="set-typ" data-v="EM">Havarijní (EM)</button>
+      </div>
+    </div>
     <div><label>Obor</label>
       <div class="row" style="gap:1rem">
         ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
@@ -725,6 +744,7 @@ async function act(a,v,el,ev){
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';break;
+    case 'set-typ': if(editing) editing.typ=v; break;
     case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';break;
     case 'edit': collect(); editMode=true; break;
     case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
