@@ -360,6 +360,17 @@ protože:
     vodorovný posuvník na mobilu (`scrollWidth` > `clientWidth` kvůli
     CSS Grid `1fr` sloupci, co se roztáhl podle nejširšího obsahu v
     `<section>`). Přidán `flex-wrap:wrap`.
+- **Verze v Údržbě (2026-09-26)** — Martin chtěl, ať se v Údržbě vždy
+  ukazuje aktuální verze appky, ale bez buildu (na rozdíl od appky
+  Pracovní příkazy, kde to řeší Vite `__APP_VERSION__` z
+  `package.json`) tohle repo nemá jak "vpéct" hodnotu při buildu.
+  Řešení: `fetch('VERSION')` při startu appky (stejný soubor, co se
+  bumpuje při každém releasu — `let appVersion=''` + `.then(t=>{
+  appVersion=t.trim(); render(); })`), zobrazeno jako `.version-tag`
+  (malý šedý text s čárkou nad sebou) na konci levého panelu filtrů.
+  Díky čtení přímo ze souboru se **nemusí ručně přepisovat v HTML** při
+  každém bumpu — stačí, že se `VERSION` soubor mění při každém releasu
+  (což se dělá i teď).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
