@@ -3,9 +3,21 @@
    Vzhled 1:1 podle Claude Design návrhu "Údržba — nové rozložení"
    (font v logu = jediné, co z původní hlavičky zůstalo beze změny).
    Používá vlastní třídy uh-* / mm-* (nekoliduje se styly modulů).
-   ============================================================ */
+
+   Font Nunito se natahuje přímo odsud (@import), ne přes <link> v <head>
+   každé stránky — jinak by hlavička na modulech bez vlastního odkazu na
+   Nunito (všechny kromě Údržby) padala zpátky na systémové písmo stránky
+   a vypadala jinak, i když jde o úplně stejný header.css/header.js.
+   Stejně tak font-family a flex-wrap jsou na .uhdr nastavené explicitně,
+   aby to nezáviselo na tom, co si nastaví hostitelská stránka (některé
+   moduly mají z doby před sjednocením hlavičky ještě starou "holou"
+   `header{...}` definici se svým vlastním písmem/flex-wrap — ta se
+   specificitou třídy .uhdr přebije všude, KDE .uhdr danou vlastnost
+   sama nastavuje, proto tu musí být nastavené i font-family/flex-wrap). */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 .uhdr{background:linear-gradient(90deg,#1f2d6e,#2b3a86);color:#fff;height:76px;padding:0 24px;
-  display:flex;align-items:center;gap:20px;position:relative;z-index:60}
+  display:flex;align-items:center;gap:20px;flex-wrap:nowrap;position:relative;z-index:60;
+  font-family:'Nunito','Segoe UI',sans-serif}
 /* .uh-brandgroup (menu+logo) je na širokém panelu jen průchozí obálka — její
    obsah teče do .uhdr úplně stejně, jako by tahle obálka vůbec nebyla.
    Existuje kvůli mobilu (viz media query níže), kde se z ní stane skutečná
