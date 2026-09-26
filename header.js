@@ -12,19 +12,14 @@
     + 'font-weight="900" font-size="108" textLength="244" lengthAdjust="spacingAndGlyphs">YFAI</text>'
     + '<text x="150" y="128" text-anchor="middle" fill="#111418" font-family="Arial,Helvetica,sans-serif" '
     + 'font-weight="700" font-size="42" letter-spacing="1" textLength="246" lengthAdjust="spacingAndGlyphs">minimo</text></svg>';
-  var CZ = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="20" fill="#fff"/>'
-    + '<rect y="20" width="60" height="20" fill="#d7141a"/><path d="M0 0 30 20 0 40Z" fill="#11457e"/></svg>';
   // Ikona odhlášení (dveře + šipka ven) — obrys, barva přes currentColor,
   // takže se sama přizpůsobí (bílá na mobilu, tmavá na PC dlaždici).
   var LOGOUT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '
     + 'stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>'
     + '<polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
-  // Ikona menu (tři čárky) — stejná rodina jako LOGOUT_ICON (obrys,
-  // currentColor), místo textového znaku ☰, který vypadal jinak než ostatní
-  // ikony v hlavičce.
-  var MENU_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '
-    + 'stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/>'
-    + '<line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
+  // Ikona menu (tři čárky) — přesně podle Claude Design návrhu (tři plné
+  // pruhy, ne obrysová SVG ikona).
+  var MENU_ICON = '<span></span><span></span><span></span>';
   // displayName() skládá jméno z firstName/lastName, které volající stránky
   // nemusí (na rozdíl od ostatních polí) předem escapovat — udělá se to tady.
   function esc(s){ return String(s??'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -53,12 +48,6 @@
     if(!f && !l){ var d = splitEmailName(o.email||o.user); f=d.first; l=d.last; }
     return [cap(f), cap(l)].filter(Boolean).join(' ');
   }
-  var GB = '<svg viewBox="0 0 60 40" width="20" height="13"><rect width="60" height="40" fill="#012169"/>'
-    + '<path d="M0 0 60 40M60 0 0 40" stroke="#fff" stroke-width="8"/>'
-    + '<path d="M0 0 60 40M60 0 0 40" stroke="#c8102e" stroke-width="4"/>'
-    + '<path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="12"/>'
-    + '<path d="M30 0V40M0 20H60" stroke="#c8102e" stroke-width="6"/></svg>';
-
   window.uheaderHTML = function(o){
     o = o || {};
     function link(href, ico, label, key){
@@ -112,8 +101,9 @@
         + '<a class="uh-brand" href="index.html" title="Hlavní stránka">'+LOGO+'</a>'
       + '</div>'
       + '<div class="uh-title"><b>minimo · YFAI</b><span>'+(o.module||'')+'</span></div>'
-      + '<div class="uh-lang"><button data-lang="cs" title="Čeština">'+CZ+'</button>'
-        + '<button data-lang="en" title="English">'+GB+'</button></div>'
+      + '<div class="uh-lang"><button data-lang="cs" title="Čeština">CZ</button>'
+        + '<button data-lang="en" title="English">EN</button></div>'
+      + '<span class="uh-divider"></span>'
       + '<div class="uh-topright">'
         + '<div class="uh-idbox">'
           + '<a class="uh-avatar" href="profil.html" title="Můj profil">'

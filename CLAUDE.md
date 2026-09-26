@@ -204,7 +204,8 @@ protože:
   (nový → rozpracováno → hotovo, přiřazení, linka/stroj ze sdíleného
   `meta/config.sections`, historie, číslo `PP-rok-XXX` přes transakci na
   `meta/config.seqUdrzba`).
-- **`udrzba.html` — nové rozvržení pro PC (2026-09-17)**, podle needitovaného
+- **`udrzba.html` — nové rozvržení pro PC (2026-09-17, HISTORICKÉ —
+  nahrazeno rozvržením z 2026-09-26 níž)**, podle needitovaného
   mockupu `mockup-udrzba-layout.html` (smazaný, jakmile bylo rozvržení
   přeneseno sem — sloužil jen jako needitovaný náhled). Řádek 1 = název
   stránky + „+ Nový pracovní příkaz" (patří k sobě, obojí „o celé stránce").
@@ -223,6 +224,54 @@ protože:
   a v sidebar seznamu Stavů se navzájem respektují (přepínač typu přepočítá
   čísla u stavů a naopak), ale hledání/„Moje" platí na obě strany stejně —
   viz `baseRows()`/`visibleRows()` v `udrzba.html`.
+- **`udrzba.html` — rozvržení předěláno znovu, přesně 1:1 podle Claude
+  Design mockupu (2026-09-26)** — Martin navrhl nové rozvržení v nástroji
+  Claude Design (`Udrzba.dc.html`, export přes "Project HTML" zip, viz
+  [[minimo-udrzba-fork]] v paměti pro to, jak se k souboru dostat příště) a
+  chtěl ho napřesno okopírovat, ne jen opticky napodobit. Nahrazuje celý
+  bod výš:
+  - **4 dlaždice "pohled"** nahoře, jednovýběrové: Vše / Nepřiřazené /
+    Potřeba objednat díl / Moje (`VIEWS` pole + `filters.view`).
+  - **4 kombinovatelné (multi-select, AND) skupiny filtrů** v levém panelu
+    (`.sidebar`, teď bílá karta s okrajem, ne jen plovoucí seznam): Typ
+    (CM/EM), Stav (Nový/Rozpracováno/**Čeká na díl (objednáno)**/Hotovo),
+    Priorita, **Obor** (Mechanika/Elektro-PLC/Nástrojárna — nové pole
+    `udrzba/{id}.obor`, pole hodnot). Každá skupina počítá svůj počet
+    přes `passes(o, skip)` — bere v potaz VŠECHNY ostatní aktivní filtry
+    kromě vlastní dimenze, takže čísla u nezaškrtnutých voleb ukazují,
+    kolik by jich přibylo (stejný vzorec jako dřívější CM/EM počty).
+  - **Řazení** (Datum/Priorita/Stav, vzestupně/sestupně) nezávisle na
+    aktivní dlaždici.
+  - **Nový "chybí díl" workflow** — `udrzba/{id}.nd`: `null` →
+    (technik) `'potreba'` → (mistr) `'objednano'` → `'Pokračovat'` zpátky
+    na `null`. Lehký štítek nezávislý na hlavním stavu, řeší se v
+    modálním okně („Náhradní díl" sekce, jen když `canEditDoc(o) &&
+    o.status==='rozpracováno'`), historie příkazu se zapisuje při každé
+    změně.
+  - **Hledání se rozbaluje/zabaluje** (ikona lupy → textové pole s
+    křížkem na zavření), ne trvale vidět.
+  - Barvy/fonty/rozestupy **přesně podle zdroje** — `--accent:#2b3a86`,
+    font Nunito (Google Fonts `<link>`), `:has(input:checked)` na celém
+    řádku filtru (navy pozadí + bílá fajfka), `.viewtiles`/`.sidebar`/
+    `.empty2` mají stejné stíny/okraje/rozměry jako `Udrzba.dc.html`.
+    Později (na Martinovo přání "trošku zmenšit") zmenšeno cca o 10-12 %
+    (výšky/fonty/odsazení v `.pagehead`/`.sidebar`/`.list-card`), aby se
+    vešlo bez svislého posuvníku na běžnou výšku okna — poměry/zarovnání
+    zůstaly stejné, jen menší měřítko.
+  - **Hlavička (nadpis "Údržba" + dlaždice/hledání/řazení/tlačítko) je
+    grid se STEJNÝMI dvěma sloupci jako `.board`** (`.pagehead{display:
+    grid;grid-template-columns:230px 1fr}`) — nadpis leží nad levým
+    sloupcem (filtry), dlaždice+akce nad pravým (seznam), takže to celé
+    lícuje se sloupci pod tím. Dřívější verze měla hlavičku jako jeden
+    souvislý flex řádek, což vypadalo, že dlaždice "lepí" hned za nadpis,
+    místo aby začínaly nad obsahem — Martin na to sám upozornil
+    screenshoty ("špatně zarovnané").
+  - **Oprava mazání příkazu** — `confirm()` (nativní JS dialog) nespolehlivě
+    fungoval i v běžném používání (Martin: "problikne, ale nesmaže se").
+    Nahrazeno in-app dvoukrokovým potvrzením (`editing.confirmDel`
+    boolean + inline varování s tlačítky Ano/Zrušit v modálu), ověřeno
+    na dvou testovacích záznamech, že se smaže přesně jeden.
+  - `assets/wrench.png` — ikona klíče vedle nadpisu, z Martinova exportu.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
@@ -256,9 +305,47 @@ protože:
   se budou přihlašovat všichni, firemní e-mail to už v sobě má). `cap()`
   velké první písmeno, zbytek malá, na obou slovech, ať uživatel do
   e-mailu/Profilu napíše cokoliv.
-  Vlajky jazyka jsou přímo v hlavičce, uvnitř `.uh-idbox` před fotkou
-  (zkoušeli jsme je i v menu, Martinovi se to líbilo víc takhle).
-- **PC hlavička sjednocená (2026-09-12)** — Martinovi přišla nesourodá
+  Jazyk (CZ/EN) je přímo v hlavičce, mezi logem/nadpisem a foto+jménem
+  (od 2026-09-26 jako textové "pilulky" CZ/EN, ne vlaječky — viz níž).
+- **Hlavička (`header.js`/`header.css`) předělaná znovu, kompletně 1:1
+  podle Claude Design (2026-09-26)** — Martin v Claude Design připravil
+  mockup nového rozvržení Údržby (`Udrzba.dc.html`, viz bod výš), a chtěl
+  stejným stylem/barvami/rozměry předělat i celou sdílenou hlavičku
+  portálu (dopad na VŠECHNY moduly, ne jen Údržbu — odsouhlaseno
+  explicitně, viz [[minimo-udrzba-fork]] v paměti). **Jediné, co zůstalo
+  beze změny, je font v logu** (`LOGO` SVG v `header.js`, pruhované
+  "YFAI" + "minimo" — nedotčeno). Všechno ostatní přepsáno na přesné
+  hodnoty z mockupu:
+  - gradient `linear-gradient(90deg,#1f2d6e,#2b3a86)` (bylo tmavší
+    `#0f2f5f→#1b4b8f`), hlavička `height:76px;padding:0 24px;gap:20px`
+    (bylo `min-height:66px;padding:9px 16px;gap:14px`)
+  - **menu (`.uh-menu`)** — tři plné pruhy (`MENU_ICON` teď jen
+    `<span>×3`, ne obrysová SVG), box 28×28px, žádná trvalá kružnice
+  - **logo (`.uh-brand`)** — bílý box **pevně 118×56px**, bez stínu,
+    beze změny paddingu na obsah (jen `width`/`height` + `flex:center`)
+  - **hodiny (`.uh-clock`)** — pozadí `#1b2660` (bylo `rgba(0,0,0,.24)`),
+    `border-radius:8px` (bylo 12), fixní `height:54px;min-width:200px`,
+    pořád vycentrované přes `position:absolute` (design použil
+    `margin:0 auto`, ale to by centrovalo jen matematicky "napůl" mezi
+    nesouměrnou levou/pravou stranou — necháno funkčně chytřejší řešení,
+    vizuálně identický box)
+  - **jazyk (`.uh-lang`)** — **textové pilulky "CZ"/"EN"** místo SVG
+    vlaječek (aktivní = bílé pozadí + `#1f2d6e` text, neaktivní = jen
+    obrys `rgba(255,255,255,.4)` + opacity .7) — `CZ`/`GB` SVG konstanty
+    v `header.js` smazané, nepoužívají se. Samostatný `<span class=
+    "uh-divider">` (1×28px, `rgba(255,255,255,.2)`) mezi jazykem a
+    foto+jménem, místo dřívějšího `border-right` na `.uh-lang`.
+  - **avatar (`.uh-avatar`)** — 36×36px, plné pozadí `#4a5aa8` (bylo
+    průhledné `rgba(255,255,255,.22)`); jméno/pozice o chlup větší
+    (`.uh-user .n` 14px/800, `.l` 12px)
+  - **odhlásit (`.uh-logout`)** — stejná SVG ikona dveří+šipky jako dřív
+    (design měl jen placeholder znak "⇥", ponecháno srozumitelnější
+    skutečné ikony — jediná vědomá odchylka od 1:1), zmenšeno na 32×32px
+  - `.mm-panel{top:84px}` doladěno na skutečnou novou výšku hlavičky.
+  Popis "PC hlavička sjednocená (2026-09-12)" níž je teď **historický**
+  (Varianta C, váha písma 700, SVG vlaječky) — nahrazeno tímhle bodem,
+  ponecháno jen jako kontext proč byla hlavička předtím taková, jaká byla.
+- **PC hlavička sjednocená (2026-09-12, HISTORICKÉ — nahrazeno výš)** — Martinovi přišla nesourodá
   („nic k sobě nesedí, každé písmo jiné"). Prošli jsme spolu 6 variant
   v samostatném mockupu (`_mockup-header.html`, needitovaný náhled, smazaný
   po dohodě). Zkoušeli jsme napřed Variantu F (menu jako skleněná dlaždice),

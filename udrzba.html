@@ -6,79 +6,139 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Crect%20width=%27100%27%20height=%27100%27%20rx=%2722%27%20fill=%27%231b4b8f%27/%3E%3Ctext%20x=%2750%27%20y=%2776%27%20font-size=%2774%27%20font-family=%27Arial,sans-serif%27%20font-weight=%27bold%27%20fill=%27white%27%20text-anchor=%27middle%27%3Em%3C/text%3E%3C/svg%3E">
 <title>Údržba — YFAI minimo</title>
 <link rel="stylesheet" href="header.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   /* Barvy hlavičky/tlačítek = Davidovy (navy minimo). Karty, okno příkazu
-     a barvy stavů = styl appky Pracovní příkazy. */
-  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f4f6f9;--surface:#fff;--border:#dde4ec;--text:#16233a;--muted:#6b7a90;
+     a barvy stavů = styl appky Pracovní příkazy. Rozvržení stránky Údržby
+     (hlavička, dlaždice, filtry, prázdný stav) = přesně podle návrhu
+     "Údržba — nové rozložení" z Claude Design (font Nunito, akcent #2b3a86). */
+  :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f3f4f8;--surface:#fff;--border:#e3e6ef;--text:#1d2340;--muted:#4a5170;
     --ok:#15803d;--warn:#b45309;--danger:#c0392b;--radius:10px;
-    --shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06)}
+    --shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06);
+    --accent:#2b3a86;--accent-dark:#1f2d6e}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px}
-  main{max-width:1400px;margin:0 auto;padding:16px 18px 40px}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito','Segoe UI',sans-serif;font-size:14px}
+  main{max-width:1800px;margin:0 auto;padding:12px 16px 16px}
   button{font-family:inherit;font-size:13.5px;cursor:pointer;border-radius:8px;border:1px solid transparent;padding:0.5rem 0.9rem;background:#fff}
   button:disabled{opacity:.45;cursor:not-allowed}
   input,select,textarea{font-family:inherit;font-size:14px;padding:0.5rem 0.6rem;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);width:100%}
+  input::placeholder{color:#8a90a6}
   label{font-size:0.82rem;font-weight:600;color:var(--muted);display:block;margin-bottom:0.25rem}
-  .btn-primary{background:var(--navy-2);color:#fff;font-weight:600}
-  .btn-primary:hover{background:var(--navy-1)}
-  .btn-ghost{background:#fff;border:1px solid var(--border);color:#41506b}
+  .btn-primary{background:var(--accent);color:#fff;font-weight:800}
+  .btn-primary:hover{background:var(--accent-dark)}
+  .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--muted)}
   .btn-danger{background:#fff;border:1px solid #f3c6c1;color:var(--danger)}
   .btn-danger:hover{background:#fdecea}
   .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
   .spacer{flex:1}
   .muted{color:var(--muted);font-size:.85rem}
   h1{font-size:1.35rem;margin:0 0 .2rem}
-  .intro{color:var(--muted);font-size:.9rem;margin:0 0 1rem}
 
-  /* --- hlavička stránky + řádek filtrů (v2, převzato z mockup-udrzba-layout) ---
-     Řádek 1 = identita stránky + hlavní akce. Řádek 2 = dva různé způsoby
-     zúžení seznamu: záložky druhu poruchy vlevo, hledání vpravo. */
-  .pagehead{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.3rem}
-  .pagehead h1{margin:0}
-  .filterbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
-    margin:1rem 0 1.2rem;padding-top:1rem;border-top:1px solid var(--border)}
-  .typetabs{display:flex;gap:.5rem;flex-wrap:wrap}
-  .typetab{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.6rem 1.1rem;font-weight:700;font-size:.88rem;color:#41506b}
-  .typetab.on{background:var(--navy-2);border-color:var(--navy-2);color:#fff}
-  .typetab.em.on{background:var(--danger);border-color:var(--danger)}
-  .filterbar .search{max-width:260px}
-  .check{display:inline-flex;gap:.4rem;align-items:center;font-size:.85rem;font-weight:600;color:#41506b;white-space:nowrap;cursor:pointer}
-  .check input{width:16px;height:16px;margin:0}
+  /* --- hlavička stránky ---
+     Přesně podle Claude Design zdroje: hlavička je grid se STEJNÝMI sloupci
+     jako `.board` níž (260px / zbytek) — název je v levém sloupci (nad
+     filtry), dlaždice+hledání+řazení+akce jsou v pravém sloupci (nad
+     seznamem), aby vše lícovalo se sloupci pod tím. */
+  .pagehead{display:grid;grid-template-columns:230px 1fr;gap:14px 18px;align-items:start;margin-bottom:12px}
+  .pagehead h1{margin:0;height:42px;font-size:23px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+  .page-icon{width:38px;height:38px;border-radius:9px;background:#fff;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 1px 2px rgba(29,35,64,.05)}
+  .page-icon img{width:26px;height:auto;display:block}
+  .pagehead-row2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+  .check{display:inline-flex;gap:.4rem;align-items:center;font-size:.85rem;font-weight:600;color:var(--muted);white-space:nowrap;cursor:pointer}
+  .check input{width:16px;height:16px;margin:0;flex:none}
 
-  /* --- rozvržení: levý panel s klikacími filtry + široký seznam --- */
-  .board{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
-  .sidebar{position:sticky;top:18px;display:grid;gap:1.1rem;background:#fff;border:1px solid var(--border);
-    border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
-  .statuslist{display:grid;gap:.2rem}
-  .stat-item{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;
-    background:transparent;border:1px solid transparent;border-radius:8px;padding:.5rem .6rem;font-weight:600;color:#41506b;font-size:.86rem}
-  .stat-item:hover{background:#eef2f7}
-  .stat-item.on{background:var(--navy-2);color:#fff}
-  .stat-item .count{font-size:.75rem;font-weight:700;opacity:.75;background:rgba(0,0,0,.08);border-radius:999px;padding:.05rem .5rem}
-  .stat-item.on .count{background:rgba(255,255,255,.22);opacity:1}
-  .hr{height:1px;background:var(--border);margin:0}
+  /* --- dlaždice hlavních pohledů (co vyžaduje akci teď) --- */
+  .viewtiles{display:flex;gap:3px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:9px;
+    padding:3px;box-shadow:0 1px 2px rgba(29,35,64,.05);max-width:100%;min-width:0}
+  .viewtile{display:flex;align-items:center;gap:6px;height:33px;background:transparent;border:none;border-radius:6px;
+    padding:0 10px;font-weight:700;font-size:13px;color:var(--text);flex:none}
+  .viewtile:hover:not(.on){background:#f0f2f8}
+  .viewtile.on{background:var(--accent);color:#fff}
+  .viewtile .vt-icon{font-size:13px}
+  .viewtile .vt-label{text-align:left;white-space:nowrap}
+  .viewtile .vt-count{min-width:19px;height:17px;border-radius:9px;background:#eef0f5;color:var(--muted);
+    font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
+  .viewtile.on .vt-count{background:rgba(255,255,255,.2);color:#fff}
+
+  /* --- pravá skupina: hledání (ikona → rozbalí se) + řazení + nový --- */
+  .head-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+  .icon-btn{width:35px;height:35px;border-radius:8px;background:#fff;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;flex:none;font-size:16px;color:var(--accent)}
+  .icon-btn:hover{border-color:var(--accent)}
+  .search-wrap{display:flex;align-items:center;gap:5px;height:35px;width:250px;background:#fff;border:1px solid var(--accent);
+    border-radius:8px;padding:0 5px 0 10px;box-shadow:0 0 0 3px rgba(43,58,134,.1)}
+  .search-wrap .search-icon{font-size:13px;color:#8a90a6;flex:none}
+  .search-wrap .search{flex:1;min-width:0;border:none;padding:0;font-weight:600;font-size:13px}
+  .search-close{width:22px;height:22px;border:none;background:#eef0f5;border-radius:6px;cursor:pointer;color:var(--muted);font-size:12px;flex:none}
+  .sortbox{display:flex;align-items:center;height:35px;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  #f-sortkey{width:auto;height:100%;border:none;padding:0 6px 0 10px;font-weight:700;font-size:13px;background:transparent}
+  .sort-dir{width:32px;height:100%;border:none;border-left:1px solid var(--border);border-radius:0;background:transparent;color:var(--accent);font-weight:800;font-size:13px}
+  .sort-dir:hover{background:#f0f2f8}
+  .head-actions .btn-primary{height:35px;padding:0 13px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:5px}
+  .head-actions .btn-primary .plus{font-size:15px;line-height:1}
+
+  /* --- rozvržení: levý panel (karta filtrů) + široký seznam --- */
+  .board{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
+  .sidebar{position:sticky;top:14px;display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid var(--border);
+    border-radius:9px;padding:13px 10px}
+  .sidebar-head{display:flex;align-items:center;gap:6px;padding:0 6px;height:18px}
+  .sidebar-title{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.6px}
+  .sidebar-count{min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:10px;
+    font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
+  .clear-filters{margin-left:auto;border:none;background:transparent;color:var(--accent);font-weight:700;font-size:12px;
+    cursor:pointer;text-decoration:underline;padding:0}
+  .filtergroup{display:flex;flex-direction:column;gap:3px;padding-top:11px;border-top:1px solid #eef0f5}
+  .filtergroup:first-child{padding-top:0;border-top:none}
+  .filtergroup-head{display:flex;align-items:center;gap:6px;padding:0 6px 3px}
+  .filtergroup-head .sidebar-title{font-size:10px}
+  .filtergroup-sel{font-size:10px;font-weight:800;color:var(--accent)}
+  .checklist{display:flex;flex-direction:column;gap:2px}
+  .filter-check{position:relative;width:100%;height:31px;display:flex;align-items:center;gap:8px;padding:0 7px;
+    border-radius:6px;font-weight:700;font-size:13px;color:var(--text);cursor:pointer}
+  .filter-check:hover{background:#f3f4f8}
+  .filter-check input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+  .filter-check .fc-box{width:14px;height:14px;border-radius:3px;border:1.5px solid #9aa0b5;background:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent}
+  .filter-check .fc-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .filter-check .count{min-width:16px;height:16px;border-radius:8px;background:#eef0f5;color:var(--muted);
+    font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+  .filter-check:has(input:checked){background:var(--accent);color:#fff}
+  .filter-check:has(input:checked) .fc-box{background:#fff;border-color:#fff;color:var(--accent)}
+  .filter-check:has(input:checked) .fc-box::after{content:'✓'}
+  .filter-check:has(input:checked) .count{background:rgba(255,255,255,.2);color:#fff}
   @media(max-width:700px){
+    .pagehead{grid-template-columns:1fr}
+    .viewtile{min-width:0}
+    .head-actions{width:100%;justify-content:space-between;flex-wrap:wrap}
+    .head-actions .btn-primary{width:100%;order:9}
     .board{grid-template-columns:1fr}
     .sidebar{position:static}
-    .filterbar{align-items:stretch}
-    .filterbar .search{max-width:none}
   }
 
-  /* --- karty příkazů (seznam) --- */
-  .list{display:grid;gap:.6rem}
+  /* --- seznam příkazů --- */
+  .list-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.8rem;min-height:210px}
+  .list{display:grid;gap:.5rem}
   .order-item{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);
-    border-left:4px solid #94a3b8;border-radius:var(--radius);box-shadow:var(--shadow);padding:.85rem 1rem}
-  .order-item:hover{border-color:#b9c6d8;filter:brightness(.99)}
+    border-left:4px solid #94a3b8;border-radius:var(--radius);padding:.65rem .8rem}
+  .order-item:hover{border-color:#b9c6d8;background:#fafbfd}
   .order-item.st-nový{border-left-color:#6366f1}
   .order-item.st-rozpracováno{border-left-color:#ea7317}
   .order-item.st-hotovo{border-left-color:var(--ok)}
   .oi-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
-  .oi-title{margin:0 0 .25rem;font-size:1rem;font-weight:700}
-  .oi-meta{font-size:.82rem;color:var(--muted)}
+  .oi-title{margin:0 0 .25rem;font-size:.92rem;font-weight:700}
+  .oi-meta{font-size:.78rem;color:var(--muted)}
   .empty{text-align:center;color:var(--muted);padding:2.5rem 1rem;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)}
+  .empty2{background:#fff;border:1px dashed #d6dae6;border-radius:var(--radius);min-height:240px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;padding:26px;text-align:center}
+  .empty2-icon{font-size:26px;opacity:.8}
+  .empty2 h3{margin:0;font-size:15px;font-weight:700}
+  .empty2 p{margin:0;color:#6b7190;font-size:13px;max-width:360px}
+  .empty2 .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center}
 
   /* --- odznaky --- */
-  .badge{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+  .badge{display:inline-block;padding:.12rem .5rem;border-radius:999px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
   .badge.st-nový{background:#e0e7ff;color:#3730a3}
   .badge.st-rozpracováno{background:#fef3c7;color:var(--warn)}
   .badge.st-hotovo{background:#dcfce7;color:var(--ok)}
@@ -87,6 +147,11 @@
   .badge.p-kritická{background:#fdecea;color:var(--danger)}
   .badge.typ-standardní{background:#eef2f7;color:#41506b}
   .badge.typ-havarijní{background:var(--danger);color:#fff}
+  .badge.obor-mechanika{background:#eef2f7;color:#41506b}
+  .badge.obor-elektro-plc{background:#fff7e0;color:#8a6d1a}
+  .badge.obor-nastrojarna{background:#e8f5e9;color:#2e7d32}
+  .badge.nd-potreba{background:#fdecea;color:var(--danger)}
+  .badge.nd-objednano{background:#fef3c7;color:var(--warn)}
 
   /* --- modal (Davidovo tělo hlavičky, náš obsah) --- */
   .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto;z-index:50}
@@ -183,9 +248,37 @@ const PRIORITA = ['běžná','vysoká','kritická'];
    Starší příkazy pole `typ` nemají — bereme je jako CM (nezmizí z filtrů). */
 const typOf = o => (o && o.typ==='EM') ? 'EM' : 'CM';
 
+/* ===== Obor (víc najednou) ===== */
+const OBOR = [
+  {k:'mechanika',    label:'Mechanika'},
+  {k:'elektro-plc',  label:'Elektro/PLC'},
+  {k:'nastrojarna',  label:'Nástrojárna'}
+];
+const oborOf = o => Array.isArray(o && o.obor) ? o.obor : [];
+
+/* ===== Náhradní díl: null | 'potreba' (potřeba objednat) | 'objednano' (čeká se) ===== */
+const NDLABEL = {potreba:'Potřeba objednat díl', objednano:'Čeká na díl (objednáno)'};
+
+/* ===== Stav (pro levý filtr — kombinuje pole status + nd do jednoho seznamu) ===== */
+const STAV_FILTER_OPTS = [
+  {k:'novy',         label:'Nový',                    test:o=>o.status==='nový'},
+  {k:'rozpracovano', label:'Rozpracováno',             test:o=>o.status==='rozpracováno'},
+  {k:'ceka-dil',     label:'Čeká na díl (objednáno)',  test:o=>o.nd==='objednano'},
+  {k:'hotovo',       label:'Hotovo',                   test:o=>o.status==='hotovo'}
+];
+const PRIORITA_LABEL = {'běžná':'Běžná','vysoká':'Vysoká','kritická':'Kritická'};
+
+/* ===== Hlavní pohledy nahoře — co potřebuje akci HNED ===== */
+const VIEWS = [
+  {k:'unassigned', icon:'📥', label:'Nepřiřazené',          test:o=>!o.assignedTo},
+  {k:'nd-needed',  icon:'📦', label:'Potřeba objednat díl', test:o=>o.nd==='potreba'},
+  {k:'mine',       icon:'👤', label:'Moje',                 test:o=>me && (o.author===me.uid || o.assignedTo===me.uid)}
+];
+
 /* ===== Stav aplikace ===== */
 let me=null, rows=[], users=[], editing=null, editMode=false, errs={}, footMsg='';
-let filters={q:'',status:'',typ:'',mine:false}, toastMsg=null, toastKind='';
+let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[]}, toastMsg=null, toastKind='';
+let sortKey='created', sortDir='desc', searchOpen=false;
 let loginBusy=false, loginErr='', dataReady=false, fatal='';
 let cfg={sections:[]};
 let downOnOverlay=false;
@@ -261,69 +354,130 @@ function shell(inner){
   const uh = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
   return uh + `<main>${inner}</main>`;
 }
-function baseRows(){ // společný základ obou os filtru: hledání + „moje"
-  let r=rows.slice();
-  if(filters.mine) r=r.filter(x=>x.author===me.uid || x.assignedTo===me.uid);
-  if(filters.q){ const q=filters.q.toLowerCase(); r=r.filter(x=>[x.cislo,x.nazev,x.popis,x.linka,x.stroj,x.assignedToName].join(' ').toLowerCase().includes(q)); }
-  return r;
+/* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
+function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.assignedToName].join(' ').toLowerCase().includes(q); }
+function matchesView(o){ if(!filters.view) return true; const v=VIEWS.find(x=>x.k===filters.view); return v?v.test(o):true; }
+function matchesTyp(o){ return !filters.typ.length || filters.typ.includes(typOf(o)); }
+function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(s=>filters.stav.includes(s.k)).some(s=>s.test(o)); }
+function matchesPriorita(o){ return !filters.priorita.length || filters.priorita.includes(o.priorita); }
+function matchesObor(o){ return !filters.obor.length || oborOf(o).some(x=>filters.obor.includes(x)); }
+function passes(o,skip){
+  if(skip!=='q' && !matchesSearch(o)) return false;
+  if(skip!=='view' && !matchesView(o)) return false;
+  if(skip!=='typ' && !matchesTyp(o)) return false;
+  if(skip!=='stav' && !matchesStav(o)) return false;
+  if(skip!=='priorita' && !matchesPriorita(o)) return false;
+  if(skip!=='obor' && !matchesObor(o)) return false;
+  return true;
 }
-function visibleRows(){
-  let r=baseRows();
-  if(filters.typ) r=r.filter(x=>typOf(x)===filters.typ);
-  if(filters.status) r=r.filter(x=>x.status===filters.status);
-  return r;
+const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
+const countTyp=k=>rows.filter(o=>passes(o,'typ') && typOf(o)===k).length;
+const countStav=k=>rows.filter(o=>passes(o,'stav') && (STAV_FILTER_OPTS.find(s=>s.k===k)||{test:()=>false}).test(o)).length;
+const countPriorita=k=>rows.filter(o=>passes(o,'priorita') && o.priorita===k).length;
+const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).length;
+
+/* ===== řazení ===== */
+const SORT_OPTS=[{k:'created',label:'Datum'},{k:'priorita',label:'Priorita'},{k:'status',label:'Stav'}];
+const PRIORITA_RANK={'běžná':0,'vysoká':1,'kritická':2};
+const STATUS_RANK={'nový':0,'rozpracováno':1,'hotovo':2};
+function sortRows(r){
+  const dir=sortDir==='asc'?1:-1;
+  return r.slice().sort((a,b)=>{
+    let av,bv;
+    if(sortKey==='priorita'){ av=PRIORITA_RANK[a.priorita]??0; bv=PRIORITA_RANK[b.priorita]??0; }
+    else if(sortKey==='status'){ av=STATUS_RANK[a.status]??0; bv=STATUS_RANK[b.status]??0; }
+    else { av=a.created||''; bv=b.created||''; }
+    if(av<bv) return -1*dir; if(av>bv) return 1*dir; return 0;
+  });
+}
+function visibleRows(){ return sortRows(rows.filter(o=>passes(o,null))); }
+
+function extraBadges(o){
+  let html='';
+  oborOf(o).forEach(k=>{ const opt=OBOR.find(x=>x.k===k); if(opt) html+=`<span class="badge obor-${k}">${esc(opt.label)}</span>`; });
+  if(o.nd) html+=`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`;
+  return html;
+}
+function filterGroup(dim,title,opts,countFn){
+  const selCount=filters[dim].length;
+  return `<div class="filtergroup">
+    <div class="filtergroup-head">
+      <span class="sidebar-title">${esc(title.toUpperCase())}</span>
+      ${selCount?`<span class="filtergroup-sel">· ${selCount}</span>`:''}
+    </div>
+    <div class="checklist">
+      ${opts.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(o.label)}</span><span class="count">${countFn(o.k)}</span></label>`).join('')}
+    </div>
+  </div>`;
 }
 function listView(){
   if(!dataReady) return `<div class="empty">Načítám data…</div>`;
   const rr=visibleRows();
-  // počty na záložkách typu ignorují jen filtr typu (ne stav/hledání/moje) a naopak,
-  // ať si obě skupiny navzájem ukazují, kolik čeho zbyde po zbylých filtrech
-  const typRows=baseRows().filter(x=>!filters.status||x.status===filters.status);
-  const cntTyp=k=>typRows.filter(x=>typOf(x)===k).length;
-  const statusRows=baseRows().filter(x=>!filters.typ||typOf(x)===filters.typ);
-  const cntStatus=k=>statusRows.filter(x=>x.status===k).length;
+  const totalActive=filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length;
+  const searchIsOpen=searchOpen||!!filters.q;
   return `
   <div class="pagehead">
-    <h1>Údržba</h1>
-    <button class="btn-primary" data-a="new">+ Nový pracovní příkaz</button>
-  </div>
-  <p class="intro">Pilotní modul pro hlášení a evidenci oprav a údržby strojů. Zatím ho vidí jen vybraní lidé.</p>
-
-  <div class="filterbar">
-    <div class="typetabs">
-      <button class="typetab ${!filters.typ?'on':''}" data-a="flt-typ" data-v="">Vše (${typRows.length})</button>
-      <button class="typetab ${filters.typ==='CM'?'on':''}" data-a="flt-typ" data-v="CM">Standardní · CM (${cntTyp('CM')})</button>
-      <button class="typetab em ${filters.typ==='EM'?'on':''}" data-a="flt-typ" data-v="EM">Havarijní · EM (${cntTyp('EM')})</button>
+    <h1><span class="page-icon"><img src="assets/wrench.png" alt=""></span><span>Údržba</span></h1>
+    <div class="pagehead-row2">
+      <div class="viewtiles">
+        <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
+          <span class="vt-icon">📋</span><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span>
+        </button>
+        ${VIEWS.map(v=>`<button class="viewtile ${filters.view===v.k?'on':''}" data-a="flt-view" data-v="${v.k}">
+          <span class="vt-icon">${v.icon}</span><span class="vt-label">${esc(v.label)}</span><span class="vt-count">${countView(v.k)}</span>
+        </button>`).join('')}
+      </div>
+      <div class="head-actions">
+        ${searchIsOpen?`
+          <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input class="search" id="f-q" placeholder="Hledat příkaz, stroj, číslo…" value="${esc(filters.q)}">
+            <button type="button" class="search-close" data-a="search-close">✕</button>
+          </div>
+        `:`<button type="button" class="icon-btn" data-a="search-open" title="Hledat">⌕</button>`}
+        <div class="sortbox">
+          <select id="f-sortkey">${SORT_OPTS.map(s=>`<option value="${s.k}" ${sortKey===s.k?'selected':''}>Řadit: ${esc(s.label)}</option>`).join('')}</select>
+          <button type="button" class="sort-dir" id="f-sortdir" title="${sortDir==='asc'?'Vzestupně':'Sestupně'}">${sortDir==='asc'?'↑':'↓'}</button>
+        </div>
+        <button class="btn-primary" data-a="new"><span class="plus">+</span> Nový pracovní příkaz</button>
+      </div>
     </div>
-    <input class="search" id="f-q" placeholder="Hledat…" value="${esc(filters.q)}">
   </div>
 
   <div class="board">
     <aside class="sidebar">
-      <label class="check"><input type="checkbox" id="f-mine" ${filters.mine?'checked':''}>Moje příkazy</label>
-      <div class="hr"></div>
-      <div>
-        <div class="sec-label">Stav</div>
-        <nav class="statuslist">
-          <button class="stat-item ${!filters.status?'on':''}" data-a="flt" data-v="">Vše <span class="count">${statusRows.length}</span></button>
-          ${STATUSES.map(s=>`<button class="stat-item ${filters.status===s.k?'on':''}" data-a="flt" data-v="${s.k}">${esc(s.label)} <span class="count">${cntStatus(s.k)}</span></button>`).join('')}
-        </nav>
+      <div class="sidebar-head">
+        <span class="sidebar-title">FILTRY</span>
+        ${totalActive?`<span class="sidebar-count">${totalActive}</span><button type="button" class="clear-filters" data-a="clear-filters">Zrušit</button>`:''}
       </div>
+      ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}],countTyp)}
+      ${filterGroup('stav','Stav',STAV_FILTER_OPTS,countStav)}
+      ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p})),countPriorita)}
+      ${filterGroup('obor','Obor',OBOR,countObor)}
     </aside>
     <section>
-      <div class="list">
-        ${rr.length?rr.map(o=>`<button type="button" class="order-item st-${o.status}" data-a="open" data-v="${o._id}">
+      ${rr.length?`<div class="list-card"><div class="list">
+        ${rr.map(o=>`<button type="button" class="order-item st-${o.status}" data-a="open" data-v="${o._id}">
             <div class="oi-top">
               <span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
               <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
               <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
+              ${extraBadges(o)}
               <span class="spacer"></span>
               <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
             <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${o.assignedToName?esc(o.assignedToName):'nepřiřazeno'} · zadal ${esc(o.authorName||'')}</div>
-          </button>`).join(''):`<div class="empty">Žádné pracovní příkazy neodpovídají filtru.</div>`}
-      </div>
+          </button>`).join('')}
+      </div></div>`:`<div class="empty2">
+        <div class="empty2-icon">📋</div>
+        <h3>Žádné pracovní příkazy neodpovídají filtru.</h3>
+        <p>Zkuste upravit filtry nebo vytvořte nový příkaz.</p>
+        <div class="actions">
+          ${totalActive?`<button class="btn-ghost" data-a="clear-filters">Zrušit filtry</button>`:''}
+          <button class="btn-primary" data-a="new">+ Nový pracovní příkaz</button>
+        </div>
+      </div>`}
     </section>
   </div>`;
 }
@@ -336,6 +490,9 @@ function collect(){
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita'); if(p!==undefined) editing.priorita=p;
   const t=g('e-typ'); if(t!==undefined) editing.typ=t;
+  if(document.getElementById('e-obor-'+OBOR[0].k)){
+    editing.obor = OBOR.map(x=>x.k).filter(k=>{ const el=document.getElementById('e-obor-'+k); return el && el.checked; });
+  }
   const asg=g('e-assigned');
   if(asg!==undefined){
     if(!asg){ editing.assignedTo=null; editing.assignedToName=null; }
@@ -359,6 +516,11 @@ function editForm(o){
       <option value="CM" ${typOf(o)==='CM'?'selected':''}>Standardní (CM)</option>
       <option value="EM" ${typOf(o)==='EM'?'selected':''}>Havarijní (EM)</option>
     </select></div>
+    <div><label>Obor</label>
+      <div class="row" style="gap:1rem">
+        ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
+      </div>
+    </div>
     <div class="form-grid cols2">
       <div><label>Priorita</label><select id="e-priorita">${PRIORITA.map(p=>`<option ${o.priorita===p?'selected':''}>${p}</option>`).join('')}</select></div>
       <div><label>Přiřazeno</label>${assignedSel}</div>
@@ -379,6 +541,7 @@ function modalView(){
     <div class="hero st-${o.status||'nový'}">
       <div class="hero-top"><span class="badge st-${o.status||'nový'}">${esc(statusLabel(o.status||'nový'))}</span>
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
+        ${extraBadges(o)}
         <span class="spacer"></span>
         ${!isNew?`<span class="muted">${esc(o.cislo||'')}</span>`:''}</div>
     </div>
@@ -388,6 +551,7 @@ function modalView(){
       <div class="hero-top"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
         <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
+        ${extraBadges(o)}
         <span class="spacer"></span>
         <span class="muted">Vytvořil ${esc(o.authorName||'')}</span></div>
       <div class="row" style="align-items:flex-start;margin-top:.5rem">
@@ -409,11 +573,24 @@ function modalView(){
         ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
       </div>
     </div>`:''}
+    ${(canEditDoc(o) && o.status==='rozpracováno')?`<div class="sec">
+      <div class="sec-label">Náhradní díl</div>
+      <div class="row">
+        ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
+        ${o.nd==='potreba'&&isAdmin()?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
+        ${o.nd==='objednano'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat (díl dorazil)</button>`:''}
+        ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
+      </div>
+    </div>`:''}
     <div class="sec">
       <div class="sec-label">Historie</div>
       <div class="hist">${histHtml}</div>
     </div>
-    ${isAdmin()?`<div class="sec"><button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button></div>`:''}
+    ${isAdmin()?`<div class="sec">${editing.confirmDel
+      ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
+         <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
+      : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
+    }</div>`:''}
   `;
   return `<div class="overlay" data-a="close-bg"><div class="modal">
     <div class="modal-head">${isNew?'Nový pracovní příkaz':esc(o.cislo)}<button class="x" data-a="close">✕</button></div>
@@ -436,7 +613,7 @@ function validate(){
 /* ===== zápisy ===== */
 async function createPrikaz(){
   const cislo=await nextNumber();
-  const rec=Object.assign({priorita:'běžná',typ:'CM'},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
+  const rec=Object.assign({priorita:'běžná',typ:'CM',obor:[]},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
     created:today(),createdTs:serverTimestamp(),hist:[`${today()} · ${me.name} · založil příkaz`]});
   delete rec._id;
   await addDoc(collection(db,'udrzba'),rec);
@@ -466,9 +643,11 @@ async function act(a,v,el,ev){
       loginBusy=true;loginErr='';render();
       try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); } return; }
     case 'logout': await signOut(auth); return;
-    case 'flt': filters.status=(filters.status===v?'':v); break;
-    case 'flt-typ': filters.typ=(filters.typ===v?'':v); break;
-    case 'new': editing={priorita:'běžná',typ:'CM',status:'nový',hist:[]}; editMode=false; errs={};footMsg='';break;
+    case 'flt-view': filters.view=(filters.view===v?'':v); break;
+    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[]; break;
+    case 'search-open': searchOpen=true; break;
+    case 'search-close': searchOpen=false; filters.q=''; break;
+    case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';break;
     case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';break;
     case 'edit': collect(); editMode=true; break;
     case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
@@ -486,10 +665,20 @@ async function act(a,v,el,ev){
         editing.status=v;
         if(v==='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
         toast('Stav změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
-    case 'del':{ if(!isAdmin())return; const o=rows.find(x=>x._id===v);
-      if(confirm(`Smazat pracovní příkaz ${o.cislo}?`)){ try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Smazáno.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
+    case 'nd-set':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
+      const ndLabelHist={potreba:'nahlásil chybějící díl',objednano:'díl objednán','':'díl vyřešen, pokračuje se'};
+      const hist=(o.hist||[]).slice().concat(`${today()} · ${me.name} · ${ndLabelHist[v]||'změna stavu dílu'}`);
+      try{ await updateDoc(doc(db,'udrzba',o._id),{nd:v||null,hist});
+        editing.nd=v||null; editing.hist=hist;
+        toast('Stav dílu změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+    case 'del':{ if(!isAdmin())return;
+      if(!editing.confirmDel){ editing.confirmDel=true; break; }
+      const o=rows.find(x=>x._id===v);
+      try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Příkaz '+(o?o.cislo:'')+' smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+    case 'cancel-del': editing.confirmDel=false; break;
   }
   render();
+  if(a==='search-open'){ const inp=document.getElementById('f-q'); if(inp) inp.focus(); }
 }
 function toast(msg,kind){ toastMsg=msg; toastKind=kind; render(); setTimeout(()=>{ toastMsg=null; render(); },2600); }
 function bind(){
@@ -502,7 +691,13 @@ function bind(){
   });
   const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
   const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
-  const m=document.getElementById('f-mine'); if(m) m.onchange=()=>{filters.mine=m.checked;render();};
+  document.querySelectorAll('[data-flt]').forEach(el=>{ el.onchange=()=>{
+    const dim=el.dataset.flt, k=el.value, arr=filters[dim], i=arr.indexOf(k);
+    if(el.checked){ if(i<0) arr.push(k); } else if(i>=0) arr.splice(i,1);
+    render();
+  };});
+  const sk=document.getElementById('f-sortkey'); if(sk) sk.onchange=()=>{sortKey=sk.value;render();};
+  const sd=document.getElementById('f-sortdir'); if(sd) sd.onclick=()=>{sortDir=sortDir==='asc'?'desc':'asc';render();};
 }
 render();
 </script>
