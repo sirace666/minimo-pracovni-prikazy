@@ -379,6 +379,16 @@ protože:
   je na SAMOSTATNÉM řádku pod názvem, ne vedle něj (Martin: "vypadá to
   hrozně"). Odstraněno — verze teď sedí na stejné (`align-items:
   center` zděděné z `.pagehead h1`) úrovni jako text "Údržba".
+  **Ještě doladěno (Martin si všiml sám: "nemá být spodek nadpisu a
+  loga zarovnaný se spodkem tlačítek vpravo?")** — měl pravdu, `.pagehead`
+  (grid) i `.pagehead h1` i `.pagehead-row2` (flex) používaly
+  `align-items:start`/`center`, takže ikona (38px), text "Údržba"
+  (23px), verze (12px), dlaždice (41px kontejner) a tlačítka vpravo
+  (35px) — samé jiné výšky — měly spodky roztroušené na 4 různých
+  úrovních (změřeno: 117–130px). Přepnuto na `align-items:end`/
+  `flex-end` na všech třech úrovních — teď mají úplně všechny prvky
+  hlavičky (ikona, nadpis, verze, dlaždice, tlačítka) spodek na stejné
+  souřadnici.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
