@@ -272,6 +272,34 @@ protože:
     boolean + inline varování s tlačítky Ano/Zrušit v modálu), ověřeno
     na dvou testovacích záznamech, že se smaže přesně jeden.
   - `assets/wrench.png` — ikona klíče vedle nadpisu, z Martinova exportu.
+- **`udrzba.html` — priorita "Nízká" + barevný posuvník + filtr Linka
+  (2026-09-26)**:
+  - **4. stupeň priority `'nízká'`** (pod `'běžná'`) — `PRIORITA`/
+    `PRIORITA_LABEL`/`PRIORITA_RANK` doplněny, nová barva odznaku
+    `.badge.p-nízká`. Škála teď: nízká → běžná → vysoká → kritická.
+  - **`PRIORITA_COLOR`** (sytá barva na stupeň, ne pastelová jako u
+    odznaků) — použitá na dvou místech: malá barevná tečka (`.fc-dot`)
+    před popiskem v checkboxu filtru Priorita (`filterGroup()` teď umí
+    volitelné `opts[].color`), a barevný posuvník ve formuláři.
+  - **Posuvník priority** (`editForm()`, nahrazuje dřívější `<select
+    id="e-priorita">`) — `<input type="range" id="e-priorita-range"
+    min=0 max=3>` s barevným gradientem na dráze (zeleno→modro→oranžo
+    →červená) a 4 popisky pod ním; táhnutí přebarví kuličku i zvýrazní
+    aktivní popisek živě (`bind()`, přes CSS proměnnou `--c` na
+    `.priority-slider`, ne přes `render()` — plynulejší než celý
+    překreslovací cyklus). `collect()` čte `e-priorita-range` a mapuje
+    index zpátky na `PRIORITA[i]`.
+  - **Filtr "Linka"** — na rozdíl od Typ/Stav/Priorita/Obor (pevný malý
+    seznam) může časem mít desítky položek (`cfg.sections`, sdílené s
+    výběrem linky ve formuláři), takže NENÍ pořád rozbalený seznam
+    checkboxů jako ostatní, ale zavřené tlačítko (`linkaFilterGroup()`),
+    které se kliknutím rozbalí do panelu s políčkem na hledání (jen
+    když je položek >6) + kombinovatelnými checkboxy uvnitř (stejná
+    `.filter-check` třída/vzhled jako ostatní filtry, stejné navázání
+    na `filters.linka`/`passes()`/`countLinka()`). Panel se zavře
+    kliknutím mimo něj — `document.addEventListener('click',...)`
+    registrovaný JEDNOU mimo `bind()` (v `bind()` by se při každém
+    `render()` násobil), stejný princip jako `#mm-panel` v `header.js`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
