@@ -709,7 +709,8 @@ async function loadPeople(force){
   try{
     const us = await getDocs(collection(db,'users'));
     people = us.docs.map(d=>{const u=d.data()||{};
-      return {uid:d.id, name:(u.name||u.email||d.id), positions:(u.positions||[])};})
+      const name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||u.email||d.id);
+      return {uid:d.id, name, positions:(u.positions||[])};})
       .sort((a,b)=>a.name.localeCompare(b.name,'cs'));
   }catch(e){ /* bez lidí se dá pracovat dál, jen se nic nenabídne */ }
 }
@@ -951,8 +952,10 @@ async function loadProfile(user){
   try{ const s=await getDoc(ref); if(s.exists()) d=s.data(); }catch(e){}
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
-  return {uid:user.uid, email:user.email, name:d.name||user.email, role,
-          level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||'', firstName: d.firstName||'', lastName: d.lastName||''};
+  const firstName=d.firstName||'', lastName=d.lastName||'';
+  const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
+  return {uid:user.uid, email:user.email, name, role,
+          level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||'', firstName, lastName};
 }
 
 /* ===== načítání dat ===== */

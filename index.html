@@ -118,7 +118,8 @@ async function ensureUserDoc(user){
   try{
     const snap=await getDoc(ref);
     if(snap.exists()) return snap.data();
-    const data={name:(user.email||'').split('@')[0], email:user.email, level:'basic', role:'zadavatel'};
+    const bootName = window.minimoDisplayName ? window.minimoDisplayName(user.email) : (user.email||'').split('@')[0];
+    const data={name:bootName, email:user.email, level:'basic', role:'zadavatel'};
     try{ await setDoc(ref,data); }catch(e){}   // vlastní záznam smí založit každý (pravidla)
     return data;
   }catch(e){ return null; }

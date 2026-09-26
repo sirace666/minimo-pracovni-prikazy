@@ -566,7 +566,8 @@ function subscribe(){
   // Lidé se berou z centrálního seznamu (kolekce users) – stejný zdroj jako Nastavení.
   unsubPeople = onSnapshot(collection(db,'users'),
     s=>{ subRetry=0; allUsers=s.docs.map(d=>{const x=d.data();
-           return {id:d.id, name:x.name||d.id, email:x.email||'', positions:x.positions||[], level:x.level, role:x.role, perms:x.perms||{}, modules:x.modules||{}};});
+           const name = window.minimoDisplayName ? window.minimoDisplayName(x) : (x.name||d.id);
+           return {id:d.id, name, email:x.email||'', positions:x.positions||[], level:x.level, role:x.role, perms:x.perms||{}, modules:x.modules||{}};});
          myDoc = allUsers.find(u=>u.id===me.uid) || null;
          render(); },
     e=>subErr('lidé',e));

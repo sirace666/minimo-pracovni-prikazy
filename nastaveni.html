@@ -315,7 +315,10 @@ onAuthStateChanged(auth, async (user)=>{
 
 function subscribe(){
   unsub = onSnapshot(collection(db,'users'), s=>{
-    users = s.docs.map(d=>({uid:d.id, ...d.data()}))
+    users = s.docs.map(d=>{ const u={uid:d.id, ...d.data()};
+        // "karel.pistek" → "Karel Pistek" (auto-založené účty ukládaly jméno
+        // rovnou z e-mailu, needitované) — Info/Práva/seznam vždycky pěkně.
+        u.name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||u.uid); return u; })
       .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'cs'));
     render();
   }, e=>toast('Chyba načítání uživatelů: '+e.message,'err'));

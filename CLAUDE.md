@@ -307,6 +307,32 @@ protože:
   e-mailu/Profilu napíše cokoliv.
   Jazyk (CZ/EN) je přímo v hlavičce, mezi logem/nadpisem a foto+jménem
   (od 2026-09-26 jako textové "pilulky" CZ/EN, ne vlaječky — viz níž).
+- **`window.minimoDisplayName()` — jména hezky napříč celým Minimem
+  (2026-09-26)** — Martin si všiml, že se v Nastavení (a jinde) zobrazují
+  jména 40 lidí syrová podle e-mailu ("karel.pistek" místo "Karel Pistek").
+  Příčina: `displayName()`/`splitEmailName()`/`cap()` v `header.js` tohle
+  uměly už dřív, ale používaly se jen pro badge v samotné hlavičce — každá
+  appka (nastaveni/nakup/dovolenky/opravy/engineering/udrzba/index) si
+  navíc SAMA zapisovala výchozí `users/{uid}.name` při prvním přihlášení
+  (`user.email.split('@')[0]`), takže ta syrová hodnota skončila natrvalo
+  v databázi. Řešení: `displayName()` rozšířena o třetí fallback
+  (`o.email||o.user||o.name` — funguje i na holé jméno bez e-mailu) a
+  exportovaná jako `window.minimoDisplayName(u)` (přijme objekt
+  `{firstName,lastName,email,name}` i obyčejný string). Zavoláno na dvou
+  místech v každém modulu: (1) kde se skládá `me`/vlastní profil (nahrazuje
+  starý `d.name||user.email` fallback i výchozí `name` při zakládání
+  nového účtu), (2) kde se načítá seznam všech uživatelů z `users`
+  (nastaveni/nakup/dovolenky/engineering/udrzba) — jméno se opraví hned při
+  načtení z Firestore, ne až při vykreslení, takže to funguje všude
+  včetně dropdownů/historie/vyhledávání beze změny na desítkách
+  jednotlivých míst. Navíc lokální `pn()` helper (`udrzba.html`,
+  `nakup.html`, `opravy.html`) na pár míst, co ukazují starší
+  denormalizované `authorName`/`approvedBy`/`assignedToName` řetězce
+  uložené ještě před touhle opravou. Neopravuje se historie/hist řádky
+  (text v minulosti, nedá se bezpečně znovu naparsovat) a `firstName`/
+  `lastName`, pokud si je člověk sám nastavil v Profilu, mají vždycky
+  přednost — tohle jen doplňuje hezký odhad, dokud si člověk jméno sám
+  neupraví.
 - **Hlavička (`header.js`/`header.css`) předělaná znovu, kompletně 1:1
   podle Claude Design (2026-09-26)** — Martin v Claude Design připravil
   mockup nového rozvržení Údržby (`Udrzba.dc.html`, viz bod výš), a chtěl

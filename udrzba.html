@@ -287,6 +287,9 @@ const sectionByName = n => (cfg.sections||[]).find(s=>s.name===n);
 
 /* ===== pomocné ===== */
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// "karel.pistek" → "Karel Pistek" — i pro starší uložená authorName/assignedToName
+// (denormalizované v době, kdy se ještě ukládalo neupravené jméno z e-mailu).
+const pn = s => window.minimoDisplayName ? window.minimoDisplayName(s) : s;
 const today = () => new Date().toISOString().slice(0,10);
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
 
@@ -306,7 +309,9 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';
-  return {uid:user.uid, email:user.email, name:d.name||(user.email||'').split('@')[0], role, level, photoURL:d.photoURL||'', firstName:d.firstName||'', lastName:d.lastName||''};
+  const firstName=d.firstName||'', lastName=d.lastName||'';
+  const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||(user.email||'').split('@')[0]);
+  return {uid:user.uid, email:user.email, name, role, level, photoURL:d.photoURL||'', firstName, lastName};
 }
 const isAdmin = () => me && me.role==='admin';
 
@@ -317,7 +322,9 @@ function subscribe(){
       rows=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())); dataReady=true; if(!editing) render();
     }, err=>{ fatal='Nemám přístup k datům: '+err.message; render(); });
     unsubU=onSnapshot(collection(db,'users'), snap=>{
-      users=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())); if(!editing) render();
+      users=snap.docs.map(d=>{ const u=Object.assign({_id:d.id}, d.data());
+        u.name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||u.email); return u; });
+      if(!editing) render();
     }, ()=>{});
     unsubC=onSnapshot(doc(db,'meta','config'), snap=>{
       const d=snap.data()||{}; cfg={sections:d.sections||[]}; if(!editing) render();
@@ -467,7 +474,7 @@ function listView(){
               <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
-            <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${o.assignedToName?esc(o.assignedToName):'nepřiřazeno'} · zadal ${esc(o.authorName||'')}</div>
+            <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${o.assignedToName?esc(pn(o.assignedToName)):'nepřiřazeno'} · zadal ${esc(pn(o.authorName)||'')}</div>
           </button>`).join('')}
       </div></div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
@@ -553,14 +560,14 @@ function modalView(){
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
         ${extraBadges(o)}
         <span class="spacer"></span>
-        <span class="muted">Vytvořil ${esc(o.authorName||'')}</span></div>
+        <span class="muted">Vytvořil ${esc(pn(o.authorName)||'')}</span></div>
       <div class="row" style="align-items:flex-start;margin-top:.5rem">
         <h2 style="flex:1">${esc(o.nazev||'')}</h2>
         ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
       </div>
       <p class="hero-desc">${o.popis?esc(o.popis):'<span class="muted">Bez popisu.</span>'}</p>
       <dl class="meta">
-        <dt>Přiřazeno</dt><dd>${o.assignedToName?esc(o.assignedToName):'<span class="muted">nepřiřazeno</span>'}</dd>
+        <dt>Přiřazeno</dt><dd>${o.assignedToName?esc(pn(o.assignedToName)):'<span class="muted">nepřiřazeno</span>'}</dd>
         <dt>Linka / stroj</dt><dd>${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
         <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}

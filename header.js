@@ -42,12 +42,22 @@
   // "Martin Smrz" — z uloženého jména/příjmení (jakmile si ho v Profilu
   // upraví), jinak automaticky odvozené z e-mailu. cap() se použije i na
   // uložené hodnoty — první písmeno velké, zbytek malá, ať uživatel napíše
-  // do Profilu cokoliv.
+  // do Profilu cokoliv. o.name je poslední záchrana pro místa, co mají jen
+  // starou denormalizovanou hodnotu (bez e-mailu po ruce) — splitEmailName
+  // funguje stejně dobře na "karel.pistek" jako na "karel.pistek@…".
   function displayName(o){
+    o = o || {};
     var f = String(o.firstName||'').trim(), l = String(o.lastName||'').trim();
-    if(!f && !l){ var d = splitEmailName(o.email||o.user); f=d.first; l=d.last; }
+    if(!f && !l){ var d = splitEmailName(o.email||o.user||o.name); f=d.first; l=d.last; }
     return [cap(f), cap(l)].filter(Boolean).join(' ');
   }
+  // Sdílené napříč celým Minimem (volá se z ostatních modulů, ne jen
+  // z hlavičky) — "karel.pistek"/"karel.pistek@yanfeng.com" → "Karel Pistek",
+  // "Martin Smrž" (už hezké, zadané v Profilu) beze změny.
+  window.minimoDisplayName = function(o){
+    if(typeof o === 'string') o = {name:o};
+    return displayName(o) || String((o&&(o.name||o.email||o.user))||'').trim();
+  };
   window.uheaderHTML = function(o){
     o = o || {};
     function link(href, ico, label, key){

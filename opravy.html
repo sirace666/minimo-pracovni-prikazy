@@ -163,6 +163,7 @@ const sectionByName = n => (cfg.sections||[]).find(s=>s.name===n);
 
 /* ===== pomocné ===== */
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pn = s => window.minimoDisplayName ? window.minimoDisplayName(s) : s;
 const today = () => new Date().toISOString().slice(0,10);
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
 const badge = (v,defs)=>{const d=defs.find(x=>x.k===v);const t=(d&&d.label)?d.label:v;return `<span class="badge ${d?d.cls:'b-grey'}">${esc(t||'—')}</span>`;};
@@ -194,7 +195,9 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';
-  return {uid:user.uid, email:user.email, name:d.name||user.email, role, level, phone:d.phone||'', team:d.team||'—', photoURL:d.photoURL||'', firstName:d.firstName||'', lastName:d.lastName||''};
+  const firstName=d.firstName||'', lastName=d.lastName||'';
+  const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
+  return {uid:user.uid, email:user.email, name, role, level, phone:d.phone||'', team:d.team||'—', photoURL:d.photoURL||'', firstName, lastName};
 }
 function teardown(){ if(unsubO)unsubO(); if(unsubR)unsubR(); if(unsubC)unsubC(); unsubO=unsubR=unsubC=null; rows=[]; reqRows=[]; dataReady=false; }
 function subscribe(){
@@ -289,7 +292,7 @@ function listView(){
           <td>${esc(o.ks||'')}</td>
           <td>${o.linka?`<b>${esc(o.linka)}</b>${o.stroj?`<div class="muted" style="font-size:11px">${esc(o.stroj)}</div>`:''}`:'<span class="muted">—</span>'}</td>
           <td class="muted" style="max-width:220px">${esc((o.zavada||'').slice(0,80))}</td>
-          <td>${esc(o.authorName||'—')}</td>
+          <td>${esc(pn(o.authorName)||'—')}</td>
           <td>${linkedReq(o)?`<span class="badge b-blue">${esc(o.nakupPoradove||linkedReq(o).poradove||'')}</span>`:'<span class="muted">—</span>'}</td>
           ${P().del?`<td><button class="btn-danger" data-a="del" data-v="${o._id}" onclick="event.stopPropagation()" style="padding:5px 9px">Smazat</button></td>`:''}
         </tr>`;}).join(''):`<tr><td colspan="14" class="empty">Žádné požadavky na opravu.</td></tr>`}</tbody>
@@ -358,7 +361,7 @@ function modalView(){
   else if(modalTab==='historie') content = tabHist;
   else content = tabOprava;
   return `<div class="overlay"><div class="modal">
-    <h3>${isNew?'Nový požadavek na opravu':esc(o.poradove)}${!isNew?` <span style="font-weight:400;opacity:.85;font-size:12px">${esc(o.authorName||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
+    <h3>${isNew?'Nový požadavek na opravu':esc(o.poradove)}${!isNew?` <span style="font-weight:400;opacity:.85;font-size:12px">${esc(pn(o.authorName)||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
     ${tabbar}
     <div class="modalbody">${content}</div>
     <div class="foot">
@@ -389,7 +392,7 @@ function genWord(o){
     <div style="text-align:center;font-size:22px;font-weight:bold;color:#1f66b5;margin-bottom:6px">YFAI — Yanfeng</div>
     <div style="text-align:center;font-size:13px;margin-bottom:16px">Průvodka zásilky — externí oprava (${esc(o.poradove||'')})</div>
     <table style="border-collapse:collapse;width:100%;font-size:13px">
-      ${cell('Jméno a příjmení odesílatele', o.authorName||'')}
+      ${cell('Jméno a příjmení odesílatele', pn(o.authorName)||'')}
       ${cell('Telefon odesílatele', o.authorPhone||'')}
       ${cell('Adresa + kontaktní osoba příjemce (popř. tel.)', [o.adresa,o.kontakt,o.telefon].filter(Boolean).join(', '))}
       ${cell('Velikost zásilky (D×V×Š) v cm', rozmer.length?rozmer.join(' × '):'')}

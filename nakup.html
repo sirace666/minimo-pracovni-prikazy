@@ -520,6 +520,8 @@ let colHide={}, colW={}, colPanel=false;
 
 /* ---------- pomocné ---------- */
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// "karel.pistek" → "Karel Pistek" — i pro starší uložená authorName/approvedBy.
+const pn = s => window.minimoDisplayName ? window.minimoDisplayName(s) : s;
 const num = (v,d=2)=>(isFinite(v)?Number(v):0).toLocaleString('cs-CZ',{minimumFractionDigits:d,maximumFractionDigits:d});
 const badge = (v,defs)=>{const d=defs.find(x=>x.k===v);const txt=(d&&d.label)?d.label:v;return `<span class="badge ${d?d.cls:'b-grey'}">${esc(txt||'—')}</span>`;};
 const total = r => (Number(r.cena)||0)*(Number(r.mnozstvi)||0);
@@ -600,12 +602,15 @@ async function loadProfile(user){
     // doplň/oprav e-mail v profilu podle přihlašovacího e-mailu (dřív se u některých neuložil)
     if(user.email && d.email!==user.email){ try{ await updateDoc(ref,{email:user.email}); }catch(e){} }
     const level = (d.level && LEVEL_RANK[d.level]) ? d.level : (ROLE2LEVEL[role]||'basic');
-    return {uid:user.uid, email:user.email, name:d.name||user.email, role, team:d.team||'—', level, modules:d.modules||{}, photoURL:d.photoURL||'', firstName:d.firstName||'', lastName:d.lastName||''};
+    const firstName=d.firstName||'', lastName=d.lastName||'';
+    const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
+    return {uid:user.uid, email:user.email, name, role, team:d.team||'—', level, modules:d.modules||{}, photoURL:d.photoURL||'', firstName, lastName};
   }
   // první uživatel v systému = admin; účty ze seznamu taky; ostatní zadavatelé
   const anyUsers = await getDocs(collection(db,'users'));
   const role = (forced || anyUsers.empty) ? 'admin' : 'zadavatel';
-  const prof = {name:user.email.split('@')[0], email:user.email, role, team: role==='admin'?'Administrátor':'—'};
+  const bootName = window.minimoDisplayName ? window.minimoDisplayName(user.email) : user.email.split('@')[0];
+  const prof = {name:bootName, email:user.email, role, team: role==='admin'?'Administrátor':'—'};
   await setDoc(ref, prof);
   return Object.assign({uid:user.uid, email:user.email, level:ROLE2LEVEL[role]||'basic', modules:{}}, prof);
 }
@@ -625,7 +630,8 @@ function subscribeRows(){
 function subscribeUsers(){
   if(unsubUsers) return;
   unsubUsers = onSnapshot(collection(db,'users'), snap=>{
-    usersList = snap.docs.map(d=>Object.assign({uid:d.id}, d.data()));
+    usersList = snap.docs.map(d=>{ const u=Object.assign({uid:d.id}, d.data());
+      u.name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||''); return u; });
     if(tab==='admin') render();
   }, ()=>{});
 }
@@ -916,8 +922,8 @@ function listView(){
           <td data-col="prijato" class="num hide-mobile" data-label="Přijato">${(r.receivedQty!==undefined&&r.receivedQty!=='')?`<b>${esc(r.receivedQty)}</b> / ${esc(r.mnozstvi||0)}${r.receivedDate?`<div class="muted" style="font-size:10px">${esc(dateCz(r.receivedDate))}</div>`:''}`:'<span class="muted">—</span>'}</td>
           <td data-col="minmax" class="num hide-mobile ${(Number(r.min)||0)>0&&(Number(r.mnozstvi)||0)<Number(r.min)?'stock-warn':''}" data-label="MIN/MAX">${(r.min||r.max)?`${r.min||0} / ${r.max||0}`:'<span class="muted">—</span>'}</td>
           <td data-col="odkaz" class="hide-mobile" data-label="Odkaz">${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ odkaz</a>`:''}${(r.files&&r.files.length)?`${r.url?'<br>':''}<span class="clip" title="Přílohy: ${r.files.length}">📎 ${r.files.length}</span>`:''}${(!r.url&&!(r.files&&r.files.length))?'<span class="muted">—</span>':''}</td>
-          <td data-col="authorName" class="hide-mobile" data-label="Zadal">${esc(r.authorName||'—')}</td>
-          <td data-col="approvedBy" class="hide-mobile" data-label="Schválil">${r.approvedBy?`<span class="badge b-green">✔ ${esc(r.approvedBy)}</span><div class="muted" style="font-size:10px">${esc(dateCz(r.approvedAt)||'')}</div>`:'<span class="muted">—</span>'}</td>
+          <td data-col="authorName" class="hide-mobile" data-label="Zadal">${esc(pn(r.authorName)||'—')}</td>
+          <td data-col="approvedBy" class="hide-mobile" data-label="Schválil">${r.approvedBy?`<span class="badge b-green">✔ ${esc(pn(r.approvedBy))}</span><div class="muted" style="font-size:10px">${esc(dateCz(r.approvedAt)||'')}</div>`:'<span class="muted">—</span>'}</td>
           <td data-col="vymaz" class="hide-mobile" data-label="Výmaz řádku"><button class="rowbtn no" data-a="del" data-v="${r._id}" ${r.status==='doručeno'?'disabled title="Doručený požadavek nelze smazat (ochrana proti omylu)"':(P().del?'':'disabled title="Mazat požadavky může jen skladník/admin"')}>Smazat</button></td>
         </tr>`;}).join('')
       :`<tr><td colspan="${manage.on?23:22}" class="empty">Žádné požadavky neodpovídají filtru.</td></tr>`}
@@ -1069,8 +1075,8 @@ function modalView(){
       <div class="f span2"><label>URL odkaz</label><div class="ro">${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a>`:'<span class="muted">—</span>'}</div></div>
       ${roL('Komu poslat e-mail o naskladnění',r.notifyEmail,'span2')}
       ${ro('poznamka',r.poznamka,'span4')}
-      <div class="f span2"><label>Zadal</label><div class="ro">${esc(r.authorName||'—')} · ${esc(dateCz(r.created))}</div></div>
-      <div class="f span2"><label>Schválil</label><div class="ro">${r.approvedBy?esc(r.approvedBy)+' · '+esc(dateCz(r.approvedAt)):'<span class="muted">zatím neschváleno</span>'}</div></div>`;
+      <div class="f span2"><label>Zadal</label><div class="ro">${esc(pn(r.authorName)||'—')} · ${esc(dateCz(r.created))}</div></div>
+      <div class="f span2"><label>Schválil</label><div class="ro">${r.approvedBy?esc(pn(r.approvedBy))+' · '+esc(dateCz(r.approvedAt)):'<span class="muted">zatím neschváleno</span>'}</div></div>`;
   const roleBar = ed
       ? `<div class="robar">Vyplň ručně, nebo klikni na 📷 u <b>skladového čísla</b> a naskenuj štítek dílu. Pokud položka skladové číslo nemá, zaškrtni <b>TXT</b>.</div>`
       : (me.role==='schvalovatel'
@@ -1120,7 +1126,7 @@ function modalView(){
   else if(modalTab==='historie') content = histContent;
   else content = `${roleBar}<div class="form">${body}</div>`;
   return `<div class="overlay"><div class="modal">
-    <h3>${isNew?'Nový nákupní požadavek':esc(r.poradove)}${!isNew?` <span style="font-weight:400;opacity:.8;font-size:12px">${esc(r.authorName||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
+    <h3>${isNew?'Nový nákupní požadavek':esc(r.poradove)}${!isNew?` <span style="font-weight:400;opacity:.8;font-size:12px">${esc(pn(r.authorName)||'')}</span>`:''}<button class="x" data-a="close">✕</button></h3>
     ${tabbar}
     <div class="modalbody">${content}</div>
     <div class="foot">
@@ -1728,7 +1734,7 @@ async function act(a,v,el,ev){
     }
     case 'approve':{
       if(!P().approve)return; const r=rows.find(x=>x._id===v);
-      if(r.approvedBy){await info('Požadavek už schválil '+r.approvedBy+'.');return;}
+      if(r.approvedBy){await info('Požadavek už schválil '+pn(r.approvedBy)+'.');return;}
       if(!await askYes(`Schválit požadavek ${r.poradove} za sebe? Stačí schválení jednoho ze schvalovatelů.`,{title:'Schválení',ok:'✔ Schválit'}))return;
       const st=['nový','ve schvalování','poptáno'].includes(r.status)?'schváleno':r.status;
       const hist=(r.hist||[]).concat(`${today()} · ${me.name} · schválil požadavek`);
