@@ -366,11 +366,13 @@ protože:
   `package.json`) tohle repo nemá jak "vpéct" hodnotu při buildu.
   Řešení: `fetch('VERSION')` při startu appky (stejný soubor, co se
   bumpuje při každém releasu — `let appVersion=''` + `.then(t=>{
-  appVersion=t.trim(); render(); })`), zobrazeno jako `.version-tag`
-  (malý šedý text s čárkou nad sebou) na konci levého panelu filtrů.
-  Díky čtení přímo ze souboru se **nemusí ručně přepisovat v HTML** při
-  každém bumpu — stačí, že se `VERSION` soubor mění při každém releasu
-  (což se dělá i teď).
+  appVersion=t.trim(); render(); })`), zobrazeno jako `.page-version`
+  (malý bledý text, zarovnaný dole) přímo **vedle nadpisu "Údržba"**
+  v `<h1>` (první pokus dát to na konec levého panelu filtrů Martin
+  hned opravil — chtěl to u názvu, ne u filtrů). Díky čtení přímo ze
+  souboru se **nemusí ručně přepisovat v HTML** při každém bumpu —
+  stačí, že se `VERSION` soubor mění při každém releasu (což se dělá
+  i teď).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

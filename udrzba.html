@@ -140,8 +140,7 @@
     padding:8px;display:flex;flex-direction:column;gap:6px}
   .linka-search{width:100%;height:30px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:13px}
   .linka-list{overflow-y:auto;max-height:190px;display:flex;flex-direction:column;gap:2px}
-  .version-tag{text-align:center;font-size:10.5px;color:#b9bece;padding-top:14px;margin-top:2px;
-    border-top:1px solid #eef0f5}
+  .page-version{font-size:12px;font-weight:600;color:#b9bece;align-self:flex-end;margin-bottom:3px}
 
   /* --- barevný posuvník priority (formulář nového/upravovaného příkazu) --- */
   .priority-slider{padding:4px 2px 0}
@@ -529,7 +528,7 @@ function listView(){
   const searchIsOpen=searchOpen||!!filters.q;
   return `
   <div class="pagehead">
-    <h1><span class="page-icon"><img src="assets/wrench.png" alt=""></span><span>Údržba</span></h1>
+    <h1><span class="page-icon"><img src="assets/wrench.png" alt=""></span><span>Údržba</span>${appVersion?`<span class="page-version">v${esc(appVersion)}</span>`:''}</h1>
     <div class="pagehead-row2">
       <div class="viewtiles">
         <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
@@ -567,7 +566,6 @@ function listView(){
       ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})),countPriorita)}
       ${filterGroup('obor','Obor',OBOR,countObor)}
       ${linkaFilterGroup()}
-      ${appVersion?`<div class="version-tag">Údržba v${esc(appVersion)}</div>`:''}
     </aside>
     <section>
       ${rr.length?`<div class="list-card"><div class="list">
