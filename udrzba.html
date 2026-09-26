@@ -110,15 +110,20 @@
   .filter-check:has(input:checked) .fc-box::after{content:'✓'}
   .filter-check:has(input:checked) .count{background:rgba(255,255,255,.2);color:#fff}
 
-  /* --- Typ (CM/EM): dvě tlačítka vedle sebe místo řádků pod sebou —
+  /* --- Typ (CM/EM): dvě skutečná tlačítka vedle sebe místo řádků pod sebou —
      jen 2 pevné hodnoty, dává smysl je mít jako "přepínače" vedle sebe.
-     Pořád stejný .filter-check/checkbox pod kapotou (kombinovatelné). --- */
-  .checklist.row{flex-direction:row;gap:6px}
-  .checklist.row .filter-check{flex:1;flex-direction:column;justify-content:center;text-align:center;
-    height:52px;padding:6px 4px;gap:2px}
+     Pořád stejný .filter-check/checkbox pod kapotou (kombinovatelné), jen
+     s viditelným rámečkem/pozadím a barvou podle druhu (--tc, nastavená
+     inline stylem z filterGroup() přes opts[].color). --- */
+  .checklist.row{flex-direction:row;gap:8px}
+  .checklist.row .filter-check{flex:1;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;height:56px;padding:6px 8px;gap:4px;border:1.5px solid var(--tc,var(--border));
+    border-radius:8px;background:#fff}
+  .checklist.row .filter-check:hover{background:#f7f8fc}
+  .checklist.row .filter-check:has(input:checked){background:var(--tc,var(--accent));border-color:var(--tc,var(--accent))}
   .checklist.row .fc-box{display:none}
   .checklist.row .fc-label{flex:none;white-space:normal;line-height:1.2;font-size:12.5px}
-  .checklist.row .count{position:absolute;top:5px;right:5px}
+  .checklist.row .count{position:static}
 
   /* --- filtr Linka: zavřené tlačítko + panel s hledáním (může jich časem
      být hodně, na rozdíl od pevných seznamů Typ/Stav/Priorita/Obor) --- */
@@ -471,7 +476,7 @@ function filterGroup(dim,title,opts,countFn,horiz){
       ${selCount?`<span class="filtergroup-sel">· ${selCount}</span>`:''}
     </div>
     <div class="checklist${horiz?' row':''}">
-      ${opts.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${countFn(o.k)}</span></label>`).join('')}
+      ${opts.map(o=>`<label class="filter-check" ${(horiz&&o.color)?`style="--tc:${o.color}"`:''}><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${(!horiz&&o.color)?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${countFn(o.k)}</span></label>`).join('')}
     </div>
   </div>`;
 }
@@ -539,7 +544,7 @@ function listView(){
         <span class="sidebar-title">FILTRY</span>
         ${totalActive?`<span class="sidebar-count">${totalActive}</span><button type="button" class="clear-filters" data-a="clear-filters">Zrušit</button>`:''}
       </div>
-      ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}],countTyp,true)}
+      ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)',color:'#41506b'},{k:'EM',label:'Havarijní (EM)',color:'#c0392b'}],countTyp,true)}
       ${filterGroup('stav','Stav',STAV_FILTER_OPTS,countStav)}
       ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})),countPriorita)}
       ${filterGroup('obor','Obor',OBOR,countObor)}
