@@ -227,6 +227,9 @@
   /* hero = barevný pruh podle stavu, jako v Pracovních příkazech */
   .hero{--accent:#94a3b8;margin:-1rem -1rem 0;padding:1rem;border-bottom:1px solid var(--border);border-top:3px solid var(--accent);
     background:linear-gradient(120deg, color-mix(in srgb, var(--accent) 12%, #fff), transparent 70%), #fff}
+  /* Pod záložkami (Info/Historie) už je jasné rozhraní od aktivní podtržené
+     tabky — barevný pruh navrch hero by tam jen splýval/matl. */
+  .hero.notop{border-top:none}
   .hero.st-nový{--accent:#6366f1}
   .hero.st-rozpracováno{--accent:#ea7317}
   .hero.st-hotovo{--accent:#15803d}
@@ -661,8 +664,13 @@ function modalView(){
         ${!isNew?`<span class="muted">${esc(o.cislo||'')}</span>`:''}</div>
     </div>
     <div class="sec">${editForm(o)}</div>
+    ${(!isNew && isAdmin())?`<div class="sec">${editing.confirmDel
+      ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
+         <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
+      : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
+    }</div>`:''}
   ` : `
-    <div class="hero st-${o.status}">
+    <div class="hero st-${o.status} notop">
       <div class="hero-top"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
         <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
@@ -702,11 +710,6 @@ function modalView(){
           ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
         </div>
       </div>`:''}
-      ${isAdmin()?`<div class="sec">${editing.confirmDel
-        ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
-           <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
-        : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
-      }</div>`:''}
     `}
   `;
   return `<div class="overlay" data-a="close-bg"><div class="modal">

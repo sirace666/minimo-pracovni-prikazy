@@ -344,6 +344,16 @@ protože:
      s rámečkem), vždy vidět nahoře i kdyby byla historie delší než
      okno. `.hero` (barevný pruh se stavem/názvem/popisem) zůstává pod
      záložkami na obou (kontext, který příkaz řešíš).
+     **Ještě doladěno (Martin: "vypadají nějak divně")** — podtržení
+     aktivní záložky a `.hero`ho vlastní `border-top:3px solid
+     var(--accent)` (barva stavu, jen 1px pod tabs) opticky splývaly do
+     jednoho matoucího pruhu. `.hero.notop{border-top:none}` — přidáno
+     jen na `.hero` ve VIEW módu (za tabs vždy následuje), edit mód
+     (bez tabs nad sebou) si svůj barevný pruh nechal.
+     **Zároveň přesunuto (Martin: "smazat příkaz vlož pouze do upravit,
+     ne v náhledu")** — tlačítko/potvrzení "Smazat příkaz" bylo v INFO
+     záložce (view mód), teď je jen v edit módu (`!isNew && isAdmin()`,
+     hned pod `editForm()`, před `modal-foot`).
   - **Mimochodem odhaleno a opraveno**: `.oi-top` (řádek odznaků na
     kartě příkazu v seznamu) neměl `flex-wrap`, takže hodně odznaků
     najednou (stav+priorita+typ+"potřeba objednat díl") vynutilo
