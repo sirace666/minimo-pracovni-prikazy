@@ -238,11 +238,14 @@
   .meta dd{margin:0}
   .sec{display:grid;gap:.5rem;padding:1rem;border-top:1px solid var(--border)}
   .sec-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
-  .modal-tabs{display:flex;gap:6px;padding:.75rem 1rem 0}
-  .modal-tab{border:1px solid var(--border);border-radius:8px;background:#fff;padding:.4rem .9rem;
-    font-weight:700;font-size:13px;color:var(--muted);cursor:pointer}
-  .modal-tab:hover{border-color:var(--accent)}
-  .modal-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* Záložky přímo pod modal-head, mimo posuvné .modal-body — vidět pořád,
+     i kdyby byl obsah (třeba dlouhá historie) delší než okno. */
+  .modal-tabs{display:flex;flex:none;background:#fff;border-bottom:1px solid var(--border)}
+  .modal-tab{flex:1;border:none;background:transparent;padding:.7rem 1rem;
+    font-family:inherit;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;
+    border-bottom:2.5px solid transparent;margin-bottom:-1px}
+  .modal-tab:hover{color:var(--text)}
+  .modal-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
   .form-grid{display:grid;gap:.7rem}
   .form-grid.cols2{grid-template-columns:1fr 1fr}
   .hist{font-size:.82rem}
@@ -645,6 +648,10 @@ function modalView(){
   const canEdit = isNew || canEditDoc(o);
   const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
   const next = NEXT_STATUS[o.status];
+  const tabs = !showEdit ? `<div class="modal-tabs">
+    <button type="button" class="modal-tab ${modalTab!=='historie'?'on':''}" data-a="modal-tab" data-v="info">Info</button>
+    <button type="button" class="modal-tab ${modalTab==='historie'?'on':''}" data-a="modal-tab" data-v="historie">Historie</button>
+  </div>` : '';
   const body = showEdit ? `
     <div class="hero st-${o.status||'nový'}">
       <div class="hero-top"><span class="badge st-${o.status||'nový'}">${esc(statusLabel(o.status||'nový'))}</span>
@@ -673,10 +680,6 @@ function modalView(){
         <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
       </dl>
-    </div>
-    <div class="modal-tabs">
-      <button type="button" class="modal-tab ${modalTab!=='historie'?'on':''}" data-a="modal-tab" data-v="info">Info</button>
-      <button type="button" class="modal-tab ${modalTab==='historie'?'on':''}" data-a="modal-tab" data-v="historie">Historie</button>
     </div>
     ${modalTab==='historie' ? `
       <div class="sec">
@@ -708,6 +711,7 @@ function modalView(){
   `;
   return `<div class="overlay" data-a="close-bg"><div class="modal">
     <div class="modal-head">${isNew?'Nový pracovní příkaz':esc(o.cislo)}<button class="x" data-a="close">✕</button></div>
+    ${tabs}
     <div class="modal-body">${body}</div>
     ${showEdit?`<div class="modal-foot">
       ${footMsg?`<span class="msg">${esc(footMsg)}</span>`:'<span class="muted">Pole s <span style="color:#c0392b">*</span> jsou povinná.</span>'}

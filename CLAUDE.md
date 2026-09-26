@@ -336,6 +336,14 @@ protože:
      'modal-tab'` v `act()`, reset na `'info'` při `open`/`new`) —
      dřív byla historie jen další sekce pod tlačítky na změnu
      stavu/náhradní díl/smazání, teď je to samostatný pohled.
+     **Doladěno (2026-09-26, Martin: "záložky chci úplně nahoru")** —
+     `.modal-tabs` přesunuty ZA `.modal-head`, PŘED `.modal-body`
+     (dřív byly první věc UVNITŘ scrollovatelného `.modal-body`, pod
+     `.hero`m) — teď jsou to skutečné podtržené tabs přes celou šířku
+     (`border-bottom` + aktivní podtržení barvou `--accent`, ne pilulky
+     s rámečkem), vždy vidět nahoře i kdyby byla historie delší než
+     okno. `.hero` (barevný pruh se stavem/názvem/popisem) zůstává pod
+     záložkami na obou (kontext, který příkaz řešíš).
   - **Mimochodem odhaleno a opraveno**: `.oi-top` (řádek odznaků na
     kartě příkazu v seznamu) neměl `flex-wrap`, takže hodně odznaků
     najednou (stav+priorita+typ+"potřeba objednat díl") vynutilo
