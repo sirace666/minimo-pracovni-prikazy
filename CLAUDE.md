@@ -373,6 +373,12 @@ protože:
   souboru se **nemusí ručně přepisovat v HTML** při každém bumpu —
   stačí, že se `VERSION` soubor mění při každém releasu (což se dělá
   i teď).
+  **Doladěno** — `.page-version` měla `align-self:flex-end` (chtělo to
+  vypadat jako drobný "index" u paty nadpisu), ale protože "Údržba" je
+  vysoko a verze má mnohem menší font, vizuálně to vypadalo, že verze
+  je na SAMOSTATNÉM řádku pod názvem, ne vedle něj (Martin: "vypadá to
+  hrozně"). Odstraněno — verze teď sedí na stejné (`align-items:
+  center` zděděné z `.pagehead h1`) úrovni jako text "Údržba".
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
