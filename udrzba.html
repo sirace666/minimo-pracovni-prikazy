@@ -182,7 +182,7 @@
   .order-item.st-nový{border-left-color:#6366f1}
   .order-item.st-rozpracováno{border-left-color:#ea7317}
   .order-item.st-hotovo{border-left-color:var(--ok)}
-  .oi-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+  .oi-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;flex-wrap:wrap}
   .oi-title{margin:0 0 .25rem;font-size:.92rem;font-weight:700}
   .oi-meta{font-size:.78rem;color:var(--muted)}
   .empty{text-align:center;color:var(--muted);padding:2.5rem 1rem;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)}
@@ -211,8 +211,8 @@
   .badge.nd-objednano{background:#fef3c7;color:var(--warn)}
 
   /* --- modal (Davidovo tělo hlavičky, náš obsah) --- */
-  .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto;z-index:50}
-  .modal{background:#fff;border-radius:var(--radius);width:100%;max-width:620px;max-height:90vh;margin:auto;
+  .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto;z-index:70}
+  .modal{background:#fff;border-radius:var(--radius);width:100%;max-width:820px;max-height:90vh;margin:auto;
     box-shadow:0 20px 50px rgba(15,23,42,.3);display:flex;flex-direction:column;overflow:hidden}
   .modal-head{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:.85rem 1rem;
     font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.6rem;flex:none}
@@ -238,6 +238,11 @@
   .meta dd{margin:0}
   .sec{display:grid;gap:.5rem;padding:1rem;border-top:1px solid var(--border)}
   .sec-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  .modal-tabs{display:flex;gap:6px;padding:.75rem 1rem 0}
+  .modal-tab{border:1px solid var(--border);border-radius:8px;background:#fff;padding:.4rem .9rem;
+    font-weight:700;font-size:13px;color:var(--muted);cursor:pointer}
+  .modal-tab:hover{border-color:var(--accent)}
+  .modal-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   .form-grid{display:grid;gap:.7rem}
   .form-grid.cols2{grid-template-columns:1fr 1fr}
   .hist{font-size:.82rem}
@@ -335,6 +340,7 @@ const VIEWS = [
 
 /* ===== Stav aplikace ===== */
 let me=null, rows=[], users=[], editing=null, editMode=false, errs={}, footMsg='';
+let modalTab='info';
 let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[]}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
 let linkaOpen=false, linkaQuery='';
@@ -618,13 +624,15 @@ function editForm(o){
         ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
       </div>
     </div>
-    <div><label>Priorita</label>
-      <div class="priority-slider" style="--c:${PRIORITA_COLOR[PRIORITA[pIdxSafe]]}">
-        <input type="range" id="e-priorita-range" min="0" max="${PRIORITA.length-1}" step="1" value="${pIdxSafe}">
-        <div class="ps-ticks">${PRIORITA.map((p,i)=>`<span class="ps-tick ${pIdxSafe===i?'on':''}">${esc(PRIORITA_LABEL[p]||p)}</span>`).join('')}</div>
+    <div class="form-grid cols2">
+      <div><label>Priorita</label>
+        <div class="priority-slider" style="--c:${PRIORITA_COLOR[PRIORITA[pIdxSafe]]}">
+          <input type="range" id="e-priorita-range" min="0" max="${PRIORITA.length-1}" step="1" value="${pIdxSafe}">
+          <div class="ps-ticks">${PRIORITA.map((p,i)=>`<span class="ps-tick ${pIdxSafe===i?'on':''}">${esc(PRIORITA_LABEL[p]||p)}</span>`).join('')}</div>
+        </div>
       </div>
+      <div><label>Přiřazeno</label>${assignedSel}</div>
     </div>
-    <div><label>Přiřazeno</label>${assignedSel}</div>
     <div class="form-grid cols2">
       <div><label>Linka</label>${linkaSel}</div>
       <div><label>Stroj</label>${strojSel}</div>
@@ -666,31 +674,37 @@ function modalView(){
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
       </dl>
     </div>
-    ${(canEditDoc(o))?`<div class="sec">
-      <div class="sec-label">Změnit stav</div>
-      <div class="row">
-        ${next?`<button class="btn-primary" data-a="status" data-v="${next}">Označit jako: ${esc(statusLabel(next))}</button>`:''}
-        ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
-      </div>
-    </div>`:''}
-    ${(canEditDoc(o) && o.status==='rozpracováno')?`<div class="sec">
-      <div class="sec-label">Náhradní díl</div>
-      <div class="row">
-        ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
-        ${o.nd==='potreba'&&isAdmin()?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
-        ${o.nd==='objednano'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat (díl dorazil)</button>`:''}
-        ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
-      </div>
-    </div>`:''}
-    <div class="sec">
-      <div class="sec-label">Historie</div>
-      <div class="hist">${histHtml}</div>
+    <div class="modal-tabs">
+      <button type="button" class="modal-tab ${modalTab!=='historie'?'on':''}" data-a="modal-tab" data-v="info">Info</button>
+      <button type="button" class="modal-tab ${modalTab==='historie'?'on':''}" data-a="modal-tab" data-v="historie">Historie</button>
     </div>
-    ${isAdmin()?`<div class="sec">${editing.confirmDel
-      ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
-         <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
-      : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
-    }</div>`:''}
+    ${modalTab==='historie' ? `
+      <div class="sec">
+        <div class="hist">${histHtml}</div>
+      </div>
+    ` : `
+      ${(canEditDoc(o))?`<div class="sec">
+        <div class="sec-label">Změnit stav</div>
+        <div class="row">
+          ${next?`<button class="btn-primary" data-a="status" data-v="${next}">Označit jako: ${esc(statusLabel(next))}</button>`:''}
+          ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
+        </div>
+      </div>`:''}
+      ${(canEditDoc(o) && o.status==='rozpracováno')?`<div class="sec">
+        <div class="sec-label">Náhradní díl</div>
+        <div class="row">
+          ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
+          ${o.nd==='potreba'&&isAdmin()?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
+          ${o.nd==='objednano'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat (díl dorazil)</button>`:''}
+          ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
+        </div>
+      </div>`:''}
+      ${isAdmin()?`<div class="sec">${editing.confirmDel
+        ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
+           <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
+        : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
+      }</div>`:''}
+    `}
   `;
   return `<div class="overlay" data-a="close-bg"><div class="modal">
     <div class="modal-head">${isNew?'Nový pracovní příkaz':esc(o.cislo)}<button class="x" data-a="close">✕</button></div>
@@ -748,9 +762,10 @@ async function act(a,v,el,ev){
     case 'search-open': searchOpen=true; break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'search-close': searchOpen=false; filters.q=''; break;
-    case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';break;
+    case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'set-typ': if(editing) editing.typ=v; break;
-    case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';break;
+    case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';modalTab='info';break;
+    case 'modal-tab': modalTab=v; break;
     case 'edit': collect(); editMode=true; break;
     case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
     case 'close': case 'close-bg':

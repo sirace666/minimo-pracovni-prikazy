@@ -313,6 +313,35 @@ protože:
     aktivní, jako přepínač). Nový `case 'set-typ'` v `act()` rovnou
     mění `editing.typ` (stejný vzorec jako `nd-set`), `collect()` už
     `#e-typ` nečte (odstraněno, bylo by to mrtvé).
+  - **CSS oprava (Martin nahlásil "vypadá to hrozně")** — první verze
+    neměla na `.checklist.row .filter-check` žádný rámeček/pozadí,
+    vypadalo to jako plovoucí text s malým odznakem. Přidán viditelný
+    rámeček + bílé pozadí + barva per položka (`--tc` inline styl z
+    `opts[].color`, CM neutrální `#41506b`, EM červená `#c0392b` —
+    stejná jako odznak "Havarijní" v kartách), po zaškrtnutí se tlačítko
+    vyplní touhle barvou.
+- **Modal příkazu: oprava z-index, širší, historie jako záložka
+  (2026-09-26)** — Martin nahlásil screenshotem tři věci:
+  1. `.overlay` (modal) mělo `z-index:50`, sdílená hlavička (`.uhdr` v
+     `header.css`) má `z-index:60` — horní okraj modalu proto zajížděl
+     POD hlavičku. Opraveno na `z-index:70` (nad hlavičkou, pod
+     `.toast` na 80).
+  2. `.modal{max-width:620px}` na teď už neomezené šířce stránky (viz
+     bod výš o `main{max-width:1800px}` odstraněném) působilo staženě/
+     uprostřed obrazovky. Zvětšeno na `820px`, `editForm()`
+     Priorita+Přiřazeno vráceny vedle sebe (`cols2`) — na širší modal se
+     tam posuvník priority i tak vejde pohodlně.
+  3. **Historie je teď druhá záložka** (`Info`/`Historie`,
+     `.modal-tabs`/`.modal-tab`, nový stav `modalTab` + `case
+     'modal-tab'` v `act()`, reset na `'info'` při `open`/`new`) —
+     dřív byla historie jen další sekce pod tlačítky na změnu
+     stavu/náhradní díl/smazání, teď je to samostatný pohled.
+  - **Mimochodem odhaleno a opraveno**: `.oi-top` (řádek odznaků na
+    kartě příkazu v seznamu) neměl `flex-wrap`, takže hodně odznaků
+    najednou (stav+priorita+typ+"potřeba objednat díl") vynutilo
+    vodorovný posuvník na mobilu (`scrollWidth` > `clientWidth` kvůli
+    CSS Grid `1fr` sloupci, co se roztáhl podle nejširšího obsahu v
+    `<section>`). Přidán `flex-wrap:wrap`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
