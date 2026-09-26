@@ -389,6 +389,18 @@ protože:
   `flex-end` na všech třech úrovních — teď mají úplně všechny prvky
   hlavičky (ikona, nadpis, verze, dlaždice, tlačítka) spodek na stejné
   souřadnici.
+  **Ještě jednou doladěno (Martin: "nadpis Údržba je stále výš než
+  ostatní věci v řádku")** — zarovnání ke spodku samo o sobě nestačilo,
+  protože `.pagehead h1` mělo `height:42px`, zatímco `.viewtiles`
+  (kontejner) vycházel na 41px a tlačítka vpravo na 35px — různé výšky
+  boxů, takže i se stejným spodkem měl každý jiný VRCHNÍ okraj (nadpis
+  logicky "trčel" nejvýš, protože byl nejvyšší box). Opraveno sjednocením
+  všech na **stejnou výšku 38px**: `.pagehead h1` 42→38 (= přesně
+  `.page-icon`), `.icon-btn`/`.search-wrap`/`.sortbox`/`.head-actions
+  .btn-primary` 35→38, `.viewtile` 33→30 (s paddingem 3px v
+  `.viewtiles` a 1px okrajem vychází kontejner přesně na 38px taky).
+  Teď mají všechny prvky hlavičky identickou výšku i souřadnice
+  vrchu/spodku, ne jen shodný spodek.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
