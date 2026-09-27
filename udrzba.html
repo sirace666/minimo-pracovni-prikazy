@@ -27,6 +27,10 @@
   label{font-size:0.82rem;font-weight:600;color:var(--muted);display:block;margin-bottom:0.25rem}
   .btn-primary{background:var(--accent);color:#fff;font-weight:800}
   .btn-primary:hover{background:var(--accent-dark)}
+  /* tlačítko Nový pracovní příkaz úmyslně barevně sedí k ostatním modulům
+     (Opravy…), ne k indigo --accent zbytku Údržby — Martinovo přání. */
+  .btn-newprikaz{background:var(--navy-2)}
+  .btn-newprikaz:hover{background:var(--navy-1)}
   .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--muted)}
   .btn-danger{background:#fff;border:1px solid #f3c6c1;color:var(--danger)}
   .btn-danger:hover{background:#fdecea}
@@ -684,7 +688,7 @@ function listView(){
           <select id="f-sortkey">${SORT_OPTS.map(s=>`<option value="${s.k}" ${sortKey===s.k?'selected':''}>Řadit: ${esc(s.label)}</option>`).join('')}</select>
           <button type="button" class="sort-dir" id="f-sortdir" title="${sortDir==='asc'?'Vzestupně':'Sestupně'}">${sortDir==='asc'?'↑':'↓'}</button>
         </div>
-        <button class="btn-primary" data-a="new"><span class="plus">+</span> Nový pracovní příkaz</button>
+        <button class="btn-primary btn-newprikaz" data-a="new"><span class="plus">+</span> Nový pracovní příkaz</button>
       </div>
     </div>
   </div>
@@ -722,7 +726,7 @@ function listView(){
         <p>Zkuste upravit filtry nebo vytvořte nový příkaz.</p>
         <div class="actions">
           ${totalActive?`<button class="btn-ghost" data-a="clear-filters">Zrušit filtry</button>`:''}
-          <button class="btn-primary" data-a="new">+ Nový pracovní příkaz</button>
+          <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
         </div>
       </div>`}
     </section>
