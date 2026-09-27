@@ -401,6 +401,37 @@ protože:
   `.viewtiles` a 1px okrajem vychází kontejner přesně na 38px taky).
   Teď mají všechny prvky hlavičky identickou výšku i souřadnice
   vrchu/spodku, ne jen shodný spodek.
+- **Oblíbené (uložené) sady filtrů — Údržba (2026-09-27)**:
+  - **Nová Firestore kolekce `udrzbaFilters/{uid}`** (jeden dokument na
+    uživatele, pole `list` s poli `{id,name,color,typ,stav,priorita,
+    obor,linka}`) — samostatná, netýká se sdílené kolekce `users` ani
+    ničeho jiného. Pravidlo: čte/píše jen vlastník
+    (`request.auth.uid==uid`). Nasazeno na testovací projekt.
+  - **Hvězdička (⭐) vedle "FILTRY"** v levém panelu (`favWrap()`) —
+    klik otevře/zavře panel se seznamem uložených filtrů, stejný vzor
+    jako filtr Linka (zavřené tlačítko → panel, zavírání kliknutím
+    mimo `.fav-wrap`, sdílí stejný globální `click` listener).
+  - **Panel**: barevná tečka + název u každé položky, klik = rovnou
+    aplikuje (`favApply()` přepíše `filters.typ/stav/priorita/obor/
+    linka`), malá tužtička = otevře **stejné** modální okno jako "+
+    Nový filtr", jen předvyplněné (`case 'fav-edit'` klonuje záznam do
+    `filterModal`).
+  - **Okno Nový/Upravit filtr** (`filterModalView()`) — Název, barva
+    (paleta 8 předvolených barev `FAV_COLORS`, ne libovolný picker),
+    a **samostatná** sada checkboxů Typ/Stav/Priorita/Obor/Linka
+    (`favCheckGroup()`, vázaná na `data-favflt` — nový generický
+    handler v `bind()`, analogický k `data-flt`, ale píše do
+    `filterModal[dim]` místo globálního `filters[dim]`) — nezávislá na
+    tom, co je zrovna zaškrtnuté v levém panelu, přesně jak chtěl
+    Martin. Smazání má stejné dvoukrokové potvrzení jako mazání
+    pracovního příkazu (`filterModal.confirmDel`).
+  - **Oprava při testování**: `#fv-name` ztrácelo napsaný text při
+    jiné akci v okně (barva/checkbox), protože každá akce spouští
+    `render()` (celý `innerHTML` přepis) a input neměl `oninput`
+    handler, který by `filterModal.name` držel v aktuálním stavu —
+    stejný druh chyby, co řeší `f-q`/`f-linka-q`, jen tady stačí jen
+    zapsat hodnotu do proměnné (bez `render()`/kurzoru), protože pole
+    samo o sobě nic dalšího nepřekresluje.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

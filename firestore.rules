@@ -102,6 +102,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // --- Údržba: oblíbené (uložené) sady filtrů — jeden dokument na
+    // uživatele, čte/píše jen on sám. Samostatná kolekce, nesahá na nic
+    // sdíleného s ostatními moduly.
+    match /udrzbaFilters/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
     // --- Engineering: prostoje ze Symesticu ---
     // Prostoje a denní souhrny čte každý přihlášený, zapisuje je jen správce
     // při importu reportu.
