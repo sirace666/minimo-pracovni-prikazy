@@ -963,8 +963,16 @@ async function act(a,v,el,ev){
   }
   render();
   if(a==='search-open'){ const inp=document.getElementById('f-q'); if(inp) inp.focus(); }
-  if(a==='linka-toggle' && linkaOpen){ const inp=document.getElementById('f-linka-q'); if(inp) inp.focus(); }
-  if(a==='fav-linka-toggle' && favLinkaOpen){ const inp=document.getElementById('fv-linka-q'); if(inp) inp.focus(); }
+  // tlačítko Linka bývá poslední v seznamu/okně, takže se rozbalený panel
+  // schová pod okraj — po otevření se sám doscrolluje do vidu.
+  if(a==='linka-toggle' && linkaOpen){
+    const inp=document.getElementById('f-linka-q'); if(inp) inp.focus();
+    const p=document.querySelector('.linka-wrap .linka-panel'); if(p) p.scrollIntoView({block:'nearest'});
+  }
+  if(a==='fav-linka-toggle' && favLinkaOpen){
+    const inp=document.getElementById('fv-linka-q'); if(inp) inp.focus();
+    const p=document.querySelector('.fav-linka-wrap .linka-panel'); if(p) p.scrollIntoView({block:'nearest'});
+  }
 }
 function toast(msg,kind){ toastMsg=msg; toastKind=kind; render(); setTimeout(()=>{ toastMsg=null; render(); },2600); }
 function bind(){
