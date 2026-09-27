@@ -28,9 +28,10 @@
   .btn-primary{background:var(--accent);color:#fff;font-weight:800}
   .btn-primary:hover{background:var(--accent-dark)}
   /* tlačítko Nový pracovní příkaz úmyslně barevně sedí k ostatním modulům
-     (Opravy…), ne k indigo --accent zbytku Údržby — Martinovo přání. */
-  .btn-newprikaz{background:var(--navy-2)}
-  .btn-newprikaz:hover{background:var(--navy-1)}
+     (stejný oranžový gradient jako "+ Nový požadavek na opravu" v Opravách),
+     ne k indigo --accent zbytku Údržby — Martinovo přání. */
+  .btn-newprikaz{background:linear-gradient(180deg,#f6821f,#e8590c)}
+  .btn-newprikaz:hover{background:linear-gradient(180deg,#e8590c,#d24f0a)}
   .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--muted)}
   .btn-danger{background:#fff;border:1px solid #f3c6c1;color:var(--danger)}
   .btn-danger:hover{background:#fdecea}
