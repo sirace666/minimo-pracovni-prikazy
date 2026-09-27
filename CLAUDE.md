@@ -418,13 +418,14 @@ protože:
     `filterModal`).
   - **Okno Nový/Upravit filtr** (`filterModalView()`) — Název, barva
     (paleta 8 předvolených barev `FAV_COLORS`, ne libovolný picker),
-    a **samostatná** sada checkboxů Typ/Stav/Priorita/Obor/Linka
-    (`favCheckGroup()`, vázaná na `data-favflt` — nový generický
-    handler v `bind()`, analogický k `data-flt`, ale píše do
-    `filterModal[dim]` místo globálního `filters[dim]`) — nezávislá na
-    tom, co je zrovna zaškrtnuté v levém panelu, přesně jak chtěl
-    Martin. Smazání má stejné dvoukrokové potvrzení jako mazání
-    pracovního příkazu (`filterModal.confirmDel`).
+    a **samostatná** sada checkboxů Typ/Stav/Priorita/Obor
+    (`favCheckGroup()`, vázaná na `data-favflt` — generický handler
+    v `bind()`, analogický k `data-flt`, ale píše do `filterModal[dim]`
+    místo globálního `filters[dim]`) — nezávislá na tom, co je zrovna
+    zaškrtnuté v levém panelu, přesně jak chtěl Martin. Linka v tomhle
+    okně NENÍ přes `favCheckGroup()` (viz oprava níž z 2026-09-28) —
+    má vlastní `favLinkaGroup()`. Smazání má stejné dvoukrokové
+    potvrzení jako mazání pracovního příkazu (`filterModal.confirmDel`).
   - **Oprava při testování**: `#fv-name` ztrácelo napsaný text při
     jiné akci v okně (barva/checkbox), protože každá akce spouští
     `render()` (celý `innerHTML` přepis) a input neměl `oninput`
@@ -432,6 +433,43 @@ protože:
     stejný druh chyby, co řeší `f-q`/`f-linka-q`, jen tady stačí jen
     zapsat hodnotu do proměnné (bez `render()`/kurzoru), protože pole
     samo o sobě nic dalšího nepřekresluje.
+- **Čtveřice drobných oprav v Údržbě (2026-09-27/28, v0.10.1–v0.10.4)**:
+  - **Hlavička se přestala překreslovat při každé akci.** Dřív `render()`
+    dělal `app.innerHTML = shell(listView())+...` a `shell()` volal
+    `window.uheaderHTML(...)` pokaždé — na vteřinu to shodilo hodiny
+    (placeholder `--:--:--`, než je opravil `setInterval` v `header.js`)
+    a zvýraznění CZ/EN na výchozí stav. `shell()` je pryč; `render()`
+    teď volá `renderShell(inner)`, která rozdělí `#app` na trvalé
+    `#uh-host` (hlavička, přepíše se jen když se změní `headerSig` —
+    e-mail/level/photoURL/firstName/lastName) a `#main-host` (obsah,
+    přepisuje se dál celý jako dřív). Kdokoli hledá `shell(` v kódu, ať
+    ví, že už neexistuje.
+  - **`renderShell()` navíc drží scroll otevřeného okna** — zapamatuje
+    `scrollTop` prvního `.overlay .modal-body` před přepisem
+    `#main-host` a hned po přepisu ho vrátí (jinak nový DOM element =
+    scroll na nule, vadilo to hlavně v okně Nový/Upravit filtr při
+    zaškrtávání).
+  - **Linka v okně Nový/Upravit filtr přestala být plochý seznam
+    všech linek** (`favCheckGroup('linka',...)` pryč) — sdílí stejné
+    jádro jako panel Linka v levém sloupci: `linkaPickerCore(mode)`
+    (`mode:'filter'` čte/píše `filters.linka`+`linkaOpen`+`linkaQuery`,
+    `mode:'fav'` čte/píše `filterModal.linka`+`favLinkaOpen`+
+    `favLinkaQuery` — nezávislý stav, ať otevření jednoho panelu
+    nezavře druhý). `linkaFilterGroup()` a `favLinkaGroup()` jsou už
+    jen tenké obaly nad `linkaPickerCore()` s jiným vnějším wrapperem
+    (`.filtergroup` vs. `<label>Linka</label>`). Obal fav verze má
+    třídu `.fav-linka-wrap` (ne `.linka-wrap`), aby je šlo v
+    document-click-outside listeneru zavírat nezávisle.
+  - **Panel Linka (obě místa) se po otevření sám `scrollIntoView`uje**
+    — tlačítko Linka bývá poslední v seznamu/okně, takže rozbalený
+    seznam čar jinak vyjížděl pod okraj stránky/modalu a muselo se
+    ručně rolovat.
+  - **Tlačítko „+ Nový pracovní příkaz" má barvu `.btn-newprikaz`**
+    (oranžový gradient `#f6821f→#e8590c`, stejný jako „+ Nový požadavek
+    na opravu" v `opravy.html`) — úmyslně JINOU než zbytek `.btn-primary`
+    tlačítek v Údržbě (ta zůstávají v indigo `--accent`). Martinovo
+    přání: jen tohle jedno tlačítko má sedět barvou k ostatním modulům,
+    ne celá appka.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
@@ -686,14 +724,23 @@ tady). Před otevřením PR:
 
 ## Verzování (na Martinovo přání, stejně jako appka Pracovní příkazy)
 
-I když je tohle „jen" pracovní fork, po každé smysluplné dávce změn
-(ne po každém drobném commitu) udělej i tady tag + GitHub Release —
-Martin to chce mít stejně přehledné jako u appky Pracovní příkazy:
+I když je tohle „jen" pracovní fork, **po KAŽDÉ změně nebo opravě, kterou
+Martin potvrdí jako v pořádku** (ne jen po velkých dávkách — upřesněno
+2026-09-28, protože verze v0.10.1–v0.10.4 dřív dostaly tag, ale ne
+Release, a Martin si toho všiml), udělej tag + GitHub Release:
 1. Zvyš `VERSION` (semver — PATCH oprava, MINOR nová věc, MAJOR zásadní
    změna; zatím 0.x).
 2. `git tag -a vX.Y.Z -m "…"` a `git push origin main --tags`.
 3. `gh release create vX.Y.Z --title "…" --notes "…"` (repo
-   `sirace666/minimo-pracovni-prikazy`).
+   `sirace666/minimo-pracovni-prikazy`) — **`gh` bývá nainstalovaný, ale
+   ne na PATH**, co vidí Bash/PowerShell nástroje; pokud `gh` samo o
+   sobě selže na "command not found", zkus přímo
+   `"/c/Program Files/GitHub CLI/gh.exe"` (Bash) nebo
+   `"C:\Program Files\GitHub CLI\gh.exe"` (PowerShell), než appku
+   pokládej za nedostupnou.
+4. Pro `--notes` s uvozovkami/závorkami v textu raději napiš poznámky
+   do dočasného souboru a použij `--notes-file cesta` — inline text s
+   `()`/„""` v Bash tool vede na syntax chybu.
 
 ## Dokumentace pro Davida (`docs/pro-davida.md`) — JEN NA DISKU, není v gitu
 
