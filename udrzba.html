@@ -153,6 +153,7 @@
   /* --- filtr Linka: zavřené tlačítko + panel s hledáním (může jich časem
      být hodně, na rozdíl od pevných seznamů Typ/Stav/Priorita/Obor) --- */
   .linka-wrap{position:relative}
+  .fav-linka-wrap{position:relative}
   .linka-trigger{width:100%;height:34px;display:flex;align-items:center;justify-content:space-between;gap:6px;
     padding:0 9px;border:1px solid var(--border);border-radius:7px;background:#fff;font-weight:700;font-size:13px;
     color:var(--text);text-align:left}
@@ -380,6 +381,7 @@ fetch('VERSION').then(r=>r.text()).then(t=>{ appVersion=t.trim(); render(); }).c
 let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[]}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
 let linkaOpen=false, linkaQuery='';
+let favLinkaOpen=false, favLinkaQuery='';
 let loginBusy=false, loginErr='', dataReady=false, fatal='';
 let cfg={sections:[]};
 let downOnOverlay=false;
@@ -450,14 +452,39 @@ async function nextNumber(){
   return 'PP-'+year+'-'+String(n).padStart(3,'0');
 }
 
-/* ===== render ===== */
+/* ===== render =====
+   Hlavička se vykresluje jen jednou (do #uh-host, obnoví se jen když se
+   opravdu změní e-mail/level/foto/jméno), ne při každé akci — dřív se
+   celá appka (hlavička i obsah) přepisovala od nuly na každý klik, což
+   na vteřinu shodilo hodiny a zvýraznění jazyka CZ/EN v hlavičce na
+   výchozí stav (než je stihl opravit setInterval v header.js). Obsah
+   (#main-host) se dál přepisuje celý, jako dřív. */
+let headerSig=null;
 function render(){
-  const app=document.getElementById('app');
-  if(!me){ app.innerHTML=loginView(); bind(); return; }
-  if(!isOwner(me.email)){ app.innerHTML=shell(`<div class="empty">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
-  if(fatal){ app.innerHTML=shell(`<div class="empty">${esc(fatal)}</div>`); bind(); return; }
-  app.innerHTML = shell(listView()) + (editing?modalView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  if(!me){ headerSig=null; document.getElementById('app').innerHTML=loginView(); bind(); return; }
+  if(!isOwner(me.email)){ renderShell(`<div class="empty">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
+  if(fatal){ renderShell(`<div class="empty">${esc(fatal)}</div>`); bind(); return; }
+  renderShell(listView());
   bind();
+}
+function renderShell(inner){
+  const app=document.getElementById('app');
+  let uhHost=document.getElementById('uh-host'), mainHost=document.getElementById('main-host');
+  if(!uhHost||!mainHost){
+    app.innerHTML='<div id="uh-host"></div><div id="main-host"></div>';
+    uhHost=document.getElementById('uh-host'); mainHost=document.getElementById('main-host');
+  }
+  const sig=JSON.stringify([me.email,me.level,me.photoURL,me.firstName,me.lastName]);
+  if(headerSig!==sig){
+    uhHost.innerHTML = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
+    headerSig=sig;
+  }
+  // scroll v otevřeném okně se jinak při každém překreslení ztrácel (nový
+  // DOM element = scrollTop 0) — zapamatuje se a hned po překreslení vrátí.
+  const modalBody=document.querySelector('.overlay .modal-body');
+  const scrollTop=modalBody?modalBody.scrollTop:null;
+  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  if(scrollTop!=null){ const nb=document.querySelector('.overlay .modal-body'); if(nb) nb.scrollTop=scrollTop; }
 }
 function loginView(){
   return `<div class="login-wrap"><form class="login" id="loginForm">
@@ -467,10 +494,6 @@ function loginView(){
     <input type="password" id="li-pass" placeholder="Heslo" autocomplete="current-password">
     <button type="submit" class="btn-primary" ${loginBusy?'disabled':''}>${loginBusy?'Přihlašuji…':'Přihlásit se'}</button>
   </form></div>`;
-}
-function shell(inner){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
-  return uh + `<main>${inner}</main>`;
 }
 /* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
 function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.assignedToName].join(' ').toLowerCase().includes(q); }
@@ -532,29 +555,43 @@ function filterGroup(dim,title,opts,countFn,horiz){
     </div>
   </div>`;
 }
-function linkaFilterGroup(){
+function linkaPickerCore(mode){
+  const isFav=mode==='fav';
+  const sel=isFav?(filterModal.linka||[]):filters.linka;
+  const open=isFav?favLinkaOpen:linkaOpen;
+  const query=isFav?favLinkaQuery:linkaQuery;
   const all=linkaOptions();
-  const q=linkaQuery.trim().toLowerCase();
+  const q=query.trim().toLowerCase();
   const shown=q?all.filter(n=>n.toLowerCase().includes(q)):all;
+  const selCount=sel.length;
+  const label=!selCount?'Všechny linky':(selCount<=2?sel.map(esc).join(', '):selCount+' vybráno');
+  const dataAttr=isFav?'data-favflt="linka"':'data-flt="linka"';
+  const toggleAction=isFav?'fav-linka-toggle':'linka-toggle';
+  const searchId=isFav?'fv-linka-q':'f-linka-q';
+  return `<div class="${isFav?'fav-linka-wrap':'linka-wrap'}">
+    <button type="button" class="linka-trigger ${selCount?'has-sel':''}" data-a="${toggleAction}">
+      <span class="linka-trigger-label">${label}</span><span class="car">${open?'▴':'▾'}</span>
+    </button>
+    ${open?`<div class="linka-panel">
+      ${all.length>6?`<input type="text" class="linka-search" id="${searchId}" placeholder="Hledat linku…" value="${esc(query)}">`:''}
+      <div class="checklist linka-list">
+        ${shown.length?shown.map(name=>`<label class="filter-check"><input type="checkbox" ${dataAttr} value="${esc(name)}" ${sel.includes(name)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(name)}</span>${isFav?'':`<span class="count">${countLinka(name)}</span>`}</label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}
+      </div>
+    </div>`:''}
+  </div>`;
+}
+function linkaFilterGroup(){
   const selCount=filters.linka.length;
-  const label=!selCount?'Všechny linky':(selCount<=2?filters.linka.map(esc).join(', '):selCount+' vybráno');
   return `<div class="filtergroup">
     <div class="filtergroup-head">
       <span class="sidebar-title">LINKA</span>
       ${selCount?`<span class="filtergroup-sel">· ${selCount}</span>`:''}
     </div>
-    <div class="linka-wrap">
-      <button type="button" class="linka-trigger ${selCount?'has-sel':''}" data-a="linka-toggle">
-        <span class="linka-trigger-label">${label}</span><span class="car">${linkaOpen?'▴':'▾'}</span>
-      </button>
-      ${linkaOpen?`<div class="linka-panel">
-        ${all.length>6?`<input type="text" class="linka-search" id="f-linka-q" placeholder="Hledat linku…" value="${esc(linkaQuery)}">`:''}
-        <div class="checklist linka-list">
-          ${shown.length?shown.map(name=>`<label class="filter-check"><input type="checkbox" data-flt="linka" value="${esc(name)}" ${filters.linka.includes(name)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(name)}</span><span class="count">${countLinka(name)}</span></label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}
-        </div>
-      </div>`:''}
-    </div>
+    ${linkaPickerCore('filter')}
   </div>`;
+}
+function favLinkaGroup(){
+  return `<div><label>Linka</label>${linkaPickerCore('fav')}</div>`;
 }
 function favWrap(){
   return `<div class="fav-wrap">
@@ -601,7 +638,7 @@ function filterModalView(){
         ${favCheckGroup('stav','Stav',STAV_FILTER_OPTS)}
         ${favCheckGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})))}
         ${favCheckGroup('obor','Obor',OBOR)}
-        ${favCheckGroup('linka','Linka',linkaOptions().map(n=>({k:n,label:n})))}
+        ${favLinkaGroup()}
       </div>
       ${!isNew?`<div class="sec">${f.confirmDel
         ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat filtr „${esc(f.name)}"? Nejde vrátit zpět.</div>
@@ -871,6 +908,7 @@ async function act(a,v,el,ev){
     case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[]; break;
     case 'search-open': searchOpen=true; break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
+    case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'set-typ': if(editing) editing.typ=v; break;
@@ -904,28 +942,29 @@ async function act(a,v,el,ev){
       try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Příkaz '+(o?o.cislo:'')+' smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'cancel-del': editing.confirmDel=false; break;
     case 'fav-toggle': favOpen=!favOpen; break;
-    case 'fav-new': filterModal=newFilterDraft(); favOpen=false; break;
-    case 'fav-edit':{ const f=savedFilters.find(x=>x.id===v); if(f) filterModal=JSON.parse(JSON.stringify(f)); favOpen=false; break; }
+    case 'fav-new': filterModal=newFilterDraft(); favOpen=false; favLinkaOpen=false; favLinkaQuery=''; break;
+    case 'fav-edit':{ const f=savedFilters.find(x=>x.id===v); if(f) filterModal=JSON.parse(JSON.stringify(f)); favOpen=false; favLinkaOpen=false; favLinkaQuery=''; break; }
     case 'fav-apply':{ const f=savedFilters.find(x=>x.id===v); if(f) favApply(f); favOpen=false; break; }
     case 'fav-color': if(filterModal) filterModal.color=v; break;
     case 'fav-close': case 'fav-close-bg':
       if(a==='fav-close-bg'&&(!downOnOverlay||(ev&&ev.target!==el))){ downOnOverlay=false; return; }
-      downOnOverlay=false; filterModal=null; break;
+      downOnOverlay=false; filterModal=null; favLinkaOpen=false; favLinkaQuery=''; break;
     case 'fav-cancel-del': if(filterModal) filterModal.confirmDel=false; break;
     case 'fav-delete':{ if(!filterModal || !filterModal.id) return;
       if(!filterModal.confirmDel){ filterModal.confirmDel=true; break; }
       const list=savedFilters.filter(x=>x.id!==filterModal.id);
-      try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; toast('Filtr smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+      try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; favLinkaOpen=false; favLinkaQuery=''; toast('Filtr smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'fav-save':{ const name=(g('fv-name')||'').trim();
       if(!name){ filterModal.err='name'; break; }
       const id=filterModal.id||('f'+Date.now());
       const item={id,name,color:filterModal.color,typ:filterModal.typ,stav:filterModal.stav,priorita:filterModal.priorita,obor:filterModal.obor,linka:filterModal.linka};
       const list=savedFilters.filter(x=>x.id!==id).concat([item]);
-      try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; toast('Filtr uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+      try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; favLinkaOpen=false; favLinkaQuery=''; toast('Filtr uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
   }
   render();
   if(a==='search-open'){ const inp=document.getElementById('f-q'); if(inp) inp.focus(); }
   if(a==='linka-toggle' && linkaOpen){ const inp=document.getElementById('f-linka-q'); if(inp) inp.focus(); }
+  if(a==='fav-linka-toggle' && favLinkaOpen){ const inp=document.getElementById('fv-linka-q'); if(inp) inp.focus(); }
 }
 function toast(msg,kind){ toastMsg=msg; toastKind=kind; render(); setTimeout(()=>{ toastMsg=null; render(); },2600); }
 function bind(){
@@ -940,6 +979,7 @@ function bind(){
   const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
   const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
   const lq=document.getElementById('f-linka-q'); if(lq) lq.oninput=()=>{linkaQuery=lq.value;const p=lq.selectionStart;render();const n=document.getElementById('f-linka-q');if(n){n.focus();n.setSelectionRange(p,p);}};
+  const flq=document.getElementById('fv-linka-q'); if(flq) flq.oninput=()=>{favLinkaQuery=flq.value;const p=flq.selectionStart;render();const n=document.getElementById('fv-linka-q');if(n){n.focus();n.setSelectionRange(p,p);}};
   // Jméno filtru se nepřekresluje při psaní (nemusí), jen se drží v paměti,
   // ať se neztratí při dalším render() vyvolaném jinou akcí (barva/checkbox).
   const fvn=document.getElementById('fv-name'); if(fvn) fvn.oninput=()=>{ if(filterModal){ filterModal.name=fvn.value; filterModal.err=null; } };
@@ -967,6 +1007,7 @@ function bind(){
 // registrováno JEDNOU, ne v bind() (ten se volá při každém render(), listener by se jinak násobil).
 document.addEventListener('click', e=>{
   if(linkaOpen && !e.target.closest('.linka-wrap')){ linkaOpen=false; linkaQuery=''; render(); }
+  if(favLinkaOpen && !e.target.closest('.fav-linka-wrap')){ favLinkaOpen=false; favLinkaQuery=''; render(); }
   if(favOpen && !e.target.closest('.fav-wrap')){ favOpen=false; render(); }
 });
 render();
