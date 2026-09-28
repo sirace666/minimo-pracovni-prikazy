@@ -272,6 +272,10 @@ protože:
     boolean + inline varování s tlačítky Ano/Zrušit v modálu), ověřeno
     na dvou testovacích záznamech, že se smaže přesně jeden.
   - `assets/wrench.png` — ikona klíče vedle nadpisu, z Martinova exportu.
+    **Odstraněna z nadpisu 2026-09-28 (v0.11.4)** — Martin ji nakonec
+    nechtěl, `.page-icon`/`.page-icon img` CSS i `<span class="page-icon">`
+    v `<h1>` pryč. Soubor `assets/wrench.png` zůstal na disku (nikde jinde
+    referencovaný, ale mazání assetu nebylo požadováno).
 - **`udrzba.html` — priorita "Nízká" + barevný posuvník + filtr Linka
   (2026-09-26)**:
   - **4. stupeň priority `'nízká'`** (pod `'běžná'`) — `PRIORITA`/
@@ -553,6 +557,19 @@ protože:
     Explicitní „✕"/Zrušit tlačítka fungují v obou stavech beze změny
     (mají vlastní `data-a="close"`/`"cancel-edit"`/`"fav-close"`, ne
     přes tenhle mechanismus).
+- **Ikona klíče před „Údržba" odstraněna + oprava zarovnání s verzí
+  (2026-09-28, v0.11.4)** — `<span class="page-icon">` s
+  `assets/wrench.png` pryč z `<h1>`, CSS `.page-icon`/`.page-icon img`
+  smazáno (viz i poznámka u `assets/wrench.png` výš). Martin si zároveň
+  všiml, že „Údržba" a verze (`v${appVersion}`) vedle ní teď vypadaly
+  nesesazeně — `.pagehead h1` mělo `align-items:flex-end` (zarovnání
+  ke spodku boxu), což mezi 23px nadpisem a 12px verzí vytvořilo vizuální
+  posun (různé font-metriky = jiná výška „spodku písma" u každé
+  velikosti). Přepnuto na `align-items:baseline` — zarovná text podle
+  účaří, ne podle spodku boxu, správný způsob pro pairing nadpis+drobný
+  štítek vedle něj. Zarovnání celého `<h1>` řádku vůči zbytku hlavičky
+  (dlaždice/tlačítka vpravo) tím není dotčené — to řeší `height:38px`
+  na `<h1>` a `align-items:end` na `.pagehead` (grid), beze změny.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
