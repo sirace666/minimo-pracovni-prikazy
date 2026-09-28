@@ -558,18 +558,25 @@ protože:
     (mají vlastní `data-a="close"`/`"cancel-edit"`/`"fav-close"`, ne
     přes tenhle mechanismus).
 - **Ikona klíče před „Údržba" odstraněna + oprava zarovnání s verzí
-  (2026-09-28, v0.11.4)** — `<span class="page-icon">` s
+  (2026-09-28, v0.11.4–v0.11.5)** — `<span class="page-icon">` s
   `assets/wrench.png` pryč z `<h1>`, CSS `.page-icon`/`.page-icon img`
-  smazáno (viz i poznámka u `assets/wrench.png` výš). Martin si zároveň
-  všiml, že „Údržba" a verze (`v${appVersion}`) vedle ní teď vypadaly
-  nesesazeně — `.pagehead h1` mělo `align-items:flex-end` (zarovnání
-  ke spodku boxu), což mezi 23px nadpisem a 12px verzí vytvořilo vizuální
-  posun (různé font-metriky = jiná výška „spodku písma" u každé
-  velikosti). Přepnuto na `align-items:baseline` — zarovná text podle
-  účaří, ne podle spodku boxu, správný způsob pro pairing nadpis+drobný
-  štítek vedle něj. Zarovnání celého `<h1>` řádku vůči zbytku hlavičky
-  (dlaždice/tlačítka vpravo) tím není dotčené — to řeší `height:38px`
-  na `<h1>` a `align-items:end` na `.pagehead` (grid), beze změny.
+  smazáno (viz i poznámka u `assets/wrench.png` výš). Dvoukolové
+  doladění zarovnání `.pagehead h1` (nadpis „Údržba" + verze
+  `v${appVersion}` vedle něj):
+  1. `align-items:flex-end` → `align-items:baseline` — vyřešilo
+     nesesazenost MEZI nadpisem (23px) a verzí (12px) vedle něj
+     (různé font-metriky = jiný „spodek písma" u každé velikosti,
+     baseline zarovná podle účaří místo podle spodku boxu).
+  2. Ale `baseline` na jediném řádku ve fixní výšce (`height:38px`)
+     zarovná celou dvojici k VRCHU boxu (prázdný prostor zůstal dole),
+     takže "Údržba" pak sedělo výš než dlaždice vpravo (ty mají
+     `align-items:center`, ne baseline) — Martin si všiml. Opraveno
+     na `align-items:center` — sjednocuje to s tím, jak se centruje
+     obsah `.viewtile`, takže nadpis, verze i dlaždice mají teď
+     stejný vizuální střed (ověřeno `getBoundingClientRect()`, rozdíl
+     pod 0.1px). `center` mezitím pořád drží nadpis a verzi vedle
+     sebe rozumně zarovnané (na rozdíl od `flex-end` z bodu 1) —
+     nejde o čistý baseline-fix, ale vizuálně dostatečné.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
