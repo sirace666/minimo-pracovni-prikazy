@@ -147,6 +147,10 @@
   .filter-check:has(input:checked) .count{background:rgba(255,255,255,.2);color:#fff}
   .filter-check .count.count-warn{background:#fdecea;color:var(--danger);font-weight:800}
   .filter-check:has(input:checked) .count.count-warn{background:rgba(255,255,255,.35);color:#fff}
+  .filter-check .count.count-danger{background:#fdecea;color:var(--danger);font-weight:800}
+  .filter-check .count.count-ok{background:#e6f4ea;color:#1e7d4b;font-weight:800}
+  .filter-check:has(input:checked) .count.count-danger,
+  .filter-check:has(input:checked) .count.count-ok{background:rgba(255,255,255,.35);color:#fff}
 
   /* --- Typ (CM/EM): dvě skutečná tlačítka vedle sebe místo řádků pod sebou —
      jen 2 pevné hodnoty, dává smysl je mít jako "přepínače" vedle sebe.
@@ -624,9 +628,9 @@ function ndTileWrap(){
     </button>
     ${ndOpen?`<div class="linka-panel" style="min-width:210px">
       <div class="checklist">
-        <label class="filter-check"><input type="checkbox" data-flt="nd" value="potreba" ${filters.nd.includes('potreba')?'checked':''}><span class="fc-box"></span><span class="fc-label">Potřeba objednat</span><span class="count">${potreba}</span></label>
+        <label class="filter-check"><input type="checkbox" data-flt="nd" value="potreba" ${filters.nd.includes('potreba')?'checked':''}><span class="fc-box"></span><span class="fc-label">Potřeba objednat</span><span class="count${potreba?' count-danger':''}">${potreba}</span></label>
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="objednano" ${filters.nd.includes('objednano')?'checked':''}><span class="fc-box"></span><span class="fc-label">Čeká (objednáno)</span><span class="count">${objednano}</span></label>
-        <label class="filter-check"><input type="checkbox" data-flt="nd" value="prisel" ${filters.nd.includes('prisel')?'checked':''}><span class="fc-box"></span><span class="fc-label">Díl přišel</span><span class="count">${prisel}</span></label>
+        <label class="filter-check"><input type="checkbox" data-flt="nd" value="prisel" ${filters.nd.includes('prisel')?'checked':''}><span class="fc-box"></span><span class="fc-label">Díl přišel</span><span class="count${prisel?' count-ok':''}">${prisel}</span></label>
       </div>
     </div>`:''}
   </div>`;

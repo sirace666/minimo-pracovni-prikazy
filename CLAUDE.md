@@ -495,6 +495,14 @@ protože:
     „není to tak důležité"): červená když `countNd('potreba')>0`
     (má přednost), jinak zelená když `countNd('prisel')>0`, jinak
     neutrální. `.vt-count.count-danger`/`.count-ok`.
+    **Stejné barvy i u čísel uvnitř rozbaleného panelu** (Martin si
+    všiml, že tam zůstávala neutrální) — `count-danger`/`count-ok`
+    třídy na `.count` u řádků „Potřeba objednat"/„Díl přišel"
+    (`.filter-check .count.count-danger/.count-ok`, nové CSS vedle
+    už existujícího `.count-warn` z bodu o Kritické výš — schválně
+    samostatné třídy, ne recyklace `.count-warn`, ať se nic nerozbije
+    na místě, kde `.count-warn` už funguje). „Čeká (objednáno)" zůstává
+    neutrální i tady, stejná logika jako u dlaždice.
   - **`totalActive` (sidebar „FILTRY" počet + tlačítko „Zrušit filtry"
     v prázdném stavu) musí počítat i `filters.nd.length`** — bez toho
     šlo mít aktivní nd-filtr a nikde nebylo vidět/kudy ho zrušit kromě
