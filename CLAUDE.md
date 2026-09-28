@@ -492,16 +492,20 @@ protože:
     ale zároveň i seznam"): sdílí STEJNÝ `filters.view` přepínač jako
     Vše/Nepřiřazené/Moje, jen s vlastní hodnotou `'nd'` — `matchesView()`
     má pro ni zvláštní větev (`filters.view==='nd' → !!o.nd`, mimo
-    `VIEWS.find()`). Klik na dlaždici (`case 'nd-tile-toggle'`) přepíná
-    `filters.view` mezi `''`/`'nd'` přesně jako `case 'flt-view'` u
-    ostatních — aktivací se automaticky otevře i `ndOpen` panel,
-    deaktivací (klik znovu, NEBO klik na jinou dlaždici — `case
-    'flt-view'` teď na začátku kontroluje `filters.view==='nd'` a při
-    odchodu z něj sama zavře panel a vyprázdní `filters.nd`) se panel
-    zavře A vynuluje užší výběr. Kliknutí MIMO panel (ne na dlaždici,
-    stávající listener) zavírá jen `ndOpen` — `filters.view`/`filters.nd`
-    nechává beze změny, ať se rozdělaný užší výběr neztratí jen proto,
-    že si chceš prohlídnout seznam pod panelem.
+    `VIEWS.find()`).
+    **Klik na dlaždici NENÍ toggle celého pohledu** (opraveno
+    2026-09-28/v0.12.1 — Martin chtěl: klik→otevře seznam, klik mimo→
+    zavře, klik na dlaždici ZNOVU→zase otevře, ne deaktivuje) — `case
+    'nd-tile-toggle'` teď jen přepíná `ndOpen` (`ndOpen=!ndOpen`) a při
+    OTEVŘENÍ nastaví `filters.view='nd'` (idempotentní, když už tam je).
+    `filters.view` se na `''` vrátí JEN přechodem na jinou dlaždici
+    (`case 'flt-view'` na začátku kontroluje `filters.view==='nd'` a
+    při odchodu z něj zavře panel a vyprázdní `filters.nd`) — NE kliky
+    na Náhradní díl samotné. Kliknutí MIMO panel (stávající listener,
+    beze změny) zavírá jen `ndOpen`, `filters.view`/`filters.nd` nechává
+    beze změny — takže „klik mimo" a „klik na dlaždici, když je panel
+    otevřený" dělají teď to samé (obojí jen `ndOpen=false`), jen různou
+    cestou.
     Samotný **rozbalovací panel** se třemi checkboxy je pořád vázaný na
     `filters.nd` (pole) přes **existující generický `data-flt`
     handler** — `nd` jako filtrovací dimenze (`matchesNd()`, `passes()`,
@@ -522,6 +526,16 @@ protože:
     samostatné třídy, ne recyklace `.count-warn`, ať se nic nerozbije
     na místě, kde `.count-warn` už funguje). „Čeká (objednáno)" zůstává
     neutrální i tady, stejná logika jako u dlaždice.
+  - **Čísla na dlaždici jsou nezávislá na tom, která dlaždice nahoře je
+    zrovna aktivní** (2026-09-28/v0.12.1, Martin: „kliknutí na jakoukoli
+    dlaždici nebude ovlivňovat čísla v Náhradní díl") — `passes(o,skip)`
+    dostal nepovinný 2. parametr `skip2` (zpětně kompatibilní, nic
+    jiného ho nepoužívá), `countNd` teď volá `passes(o,'nd','view')` —
+    kromě vlastní `nd` dimenze ignoruje i `view`, takže se drží jen
+    podle sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání), ne
+    podle toho, jestli je aktivní Vše/Nepřiřazené/Moje/Náhradní díl
+    samo. Ostatní `count*` funkce (`countView`, `countTyp`, `countStav`…)
+    beze změny — pořád skipují jen svou vlastní dimenzi.
   - **`totalActive` (sidebar „FILTRY" počet + tlačítko „Zrušit filtry"
     v prázdném stavu) musí počítat i `filters.nd.length`** — bez toho
     šlo mít aktivní nd-filtr a nikde nebylo vidět/kudy ho zrušit kromě

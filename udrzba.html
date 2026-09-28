@@ -529,15 +529,15 @@ function matchesPriorita(o){ return !filters.priorita.length || filters.priorita
 function matchesObor(o){ return !filters.obor.length || oborOf(o).some(x=>filters.obor.includes(x)); }
 function matchesLinka(o){ return !filters.linka.length || filters.linka.includes(o.linka); }
 function matchesNd(o){ return !filters.nd.length || filters.nd.includes(o.nd); }
-function passes(o,skip){
-  if(skip!=='q' && !matchesSearch(o)) return false;
-  if(skip!=='view' && !matchesView(o)) return false;
-  if(skip!=='typ' && !matchesTyp(o)) return false;
-  if(skip!=='stav' && !matchesStav(o)) return false;
-  if(skip!=='priorita' && !matchesPriorita(o)) return false;
-  if(skip!=='obor' && !matchesObor(o)) return false;
-  if(skip!=='linka' && !matchesLinka(o)) return false;
-  if(skip!=='nd' && !matchesNd(o)) return false;
+function passes(o,skip,skip2){
+  if(skip!=='q'&&skip2!=='q' && !matchesSearch(o)) return false;
+  if(skip!=='view'&&skip2!=='view' && !matchesView(o)) return false;
+  if(skip!=='typ'&&skip2!=='typ' && !matchesTyp(o)) return false;
+  if(skip!=='stav'&&skip2!=='stav' && !matchesStav(o)) return false;
+  if(skip!=='priorita'&&skip2!=='priorita' && !matchesPriorita(o)) return false;
+  if(skip!=='obor'&&skip2!=='obor' && !matchesObor(o)) return false;
+  if(skip!=='linka'&&skip2!=='linka' && !matchesLinka(o)) return false;
+  if(skip!=='nd'&&skip2!=='nd' && !matchesNd(o)) return false;
   return true;
 }
 const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
@@ -548,7 +548,10 @@ const countKritickaOpen=()=>rows.filter(o=>passes(o,'priorita') && o.priorita===
 const countLinka=name=>rows.filter(o=>passes(o,'linka') && o.linka===name).length;
 const linkaOptions=()=>(cfg.sections||[]).map(s=>s.name).filter(Boolean);
 const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).length;
-const countNd=k=>rows.filter(o=>passes(o,'nd') && o.nd===k).length;
+// nd čísla na dlaždici schválně ignorují i 'view' (skip2) — nemají se
+// měnit podle toho, která dlaždice nahoře je zrovna aktivní, jen podle
+// sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání).
+const countNd=k=>rows.filter(o=>passes(o,'nd','view') && o.nd===k).length;
 const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM');
 const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM' && o.priorita==='kritická');
 
@@ -976,12 +979,13 @@ async function act(a,v,el,ev){
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
     case 'nd-tile-toggle':
-      // dlaždice Náhradní díl je teď plnohodnotný pohled ve stejné
-      // skupině jako Vše/Nepřiřazené/Moje (viz matchesView) — klik ji
-      // aktivuje/deaktivuje stejně jako ty ostatní, jen navíc otevře
-      // panel s užším výběrem podle konkrétního stavu dílu.
-      if(filters.view==='nd'){ filters.view=''; ndOpen=false; filters.nd=[]; }
-      else{ filters.view='nd'; ndOpen=true; }
+      // Klik na dlaždici jen otevírá/zavírá panel (stejně jako klik mimo
+      // něj panel zavře) — NEdeaktivuje pohled, ať jde klikáním na
+      // dlaždici panel opakovaně znovu otevřít, i když ho předtím zavřel
+      // klik mimo. Pohled (filters.view='nd') se vypne jen přechodem na
+      // jinou dlaždici (viz 'flt-view' výš).
+      ndOpen=!ndOpen;
+      if(ndOpen) filters.view='nd';
       break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
