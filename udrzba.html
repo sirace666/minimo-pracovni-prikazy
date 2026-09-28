@@ -522,7 +522,7 @@ function loginView(){
 }
 /* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
 function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.assignedToName].join(' ').toLowerCase().includes(q); }
-function matchesView(o){ if(!filters.view) return true; const v=VIEWS.find(x=>x.k===filters.view); return v?v.test(o):true; }
+function matchesView(o){ if(!filters.view) return true; if(filters.view==='nd') return !!o.nd; const v=VIEWS.find(x=>x.k===filters.view); return v?v.test(o):true; }
 function matchesTyp(o){ return !filters.typ.length || filters.typ.includes(typOf(o)); }
 function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(s=>filters.stav.includes(s.k)).some(s=>s.test(o)); }
 function matchesPriorita(o){ return !filters.priorita.length || filters.priorita.includes(o.priorita); }
@@ -618,9 +618,8 @@ function linkaPickerCore(mode){
    něco dorazilo, jinak neutrální. ===== */
 function ndTileWrap(){
   const potreba=countNd('potreba'), objednano=countNd('objednano'), prisel=countNd('prisel');
-  const selCount=filters.nd.length;
   return `<div class="nd-tile-wrap">
-    <button type="button" class="viewtile ${selCount?'on':''}" data-a="nd-tile-toggle">
+    <button type="button" class="viewtile ${filters.view==='nd'?'on':''}" data-a="nd-tile-toggle">
       <span class="vt-icon">📦</span><span class="vt-label">Náhradní díl</span>
       <span class="vt-count${potreba?' count-danger':''}" title="Potřeba objednat">${potreba}</span>
       <span class="vt-count" title="Čeká (objednáno)">${objednano}</span>
@@ -967,12 +966,23 @@ async function act(a,v,el,ev){
       loginBusy=true;loginErr='';render();
       try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); } return; }
     case 'logout': await signOut(auth); return;
-    case 'flt-view': filters.view=(filters.view===v?'':v); break;
+    case 'flt-view':
+      // odchod z pohledu Náhradní díl na jinou dlaždici zavře i její panel
+      // a zruší rozepsaný užší výběr (potřeba/čeká/přišel) — čistý přechod.
+      if(filters.view==='nd'){ ndOpen=false; filters.nd=[]; }
+      filters.view=(filters.view===v?'':v); break;
     case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[]; break;
     case 'search-open': searchOpen=true; break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
-    case 'nd-tile-toggle': ndOpen=!ndOpen; break;
+    case 'nd-tile-toggle':
+      // dlaždice Náhradní díl je teď plnohodnotný pohled ve stejné
+      // skupině jako Vše/Nepřiřazené/Moje (viz matchesView) — klik ji
+      // aktivuje/deaktivuje stejně jako ty ostatní, jen navíc otevře
+      // panel s užším výběrem podle konkrétního stavu dílu.
+      if(filters.view==='nd'){ filters.view=''; ndOpen=false; filters.nd=[]; }
+      else{ filters.view='nd'; ndOpen=true; }
+      break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'set-typ': if(editing) editing.typ=v; break;

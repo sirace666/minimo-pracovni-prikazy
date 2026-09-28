@@ -484,17 +484,29 @@ protože:
     žádné nové omezení, na Martinovo přání) `→ null` („Pokračovat").
     `NDLABEL`/`ndLabelHist`/`.badge.nd-prisel` (zelená `#e6f4ea`/
     `#1e7d4b`, stejná jako `.badge.p-nízká`) doplněny o `prisel`.
-  - **Dlaždice „Náhradní díl" nahoře NENÍ obyčejná položka `VIEWS`**
-    (ty jsou jednovýběrové) — je to vlastní widget `ndTileWrap()`,
-    stejný princip jako `linkaFilterGroup()`/`favLinkaGroup()`: tlačítko
-    + `ndOpen` stav + rozbalovací `.linka-panel` (recyklovaný, ne nové
-    CSS) se třemi checkboxy vázanými na `filters.nd` (pole) přes
-    **existující generický `data-flt` handler** — `nd` funguje jako
-    kterýkoli jiný filtr (`matchesNd()`, `passes()`, `countNd()`), nic
-    nového se nemuselo psát na bind. `VIEWS` pole teď má jen
-    `unassigned`+`mine` (`nd-needed` pryč) a viewtiles se renderují
-    ručně (ne přes `VIEWS.map()`), aby šlo `ndTileWrap()` vložit přesně
-    mezi Nepřiřazené a Moje.
+  - **Dlaždice „Náhradní díl" NENÍ položka pole `VIEWS`** (`unassigned`+
+    `mine` tam zůstaly, `nd-needed` je pryč, viewtiles se renderují
+    ručně, ne přes `VIEWS.map()`, aby šlo `ndTileWrap()` vložit přesně
+    mezi Nepřiřazené a Moje) — ale **CHOVÁ SE jako by tam byla**
+    (2026-09-28/v0.12.0, na Martinovo přání — „funguje jako tlačítko,
+    ale zároveň i seznam"): sdílí STEJNÝ `filters.view` přepínač jako
+    Vše/Nepřiřazené/Moje, jen s vlastní hodnotou `'nd'` — `matchesView()`
+    má pro ni zvláštní větev (`filters.view==='nd' → !!o.nd`, mimo
+    `VIEWS.find()`). Klik na dlaždici (`case 'nd-tile-toggle'`) přepíná
+    `filters.view` mezi `''`/`'nd'` přesně jako `case 'flt-view'` u
+    ostatních — aktivací se automaticky otevře i `ndOpen` panel,
+    deaktivací (klik znovu, NEBO klik na jinou dlaždici — `case
+    'flt-view'` teď na začátku kontroluje `filters.view==='nd'` a při
+    odchodu z něj sama zavře panel a vyprázdní `filters.nd`) se panel
+    zavře A vynuluje užší výběr. Kliknutí MIMO panel (ne na dlaždici,
+    stávající listener) zavírá jen `ndOpen` — `filters.view`/`filters.nd`
+    nechává beze změny, ať se rozdělaný užší výběr neztratí jen proto,
+    že si chceš prohlídnout seznam pod panelem.
+    Samotný **rozbalovací panel** se třemi checkboxy je pořád vázaný na
+    `filters.nd` (pole) přes **existující generický `data-flt`
+    handler** — `nd` jako filtrovací dimenze (`matchesNd()`, `passes()`,
+    `countNd()`) je beze změny, mění se jen to, jak se dlaždice
+    (de)aktivuje.
   - **Na dlaždici jsou VŠECHNA TŘI čísla vedle sebe, ne jedno souhrnné**
     (2026-09-28/v0.11.7, Martin chtěl vidět rozpad bez rozklikávání) —
     `ndTileWrap()` vykresluje tři `<span class="vt-count">` (potřeba/
