@@ -515,11 +515,16 @@ protože:
     ne `border`/`border-color` — ty by přepsaly `border-left-color`
     podle stavu, co tam už je). **EM + kritická navíc = lehce červená
     výplň** (`background:#fdecea`). Třídy `em`/`crit` na `.order-item`.
-  - **Stejná řeč (obrys+výplň) i na dlaždici „Nepřiřazené"** —
-    `unassignedHasEm()`/`unassignedHasEmCrit()` (agregace přes
-    `rows`, respektují ostatní aktivní filtry přes `passes(o,'view')`,
-    stejný vzorec jako `countView`). `.viewtile.vt-em`/`.vt-crit`
-    (`:not(.on)` u výplně, ať nepřebije zvýraznění aktivní dlaždice).
+  - **Dlaždice „Nepřiřazené" MÁ JINOU vizuální řeč než karty** — ne
+    obrys+výplň (Martin to 2026-09-28/v0.11.6 schválně změnil zpátky):
+    **jen červené číslo** u nepřiřazené havarijky (`.vt-count.count-
+    danger`, stejná třída jako u dlaždice Náhradní díl), **+ červený
+    vykřičník** (`<span class="vt-warn">!</span>`) navíc, když je
+    nepřiřazená havarijka zároveň kritická. `unassignedHasEm()`/
+    `unassignedHasEmCrit()` (agregace přes `rows`, respektují ostatní
+    aktivní filtry přes `passes(o,'view')`, stejný vzorec jako
+    `countView`) beze změny — jen se jinak vykreslují. Staré
+    `.viewtile.vt-em`/`.vt-crit` (box-shadow+background) smazané.
   - **„Kritická" v sidebar filtru Priorita**: zvýrazní se jen ČÍSLO
     (`.count-warn`), ne celá položka — na rozdíl od dlaždic výš, tady
     by celobarevná položka v nabité skupině filtrů dělala nepořádek

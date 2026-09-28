@@ -63,11 +63,11 @@
   .viewtile .vt-count{min-width:19px;height:17px;border-radius:9px;background:#eef0f5;color:var(--muted);
     font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
   .viewtile.on .vt-count{background:rgba(255,255,255,.2);color:#fff}
-  /* nepřiřazená/kritická havarijka — stejná řeč jako u karet níž (em/crit) */
-  .viewtile.vt-em{box-shadow:0 0 0 1.5px var(--danger) inset}
-  .viewtile.vt-crit:not(.on){background:#fdecea}
   .viewtile .vt-count.count-danger{background:#fdecea;color:var(--danger)}
   .viewtile .vt-count.count-ok{background:#e6f4ea;color:#1e7d4b}
+  /* nepřiřazená havarijka: červené číslo; nepřiřazená havarijka +
+     kritická navíc: červený vykřičník vedle čísla */
+  .viewtile .vt-warn{color:var(--danger);font-weight:900;font-size:13px;margin-left:1px}
   .nd-tile-wrap{position:relative}
 
   /* --- pravá skupina: hledání (ikona → rozbalí se) + řazení + nový --- */
@@ -721,8 +721,8 @@ function listView(){
         <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
           <span class="vt-icon">📋</span><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span>
         </button>
-        <button class="viewtile ${filters.view==='unassigned'?'on':''} ${unassignedHasEm()?'vt-em':''} ${unassignedHasEmCrit()?'vt-crit':''}" data-a="flt-view" data-v="unassigned">
-          <span class="vt-icon">📥</span><span class="vt-label">Nepřiřazené</span><span class="vt-count">${countView('unassigned')}</span>
+        <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
+          <span class="vt-icon">📥</span><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span>${unassignedHasEmCrit()?'<span class="vt-warn">!</span>':''}
         </button>
         ${ndTileWrap()}
         <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
