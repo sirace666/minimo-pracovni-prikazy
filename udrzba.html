@@ -63,6 +63,7 @@
   .viewtile .vt-count{min-width:19px;height:17px;border-radius:9px;background:#eef0f5;color:var(--muted);
     font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
   .viewtile.on .vt-count{background:rgba(255,255,255,.2);color:#fff}
+  .viewtiles .vt-sep{width:1px;height:16px;background:var(--border);flex:none;align-self:center}
   .viewtile .vt-count.count-danger{background:#fdecea;color:var(--danger)}
   .viewtile .vt-count.count-ok{background:#e6f4ea;color:#1e7d4b}
   /* nepřiřazená havarijka: červené číslo; nepřiřazená havarijka +
@@ -722,10 +723,13 @@ function listView(){
         <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
           <span class="vt-icon">📋</span><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span>
         </button>
+        <span class="vt-sep"></span>
         <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
           <span class="vt-icon">📥</span><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span>${unassignedHasEmCrit()?'<span class="vt-warn">!</span>':''}
         </button>
+        <span class="vt-sep"></span>
         ${ndTileWrap()}
+        <span class="vt-sep"></span>
         <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
           <span class="vt-icon">👤</span><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span>
         </button>

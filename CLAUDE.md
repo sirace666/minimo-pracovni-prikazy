@@ -585,6 +585,19 @@ protože:
      pod 0.1px). `center` mezitím pořád drží nadpis a verzi vedle
      sebe rozumně zarovnané (na rozdíl od `flex-end` z bodu 1) —
      nejde o čistý baseline-fix, ale vizuálně dostatečné.
+- **Oddělovače mezi dlaždicemi nahoře (2026-09-28, v0.11.8)** — od
+  chvíle, co má dlaždice Náhradní díl tři vlastní čísla (v0.11.7),
+  vypadaly všechny čtyři dlaždice (Vše/Nepřiřazené/Náhradní díl/Moje)
+  jako jedna splývající řada textu — chybělo mezi nimi vizuální
+  ohraničení (dřív to řešily jen barvy `.on`/hover, což u NEaktivních
+  dlaždic vedle sebe nestačí). Řešeno samostatnými `<span class=
+  "vt-sep"></span>` elementy vloženými PŘÍMO do markupu mezi jednotlivá
+  tlačítka (ne CSS `border-left`/`::before` na tlačítkách samých —
+  vyhne se to kolizi s `border-radius`/`.on` barevným pozadím aktivní
+  dlaždice). `.viewtiles .vt-sep{width:1px;height:16px;background:
+  var(--border);align-self:center}` — kratší než celá výška řádku
+  (16px v 38px kontejneru), zkrácený/vycentrovaný oddělovač, ne čára
+  přes celou výšku.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
