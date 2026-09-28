@@ -66,6 +66,12 @@
   .viewtile .vt-count{min-width:19px;height:17px;border-radius:9px;background:#eef0f5;color:var(--muted);
     font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
   .viewtile.on .vt-count{background:rgba(255,255,255,.2);color:#fff}
+  /* nepřiřazená/kritická havarijka — stejná řeč jako u karet níž (em/crit) */
+  .viewtile.vt-em{box-shadow:0 0 0 1.5px var(--danger) inset}
+  .viewtile.vt-crit:not(.on){background:#fdecea}
+  .viewtile .vt-count.count-danger{background:#fdecea;color:var(--danger)}
+  .viewtile .vt-count.count-ok{background:#e6f4ea;color:#1e7d4b}
+  .nd-tile-wrap{position:relative}
 
   /* --- pravá skupina: hledání (ikona → rozbalí se) + řazení + nový --- */
   .head-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
@@ -139,6 +145,8 @@
   .filter-check:has(input:checked) .fc-box{background:#fff;border-color:#fff;color:var(--accent)}
   .filter-check:has(input:checked) .fc-box::after{content:'✓'}
   .filter-check:has(input:checked) .count{background:rgba(255,255,255,.2);color:#fff}
+  .filter-check .count.count-warn{background:#fdecea;color:var(--danger);font-weight:800}
+  .filter-check:has(input:checked) .count.count-warn{background:rgba(255,255,255,.35);color:#fff}
 
   /* --- Typ (CM/EM): dvě skutečná tlačítka vedle sebe místo řádků pod sebou —
      jen 2 pevné hodnoty, dává smysl je mít jako "přepínače" vedle sebe.
@@ -214,6 +222,10 @@
   .order-item.st-nový{border-left-color:#6366f1}
   .order-item.st-rozpracováno{border-left-color:#ea7317}
   .order-item.st-hotovo{border-left-color:var(--ok)}
+  /* havarijka (EM) — červený obrys navíc k barvě podle stavu vlevo;
+     EM + kritická zároveň přidá i lehce červenou výplň */
+  .order-item.em{box-shadow:0 0 0 1.5px var(--danger)}
+  .order-item.em.crit{background:#fdecea}
   .oi-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;flex-wrap:wrap}
   .oi-title{margin:0 0 .25rem;font-size:.92rem;font-weight:700}
   .oi-meta{font-size:.78rem;color:var(--muted)}
@@ -241,6 +253,7 @@
   .badge.obor-nastrojarna{background:#e8f5e9;color:#2e7d32}
   .badge.nd-potreba{background:#fdecea;color:var(--danger)}
   .badge.nd-objednano{background:#fef3c7;color:var(--warn)}
+  .badge.nd-prisel{background:#e6f4ea;color:#1e7d4b}
 
   /* --- modal (Davidovo tělo hlavičky, náš obsah) --- */
   .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto;z-index:70}
@@ -357,8 +370,9 @@ const OBOR = [
 ];
 const oborOf = o => Array.isArray(o && o.obor) ? o.obor : [];
 
-/* ===== Náhradní díl: null | 'potreba' (potřeba objednat) | 'objednano' (čeká se) ===== */
-const NDLABEL = {potreba:'Potřeba objednat díl', objednano:'Čeká na díl (objednáno)'};
+/* ===== Náhradní díl: null | 'potreba' (potřeba objednat) | 'objednano' (čeká se) |
+   'prisel' (dorazil, čeká na přiřazení) ===== */
+const NDLABEL = {potreba:'Potřeba objednat díl', objednano:'Čeká na díl (objednáno)', prisel:'Díl přišel'};
 
 /* ===== Stav (pro levý filtr — kombinuje pole status + nd do jednoho seznamu) ===== */
 const STAV_FILTER_OPTS = [
@@ -369,11 +383,13 @@ const STAV_FILTER_OPTS = [
 ];
 const PRIORITA_LABEL = {'nízká':'Nízká','běžná':'Běžná','vysoká':'Vysoká','kritická':'Kritická'};
 
-/* ===== Hlavní pohledy nahoře — co potřebuje akci HNED ===== */
+/* ===== Hlavní pohledy nahoře — co potřebuje akci HNED =====
+   Náhradní díl mezi nimi NENÍ obyčejná položka VIEWS (jednovýběrová) —
+   je to vlastní dlaždice s rozbalovacím panelem (viz ndTileWrap()),
+   protože potřebuje tři nezávisle kombinovatelné stavy, ne jeden test. */
 const VIEWS = [
-  {k:'unassigned', icon:'📥', label:'Nepřiřazené',          test:o=>!o.assignedTo},
-  {k:'nd-needed',  icon:'📦', label:'Potřeba objednat díl', test:o=>o.nd==='potreba'},
-  {k:'mine',       icon:'👤', label:'Moje',                 test:o=>me && (o.author===me.uid || o.assignedTo===me.uid)}
+  {k:'unassigned', icon:'📥', label:'Nepřiřazené', test:o=>!o.assignedTo},
+  {k:'mine',       icon:'👤', label:'Moje',        test:o=>me && (o.author===me.uid || o.assignedTo===me.uid)}
 ];
 
 /* ===== Stav aplikace ===== */
@@ -383,9 +399,10 @@ let modalTab='info';
 // zobrazí se sama, jak jde bump verze při releasu, bez ručního psaní do kódu.
 let appVersion='';
 fetch('VERSION').then(r=>r.text()).then(t=>{ appVersion=t.trim(); render(); }).catch(()=>{});
-let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[]}, toastMsg=null, toastKind='';
+let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],nd:[]}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
 let linkaOpen=false, linkaQuery='';
+let ndOpen=false;
 let favLinkaOpen=false, favLinkaQuery='';
 let loginBusy=false, loginErr='', dataReady=false, fatal='';
 let cfg={sections:[]};
@@ -508,6 +525,7 @@ function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(
 function matchesPriorita(o){ return !filters.priorita.length || filters.priorita.includes(o.priorita); }
 function matchesObor(o){ return !filters.obor.length || oborOf(o).some(x=>filters.obor.includes(x)); }
 function matchesLinka(o){ return !filters.linka.length || filters.linka.includes(o.linka); }
+function matchesNd(o){ return !filters.nd.length || filters.nd.includes(o.nd); }
 function passes(o,skip){
   if(skip!=='q' && !matchesSearch(o)) return false;
   if(skip!=='view' && !matchesView(o)) return false;
@@ -516,15 +534,20 @@ function passes(o,skip){
   if(skip!=='priorita' && !matchesPriorita(o)) return false;
   if(skip!=='obor' && !matchesObor(o)) return false;
   if(skip!=='linka' && !matchesLinka(o)) return false;
+  if(skip!=='nd' && !matchesNd(o)) return false;
   return true;
 }
 const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
 const countTyp=k=>rows.filter(o=>passes(o,'typ') && typOf(o)===k).length;
 const countStav=k=>rows.filter(o=>passes(o,'stav') && (STAV_FILTER_OPTS.find(s=>s.k===k)||{test:()=>false}).test(o)).length;
 const countPriorita=k=>rows.filter(o=>passes(o,'priorita') && o.priorita===k).length;
+const countKritickaOpen=()=>rows.filter(o=>passes(o,'priorita') && o.priorita==='kritická' && o.status!=='hotovo').length;
 const countLinka=name=>rows.filter(o=>passes(o,'linka') && o.linka===name).length;
 const linkaOptions=()=>(cfg.sections||[]).map(s=>s.name).filter(Boolean);
 const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).length;
+const countNd=k=>rows.filter(o=>passes(o,'nd') && o.nd===k).length;
+const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM');
+const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM' && o.priorita==='kritická');
 
 /* ===== řazení ===== */
 const SORT_OPTS=[{k:'created',label:'Datum'},{k:'priorita',label:'Priorita'},{k:'status',label:'Stav'}];
@@ -548,7 +571,7 @@ function extraBadges(o){
   if(o.nd) html+=`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`;
   return html;
 }
-function filterGroup(dim,title,opts,countFn,horiz){
+function filterGroup(dim,title,opts,countFn,horiz,warnTest){
   const selCount=filters[dim].length;
   return `<div class="filtergroup">
     <div class="filtergroup-head">
@@ -556,7 +579,7 @@ function filterGroup(dim,title,opts,countFn,horiz){
       ${selCount?`<span class="filtergroup-sel">· ${selCount}</span>`:''}
     </div>
     <div class="checklist${horiz?' row':''}">
-      ${opts.map(o=>`<label class="filter-check" ${(horiz&&o.color)?`style="--tc:${o.color}"`:''}><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${(!horiz&&o.color)?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${countFn(o.k)}</span></label>`).join('')}
+      ${opts.map(o=>`<label class="filter-check" ${(horiz&&o.color)?`style="--tc:${o.color}"`:''}><input type="checkbox" data-flt="${dim}" value="${o.k}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${(!horiz&&o.color)?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count${warnTest&&warnTest(o.k)?' count-warn':''}">${countFn(o.k)}</span></label>`).join('')}
     </div>
   </div>`;
 }
@@ -581,6 +604,29 @@ function linkaPickerCore(mode){
       ${all.length>6?`<input type="text" class="linka-search" id="${searchId}" placeholder="Hledat linku…" value="${esc(query)}">`:''}
       <div class="checklist linka-list">
         ${shown.length?shown.map(name=>`<label class="filter-check"><input type="checkbox" ${dataAttr} value="${esc(name)}" ${sel.includes(name)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(name)}</span>${isFav?'':`<span class="count">${countLinka(name)}</span>`}</label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}
+      </div>
+    </div>`:''}
+  </div>`;
+}
+/* ===== Dlaždice "Náhradní díl" nahoře — vlastní tlačítko + rozbalovací
+   panel se třemi nezávisle kombinovatelnými stavy (na rozdíl od ostatních
+   VIEWS dlaždic, co jsou jednovýběrové). Číslo na dlaždici je jen barevné
+   (ne celá dlaždice) — červená když je co objednat, jinak zelená když
+   něco dorazilo, jinak neutrální. ===== */
+function ndTileWrap(){
+  const potreba=countNd('potreba'), objednano=countNd('objednano'), prisel=countNd('prisel');
+  const total=potreba+objednano+prisel;
+  const selCount=filters.nd.length;
+  const countCls=potreba?'count-danger':(prisel?'count-ok':'');
+  return `<div class="nd-tile-wrap">
+    <button type="button" class="viewtile ${selCount?'on':''}" data-a="nd-tile-toggle">
+      <span class="vt-icon">📦</span><span class="vt-label">Náhradní díl</span><span class="vt-count ${countCls}">${total}</span>
+    </button>
+    ${ndOpen?`<div class="linka-panel" style="min-width:210px">
+      <div class="checklist">
+        <label class="filter-check"><input type="checkbox" data-flt="nd" value="potreba" ${filters.nd.includes('potreba')?'checked':''}><span class="fc-box"></span><span class="fc-label">Potřeba objednat</span><span class="count">${potreba}</span></label>
+        <label class="filter-check"><input type="checkbox" data-flt="nd" value="objednano" ${filters.nd.includes('objednano')?'checked':''}><span class="fc-box"></span><span class="fc-label">Čeká (objednáno)</span><span class="count">${objednano}</span></label>
+        <label class="filter-check"><input type="checkbox" data-flt="nd" value="prisel" ${filters.nd.includes('prisel')?'checked':''}><span class="fc-box"></span><span class="fc-label">Díl přišel</span><span class="count">${prisel}</span></label>
       </div>
     </div>`:''}
   </div>`;
@@ -663,7 +709,7 @@ function filterModalView(){
 function listView(){
   if(!dataReady) return `<div class="empty">Načítám data…</div>`;
   const rr=visibleRows();
-  const totalActive=filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length;
+  const totalActive=filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.nd.length;
   const searchIsOpen=searchOpen||!!filters.q;
   return `
   <div class="pagehead">
@@ -673,9 +719,13 @@ function listView(){
         <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
           <span class="vt-icon">📋</span><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span>
         </button>
-        ${VIEWS.map(v=>`<button class="viewtile ${filters.view===v.k?'on':''}" data-a="flt-view" data-v="${v.k}">
-          <span class="vt-icon">${v.icon}</span><span class="vt-label">${esc(v.label)}</span><span class="vt-count">${countView(v.k)}</span>
-        </button>`).join('')}
+        <button class="viewtile ${filters.view==='unassigned'?'on':''} ${unassignedHasEm()?'vt-em':''} ${unassignedHasEmCrit()?'vt-crit':''}" data-a="flt-view" data-v="unassigned">
+          <span class="vt-icon">📥</span><span class="vt-label">Nepřiřazené</span><span class="vt-count">${countView('unassigned')}</span>
+        </button>
+        ${ndTileWrap()}
+        <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
+          <span class="vt-icon">👤</span><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span>
+        </button>
       </div>
       <div class="head-actions">
         ${searchIsOpen?`
@@ -703,13 +753,13 @@ function listView(){
       </div>
       ${filterGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)',color:'#41506b'},{k:'EM',label:'Havarijní (EM)',color:'#c0392b'}],countTyp,true)}
       ${filterGroup('stav','Stav',STAV_FILTER_OPTS,countStav)}
-      ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})),countPriorita)}
+      ${filterGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})),countPriorita,false,k=>k==='kritická'&&countKritickaOpen()>0)}
       ${filterGroup('obor','Obor',OBOR,countObor)}
       ${linkaFilterGroup()}
     </aside>
     <section>
       ${rr.length?`<div class="list-card"><div class="list">
-        ${rr.map(o=>`<button type="button" class="order-item st-${o.status}" data-a="open" data-v="${o._id}">
+        ${rr.map(o=>`<button type="button" class="order-item st-${o.status} ${typOf(o)==='EM'?'em':''} ${typOf(o)==='EM'&&o.priorita==='kritická'?'crit':''}" data-a="open" data-v="${o._id}">
             <div class="oi-top">
               <span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
               <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
@@ -851,7 +901,8 @@ function modalView(){
         <div class="row">
           ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
           ${o.nd==='potreba'&&isAdmin()?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
-          ${o.nd==='objednano'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat (díl dorazil)</button>`:''}
+          ${o.nd==='objednano'?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
+          ${o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}
           ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
         </div>
       </div>`:''}
@@ -910,10 +961,11 @@ async function act(a,v,el,ev){
       try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ loginBusy=false; loginErr='Přihlášení selhalo.'; render(); } return; }
     case 'logout': await signOut(auth); return;
     case 'flt-view': filters.view=(filters.view===v?'':v); break;
-    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[]; break;
+    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[]; break;
     case 'search-open': searchOpen=true; break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
+    case 'nd-tile-toggle': ndOpen=!ndOpen; break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'set-typ': if(editing) editing.typ=v; break;
@@ -936,7 +988,7 @@ async function act(a,v,el,ev){
         if(v==='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
         toast('Stav změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'nd-set':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
-      const ndLabelHist={potreba:'nahlásil chybějící díl',objednano:'díl objednán','':'díl vyřešen, pokračuje se'};
+      const ndLabelHist={potreba:'nahlásil chybějící díl',objednano:'díl objednán',prisel:'díl dorazil','':'pokračuje se v opravě'};
       const hist=(o.hist||[]).slice().concat(`${today()} · ${me.name} · ${ndLabelHist[v]||'změna stavu dílu'}`);
       try{ await updateDoc(doc(db,'udrzba',o._id),{nd:v||null,hist});
         editing.nd=v||null; editing.hist=hist;
@@ -1021,6 +1073,7 @@ function bind(){
 document.addEventListener('click', e=>{
   if(linkaOpen && !e.target.closest('.linka-wrap')){ linkaOpen=false; linkaQuery=''; render(); }
   if(favLinkaOpen && !e.target.closest('.fav-linka-wrap')){ favLinkaOpen=false; favLinkaQuery=''; render(); }
+  if(ndOpen && !e.target.closest('.nd-tile-wrap')){ ndOpen=false; render(); }
   if(favOpen && !e.target.closest('.fav-wrap')){ favOpen=false; render(); }
 });
 render();

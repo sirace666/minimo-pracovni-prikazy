@@ -470,6 +470,53 @@ protože:
     tlačítek v Údržbě (ta zůstávají v indigo `--accent`). Martinovo
     přání: jen tohle jedno tlačítko má sedět barvou k ostatním modulům,
     ne celá appka.
+- **Náhradní díl: třetí stav „přišel" + zvýraznění naléhavosti
+  (2026-09-28, v0.11.0)** — dlouhá diskuze v konverzaci s Martinem
+  (návrhy, mockupy, postupné upřesňování), než se to kódovalo, viz
+  transcript téhle session, kdyby bylo potřeba dohledat proč.
+  - **`nd` má teď tři stavy** místo dvou: `null → 'potreba'` (technik,
+    tlačítko „Chybí díl") `→ 'objednano'` (jen `isAdmin()`, „Objednáno")
+    `→ 'prisel'` (nové, KDOKOLIV — stejná práva jako ostatní kroky,
+    žádné nové omezení, na Martinovo přání) `→ null` („Pokračovat").
+    `NDLABEL`/`ndLabelHist`/`.badge.nd-prisel` (zelená `#e6f4ea`/
+    `#1e7d4b`, stejná jako `.badge.p-nízká`) doplněny o `prisel`.
+  - **Dlaždice „Náhradní díl" nahoře NENÍ obyčejná položka `VIEWS`**
+    (ty jsou jednovýběrové) — je to vlastní widget `ndTileWrap()`,
+    stejný princip jako `linkaFilterGroup()`/`favLinkaGroup()`: tlačítko
+    + `ndOpen` stav + rozbalovací `.linka-panel` (recyklovaný, ne nové
+    CSS) se třemi checkboxy vázanými na `filters.nd` (pole) přes
+    **existující generický `data-flt` handler** — `nd` funguje jako
+    kterýkoli jiný filtr (`matchesNd()`, `passes()`, `countNd()`), nic
+    nového se nemuselo psát na bind. `VIEWS` pole teď má jen
+    `unassigned`+`mine` (`nd-needed` pryč) a viewtiles se renderují
+    ručně (ne přes `VIEWS.map()`), aby šlo `ndTileWrap()` vložit přesně
+    mezi Nepřiřazené a Moje.
+  - **Barva ČÍSLA na dlaždici** (ne celé dlaždice — vědomé rozhodnutí,
+    „není to tak důležité"): červená když `countNd('potreba')>0`
+    (má přednost), jinak zelená když `countNd('prisel')>0`, jinak
+    neutrální. `.vt-count.count-danger`/`.count-ok`.
+  - **`totalActive` (sidebar „FILTRY" počet + tlačítko „Zrušit filtry"
+    v prázdném stavu) musí počítat i `filters.nd.length`** — bez toho
+    šlo mít aktivní nd-filtr a nikde nebylo vidět/kudy ho zrušit kromě
+    znovurozkliknutí té samé dlaždice (odhaleno až při testování).
+  - **EM = červený obrys karty** (`box-shadow:0 0 0 1.5px var(--danger)`,
+    ne `border`/`border-color` — ty by přepsaly `border-left-color`
+    podle stavu, co tam už je). **EM + kritická navíc = lehce červená
+    výplň** (`background:#fdecea`). Třídy `em`/`crit` na `.order-item`.
+  - **Stejná řeč (obrys+výplň) i na dlaždici „Nepřiřazené"** —
+    `unassignedHasEm()`/`unassignedHasEmCrit()` (agregace přes
+    `rows`, respektují ostatní aktivní filtry přes `passes(o,'view')`,
+    stejný vzorec jako `countView`). `.viewtile.vt-em`/`.vt-crit`
+    (`:not(.on)` u výplně, ať nepřebije zvýraznění aktivní dlaždice).
+  - **„Kritická" v sidebar filtru Priorita**: zvýrazní se jen ČÍSLO
+    (`.count-warn`), ne celá položka — na rozdíl od dlaždic výš, tady
+    by celobarevná položka v nabité skupině filtrů dělala nepořádek
+    (Martinovo rozhodnutí po diskuzi). Počítá se zvlášť
+    (`countKritickaOpen()` — jen `status!=='hotovo'`), NE stejnou
+    funkcí jako běžné počítadlo `countPriorita()` (to pořád ukazuje
+    úplně všechny kritické, i hotové — jinak by zaškrtnutí filtru
+    ukázalo jiný počet, než kolik ve skutečnosti vyfiltruje).
+    `filterGroup()` dostal nový nepovinný 6. parametr `warnTest(key)`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
