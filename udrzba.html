@@ -82,7 +82,8 @@
     border-radius:8px;padding:0 5px 0 10px;box-shadow:0 0 0 3px rgba(43,58,134,.1)}
   .search-wrap .search-icon{font-size:13px;color:#8a90a6;flex:none}
   .search-wrap .search{flex:1;min-width:0;border:none;outline:none;padding:0;font-weight:600;font-size:13px}
-  .search-close{width:22px;height:22px;border:none;background:#eef0f5;border-radius:6px;cursor:pointer;color:var(--muted);font-size:12px;flex:none}
+  .search-close{width:22px;height:22px;border:none;background:#eef0f5;border-radius:6px;cursor:pointer;color:var(--muted);font-size:12px;flex:none;
+    display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
   .sortbox{display:flex;align-items:center;height:38px;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}
   #f-sortkey{width:auto;height:100%;border:none;padding:0 6px 0 10px;font-weight:700;font-size:13px;background:transparent}
   .sort-dir{width:32px;height:100%;border:none;border-left:1px solid var(--border);border-radius:0;background:transparent;color:var(--accent);font-weight:800;font-size:13px}
@@ -978,7 +979,12 @@ async function act(a,v,el,ev){
     case 'edit': collect(); editMode=true; break;
     case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
     case 'close': case 'close-bg':
-      if(a==='close-bg'&&(!downOnOverlay||(ev&&ev.target!==el))){ downOnOverlay=false; return; }
+      if(a==='close-bg'){
+        if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; }
+        // rozepsaný formulář (nový příkaz / editace) se kliknutím mimo
+        // nezahazuje — musí se použít tlačítko Zrušit nebo Uložit.
+        if(!editing._id||editMode){ downOnOverlay=false; return; }
+      }
       downOnOverlay=false; editing=null;editMode=false;errs={};footMsg='';break;
     case 'save':{ collect();
       if(!validate()){footMsg='Doplň povinná pole.';render();return;}
@@ -1008,7 +1014,9 @@ async function act(a,v,el,ev){
     case 'fav-apply':{ const f=savedFilters.find(x=>x.id===v); if(f) favApply(f); favOpen=false; break; }
     case 'fav-color': if(filterModal) filterModal.color=v; break;
     case 'fav-close': case 'fav-close-bg':
-      if(a==='fav-close-bg'&&(!downOnOverlay||(ev&&ev.target!==el))){ downOnOverlay=false; return; }
+      // je to pořád rozepsaný formulář (Uložit/Zrušit) — kliknutí mimo
+      // ho nezavírá, stejně jako u okna pracovního příkazu v editaci.
+      if(a==='fav-close-bg'){ downOnOverlay=false; return; }
       downOnOverlay=false; filterModal=null; favLinkaOpen=false; favLinkaQuery=''; break;
     case 'fav-cancel-del': if(filterModal) filterModal.confirmDel=false; break;
     case 'fav-delete':{ if(!filterModal || !filterModal.id) return;
@@ -1039,8 +1047,15 @@ function toast(msg,kind){ toastMsg=msg; toastKind=kind; render(); setTimeout(()=
 function bind(){
   const lf=document.getElementById('loginForm'); if(lf) lf.onsubmit=e=>{e.preventDefault();act('login');};
   const lo=document.getElementById('btn-logout'); if(lo) lo.onclick=()=>act('logout');
-  const ov=document.querySelector('.overlay[data-a="close-bg"]'); if(ov) ov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===ov); });
-  const fov=document.querySelector('.overlay[data-a="fav-close-bg"]'); if(fov) fov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===fov); });
+  // Klik na tmavé pozadí mimo okno ho zavře — mousedown+click se sledují
+  // zvlášť (ne přes obecný [data-a] cyklus níž), ať tažení myší, co
+  // začne uvnitř okna a skončí puštěním až na pozadí, okno nezavře.
+  const ov=document.querySelector('.overlay[data-a="close-bg"]');
+  if(ov){ ov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===ov); });
+    ov.addEventListener('click',e=>{ if(e.target===ov) act('close-bg',null,ov,e); }); }
+  const fov=document.querySelector('.overlay[data-a="fav-close-bg"]');
+  if(fov){ fov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===fov); });
+    fov.addEventListener('click',e=>{ if(e.target===fov) act('fav-close-bg',null,fov,e); }); }
   document.querySelectorAll('[data-a]').forEach(el=>{ const a=el.dataset.a,v=el.dataset.v;
     if(a==='login'||a==='logout'||a==='close-bg'||a==='fav-close-bg') return;
     el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
@@ -1079,6 +1094,7 @@ document.addEventListener('click', e=>{
   if(favLinkaOpen && !e.target.closest('.fav-linka-wrap')){ favLinkaOpen=false; favLinkaQuery=''; render(); }
   if(ndOpen && !e.target.closest('.nd-tile-wrap')){ ndOpen=false; render(); }
   if(favOpen && !e.target.closest('.fav-wrap')){ favOpen=false; render(); }
+  if((searchOpen||filters.q) && !e.target.closest('.search-wrap')){ searchOpen=false; filters.q=''; render(); }
 });
 render();
 </script>

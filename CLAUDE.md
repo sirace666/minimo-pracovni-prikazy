@@ -525,6 +525,34 @@ protože:
     úplně všechny kritické, i hotové — jinak by zaškrtnutí filtru
     ukázalo jiný počet, než kolik ve skutečnosti vyfiltruje).
     `filterGroup()` dostal nový nepovinný 6. parametr `warnTest(key)`.
+- **Ovládání oken a hledání doladěno (2026-09-28, v0.11.3)**:
+  - **`.search-close` (křížek na zavření hledání) neměl `display:flex`
+    na centrování** — text „✕" tak nebyl na střed 22×22px tlačítka.
+    Doplněno.
+  - **Klik mimo pole hledání ho teď sám zavře/vyčistí** (`searchOpen=
+    false;filters.q='';render();`) — stejný `data-flt`-styl
+    document-click-outside listener jako Linka/Náhradní díl/Oblíbené.
+    Nutné vyčistit i `filters.q`, jinak by `searchIsOpen` (`filters.q||
+    searchOpen`) box držel rozbalený i po `searchOpen=false`.
+  - **Klik na tmavé pozadí mimo okno pracovního příkazu/oblíbeného
+    filtru NIKDY doopravdy nefungoval** — `case 'close-bg'`/
+    `'fav-close-bg'` v `act()` existoval, `mousedown` listener na
+    `.overlay` existoval (hlídá `downOnOverlay`, ať tažení myší z okna
+    ven nezavře okno omylem), ale chyběl `click` listener, co by
+    `act('close-bg',...)` vůbec zavolal — obecný `[data-a]` cyklus v
+    `bind()` tyhle dvě akce schválně přeskakuje (řádek s `if(a==='login'
+    ||a==='logout'||a==='close-bg'||a==='fav-close-bg') return;`).
+    Doplněny `ov.addEventListener('click',...)`/`fov.addEventListener(
+    'click',...)` vedle stávajících `mousedown` listenerů.
+  - **Teď to zavírá JEN když se nic nerozepisuje** — okno pracovního
+    příkazu: klik mimo zavře jen v READ-only pohledu (`!editing._id||
+    editMode` blokuje — pokrývá nový i rozepsaný příkaz, přesně
+    `showEdit` z `modalView()`, jen spočítané znovu v `act()`). Okno
+    Nový/Upravit oblíbený filtr: klik mimo je zablokovaný VŽDY (nemá
+    žádný „jen prohlížím" stav — je to pořád formulář s Uložit/Zrušit).
+    Explicitní „✕"/Zrušit tlačítka fungují v obou stavech beze změny
+    (mají vlastní `data-a="close"`/`"cancel-edit"`/`"fav-close"`, ne
+    přes tenhle mechanismus).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
