@@ -617,12 +617,13 @@ function linkaPickerCore(mode){
    něco dorazilo, jinak neutrální. ===== */
 function ndTileWrap(){
   const potreba=countNd('potreba'), objednano=countNd('objednano'), prisel=countNd('prisel');
-  const total=potreba+objednano+prisel;
   const selCount=filters.nd.length;
-  const countCls=potreba?'count-danger':(prisel?'count-ok':'');
   return `<div class="nd-tile-wrap">
     <button type="button" class="viewtile ${selCount?'on':''}" data-a="nd-tile-toggle">
-      <span class="vt-icon">📦</span><span class="vt-label">Náhradní díl</span><span class="vt-count ${countCls}">${total}</span>
+      <span class="vt-icon">📦</span><span class="vt-label">Náhradní díl</span>
+      <span class="vt-count${potreba?' count-danger':''}" title="Potřeba objednat">${potreba}</span>
+      <span class="vt-count" title="Čeká (objednáno)">${objednano}</span>
+      <span class="vt-count${prisel?' count-ok':''}" title="Díl přišel">${prisel}</span>
     </button>
     ${ndOpen?`<div class="linka-panel" style="min-width:210px">
       <div class="checklist">

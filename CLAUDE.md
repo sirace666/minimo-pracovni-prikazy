@@ -495,10 +495,13 @@ protože:
     `unassigned`+`mine` (`nd-needed` pryč) a viewtiles se renderují
     ručně (ne přes `VIEWS.map()`), aby šlo `ndTileWrap()` vložit přesně
     mezi Nepřiřazené a Moje.
-  - **Barva ČÍSLA na dlaždici** (ne celé dlaždice — vědomé rozhodnutí,
-    „není to tak důležité"): červená když `countNd('potreba')>0`
-    (má přednost), jinak zelená když `countNd('prisel')>0`, jinak
-    neutrální. `.vt-count.count-danger`/`.count-ok`.
+  - **Na dlaždici jsou VŠECHNA TŘI čísla vedle sebe, ne jedno souhrnné**
+    (2026-09-28/v0.11.7, Martin chtěl vidět rozpad bez rozklikávání) —
+    `ndTileWrap()` vykresluje tři `<span class="vt-count">` (potřeba/
+    objednáno/přišel) místo dřívějšího jednoho součtu; barva pořád
+    ne celá dlaždice, jen čísla (`.vt-count.count-danger`/`.count-ok`,
+    neutrální pro „objednáno"), s `title=` atributem jako tooltip, co
+    které číslo znamená (dlaždice sama nemá textové popisky u čísel).
     **Stejné barvy i u čísel uvnitř rozbaleného panelu** (Martin si
     všiml, že tam zůstávala neutrální) — `count-danger`/`count-ok`
     třídy na `.count` u řádků „Potřeba objednat"/„Díl přišel"
