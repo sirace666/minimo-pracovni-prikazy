@@ -277,6 +277,10 @@ počet posunů, stav, po termínu, uzavřeno.
 - Číslo tasku je PROSTÉ pořadové číslo (1, 2, 3…) z čítače `seqTask`
   v `meta/engcfg`, generuje se TRANSAKCÍ. Žádné předpony podle oblasti.
 - Owner se vybírá našeptávačem (řádek + návrhy pod ním), ne checkboxy.
+- Task smí smazat jen správce (`canImport()`), a to tlačítkem vpravo v řádku
+  tabulky nebo z patičky okna tasku — vždy po potvrzení. Mažou se s ním i jeho
+  přílohy v úložišti; navázaný problem solving zůstane. Na serveru to hlídá
+  `allow delete: if isAdmin()` u kolekce `tasks`.
 - Stroj se vybírá k oblasti. Seznam je v `meta/engcfg.machines` (edituje se
   v modulu Nastavení); když je pro oblast prázdný, nabídnou se linky
   z importovaných prostojů.

@@ -1992,6 +1992,26 @@ async function removePsFile(i){
   render();
 }
 
+/* Smazat task akčního plánu i s jeho přílohami. Smí jen správce — na serveru
+   to hlídá pravidlo `allow delete: if isAdmin()` u kolekce tasks. */
+async function deleteTask(id){
+  if(!canImport()){ toast('Mazat tasky smí jen správce.','err'); return; }
+  const t=tasks.find(x=>x._id===id); if(!t) return;
+  const fls=(t.files||[]).length;
+  const co = fls ? `\nSmaže se i ${fls===1?'1 příloha':fls+' přílohy'}.` : '';
+  const ps = t.psNo ? `\nJe to nápravné opatření k problem solvingu ${t.psNo} — ten zůstane.` : '';
+  if(!confirm(`Opravdu smazat task ${t.no}?\n\n${t.task||''}${co}${ps}\n\nTohle už nejde vrátit zpět.`)) return;
+  busy='Mažu task '+t.no+'…'; render();
+  try{
+    for(const fl of (t.files||[])){ try{ await deleteObject(sref(storage,fl.path)); }catch(e){ /* už tam být nemusí */ } }
+    await deleteDoc(doc(db,'tasks',id));
+    tasks=tasks.filter(x=>x._id!==id);
+    if(openTask && openTask._id===id){ openTask=null; tMsg=''; }
+    toast('Task '+t.no+' smazán.','ok');
+  }catch(e){ toast('Smazání selhalo. '+writeHint(e),'err'); }
+  busy=''; render();
+}
+
 async function deleteProblem(id){
   if(!canImport()){ toast('Mazat problem solving smí jen správce.','err'); return; }
   const p=problems.find(x=>x._id===id); if(!p) return;
@@ -2831,7 +2851,8 @@ function tasksView(){
           <td data-label="Stav"><span class="badge ${stDef(t.status).cls}">${esc(t.status)}</span></td>
           <td data-label="Po termínu" class="gcol num">${late?`<b style="color:var(--red)">${lateDays(t)} dní</b>`:'<span class="muted">—</span>'}</td>
           <td data-label="Uzavřeno">${t.closedOn?dateCz(t.closedOn):'<span class="muted">—</span>'}</td>
-          <td data-label=""><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button></td>
+          <td data-label="" class="nowrap"><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button>${
+            canImport()?` <button class="btn-del" style="padding:3px 9px;font-size:11px" data-a="tk-del" data-v="${t._id}" title="Smazat task">Smazat</button>`:''}</td>
         </tr>`;}).join('') || `<tr><td colspan="17" class="empty">Zatím žádný task. Založ ho tlačítkem <b>+ Nový task</b>.</td></tr>`}
       </tbody></table></div>
   </div>`;
@@ -2933,6 +2954,7 @@ function taskModal(){
       ${tMsg?`<span style="color:var(--red);font-weight:700;font-size:12px">${esc(tMsg)}</span>`
             :`<span class="muted" style="font-size:11.5px">${isNew?'Číslo se přidělí po uložení.':'Změny se zapíšou do historie.'}</span>`}
       <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        ${(!isNew && canImport())?`<button class="btn-del" data-a="tk-del" data-v="${t._id}">Smazat</button>`:''}
         <button class="btn-ok" data-a="tk-save">${isNew?'Založit task':'Uložit'}</button>
         <button class="btn-ghost" data-a="tk-close">Zavřít</button>
       </span>
@@ -3919,6 +3941,7 @@ async function act(a,v){
     case 'tk-open': if(openPs) collectPs();
       openTask=JSON.parse(JSON.stringify(tasks.find(x=>x._id===v)||{})); moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
     case 'tk-close': openTask=null; pendingTaskFiles=[]; moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
+    case 'tk-del': await deleteTask(v); return;
     case 'tk-save': await saveTask(); return;
     case 'tk-addmove': await addMove(); return;
     case 'tk-delfile': await removeTaskFile(Number(v)); return;
