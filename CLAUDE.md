@@ -317,6 +317,11 @@ protože:
     aktivní, jako přepínač). Nový `case 'set-typ'` v `act()` rovnou
     mění `editing.typ` (stejný vzorec jako `nd-set`), `collect()` už
     `#e-typ` nečte (odstraněno, bylo by to mrtvé).
+    **HISTORICKÉ — tyhle dva `.typ-btn` tlačítka UVNITŘ formuláře jsou
+    od 2026-10-01/v0.14.0 pryč** (viz bod „Formulář přeuspořádaný" níž):
+    stejná volba CM/EM se dělá přes `.modal-tabs` úplně nahoře v
+    modalu, `case 'set-typ'` zůstal (jen ho teď volají jiná tlačítka),
+    `.typ-toggle`/`.typ-btn` CSS smazané jako mrtvý kód.
   - **CSS oprava (Martin nahlásil "vypadá to hrozně")** — první verze
     neměla na `.checklist.row .filter-check` žádný rámeček/pozadí,
     vypadalo to jako plovoucí text s malým odznakem. Přidán viditelný
@@ -351,9 +356,12 @@ protože:
      **Ještě doladěno (Martin: "vypadají nějak divně")** — podtržení
      aktivní záložky a `.hero`ho vlastní `border-top:3px solid
      var(--accent)` (barva stavu, jen 1px pod tabs) opticky splývaly do
-     jednoho matoucího pruhu. `.hero.notop{border-top:none}` — přidáno
-     jen na `.hero` ve VIEW módu (za tabs vždy následuje), edit mód
-     (bez tabs nad sebou) si svůj barevný pruh nechal.
+     jednoho matoucího pruhu. `.hero.notop{border-top:none}` — tehdy
+     přidáno jen na `.hero` ve VIEW módu, protože edit mód tabs nad
+     sebou NEMĚL. **Od 2026-10-01/v0.14.0 už MÁ** (viz „Formulář
+     přeuspořádaný" níž — nahoře jsou teď EM/CM záložky i v edit/new
+     módu) — stejný problém se objevil znovu a `.notop` přibylo i na
+     `.hero` v `showEdit` větvi `modalView()`.
      **Zároveň přesunuto (Martin: "smazat příkaz vlož pouze do upravit,
      ne v náhledu")** — tlačítko/potvrzení "Smazat příkaz" bylo v INFO
      záložce (view mód), teď je jen v edit módu (`!isNew && isAdmin()`,
@@ -685,6 +693,58 @@ protože:
     `\s` do třídy znaků) — e-mailové local-party (tečka/podtržítko/
     pomlčka) fungují beze změny, jen teď navíc správně rozdělí i
     mezerou oddělené už-hotové jméno.
+- **Formulář příkazu přeuspořádaný + EM/CM nahoru jako záložky +
+  Prostoj od + povinná pole (2026-10-01, v0.14.0)**:
+  - **EM/CM se vybírá nahoře v `.modal-tabs`** (sdílené s Info/Historie
+    — `const tabs = showEdit ? [EM/CM tabs] : [Info/Historie tabs]`
+    v `modalView()`), ne uprostřed formuláře. Tlačítka pořád volají
+    existující `case 'set-typ'` (`data-a="set-typ" data-v="EM|CM"`) —
+    beze změny v `act()`, jen jiné místo v markupu. `.typ-toggle`/
+    `.typ-btn` CSS smazané (mrtvý kód, viz historická poznámka u bodu
+    „Typ (CM/EM) jako dvě tlačítka" výš). EM aktivní tab má vlastní
+    barvu — `.modal-tab.on.typ-em{color:var(--danger);border-bottom-
+    color:var(--danger)}` (CM nechává výchozí `--accent`).
+  - **`.hero` v `showEdit` větvi dostal `notop`** — teď má nad sebou
+    taky tabs (dřív neměl), takže by jinak nastal STEJNÝ „splývající
+    pruh" bug, co se řešil dřív jen pro view mód (viz `.hero.notop`
+    výš u bodu „Historie je teď druhá záložka").
+  - **Pořadí a popisky polí v `editForm()`**: WO → Porucha (dřív
+    „Název", stejné interní pole `nazev`, jen jiný `<label>` text,
+    `collect()`/`validate()` beze změny klíče) → Popis → [cols2]
+    Priorita | Prostoj od → [cols2] Linka | Stroj → [cols2] Obor |
+    Přiřazeno.
+  - **Nové pole `udrzba/{id}.prostojOd`** (string `YYYY-MM-DDTHH:mm`,
+    nebo `null`) — checkbox `data-a="prostoj-toggle"` vedle Priority;
+    `case 'prostoj-toggle'` v `act()`: když `editing.prostojOd` už
+    existuje → `null` (zaškrtnutí pryč = hodnota se SMAŽE, needrží se
+    skrytá); jinak se nastaví na aktuální datum/čas (ručně složené z
+    `new Date()`, ne `toISOString()` — ten by byl v UTC, chceme
+    místní čas rovnou ve tvaru, co čte `<input type="datetime-local">`).
+    `<input type="datetime-local" id="e-prostoj-od">` se vykresluje JEN
+    když `o.prostojOd` existuje; `collect()`'s `map` má `prostojOd:
+    'e-prostoj-od'`, takže ruční úpravu času sebere normálně.
+  - **DŮLEŽITÉ — `collect()` musí proběhnout PŘED akcí, co vyvolá
+    `render()`, pokud tlačítko sedí UVNITŘ otevřeného formuláře** —
+    `case 'set-typ'`, `case 'prostoj-toggle'` a `case 'assign-open'`
+    teď všechny volají `collect()` jako první věc (přesně jako už
+    dřív `#e-linka`'s `onchange`). Bez toho by přepnutí EM/CM záložky
+    (nebo zaškrtnutí Prostoj od, nebo otevření okna Přiřadit) SMAZALO
+    cokoliv rozepsané v `#e-nazev`/`#e-popis`/`#e-wo` — odhaleno až
+    při testování (`render()` dělá celý `innerHTML` přepis, needitovaný
+    DOM input text se nikam needitovaný neuloží sám). Kdyby přibylo
+    další tlačítko přímo ve `editForm()`/jejím okolí, co spouští
+    `render()`, potřebuje `collect()` na začátku stejně.
+  - **Povinná pole** — `validate()` rozšířen o `linka` (vždy povinné),
+    `stroj` (povinné JEN když má vybraná linka nějaké stroje —
+    `sectionByName(editing.linka)?.machines?.length`, jinak by šlo o
+    nesplnitelný požadavek u linky bez strojů) a `obor` (aspoň jedna
+    položka v poli). Priorita se NEŘEŠÍ (má vždycky nějakou hodnotu
+    díky posuvníku, Martinovo přání). Asterisk/červené orámování u
+    každého pole kopíruje přesně vzor, co už existoval jen pro Porucha
+    (`errs.klíč` → `<span>*</span>` + `.msg` div) — STEJNÁ nekonzistence
+    jako předtím: hvězdička/červeně se ukáže až PO neúspěšném pokusu
+    o uložení, ne preventivně předem (nikdo nežádal o změnu tohohle
+    chování, jen o rozšíření na víc polí).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

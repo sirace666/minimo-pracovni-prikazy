@@ -200,13 +200,8 @@
   .ps-tick{font-size:11px;font-weight:700;color:var(--muted)}
   .ps-tick.on{color:var(--c,var(--accent));font-weight:800}
 
-  /* --- Druh poruchy ve formuláři: dvě tlačítka vedle sebe (jedno z nich
-     vždy aktivní), místo rozbalovacího seznamu --- */
-  .typ-toggle{display:flex;gap:6px}
-  .typ-btn{flex:1;height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;
-    font-family:inherit;font-weight:700;font-size:13px;color:var(--text);cursor:pointer}
-  .typ-btn:hover{border-color:var(--accent)}
-  .typ-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* Druh poruchy (EM/CM) se teď vybírá nahoře v modal-tabs (viz
+     .modal-tab.on.typ-em níž), ne vlastním přepínačem ve formuláři. */
   @media(max-width:700px){
     .pagehead{grid-template-columns:1fr}
     .viewtile{min-width:0}
@@ -297,6 +292,7 @@
     border-bottom:2.5px solid transparent;margin-bottom:-1px}
   .modal-tab:hover{color:var(--text)}
   .modal-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .modal-tab.on.typ-em{color:var(--danger);border-bottom-color:var(--danger)}
   .form-grid{display:grid;gap:.7rem}
   .form-grid.cols2{grid-template-columns:1fr 1fr}
   .hist{font-size:.82rem}
@@ -895,7 +891,7 @@ function listView(){
 const g = id => { const el=document.getElementById(id); return el?el.value:undefined; };
 function collect(){
   if(!editing) return;
-  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj',wo:'e-wo'};
+  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj',wo:'e-wo',prostojOd:'e-prostoj-od'};
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita-range'); if(p!==undefined) editing.priorita=PRIORITA[+p]||PRIORITA[PRIORITA.indexOf('běžná')];
   if(document.getElementById('e-obor-'+OBOR[0].k)){
@@ -912,26 +908,15 @@ function editForm(o){
   const strojSel = `<select id="e-stroj" ${sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
   const assignedBtn = `<button type="button" class="assign-trigger" data-a="assign-open">${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
+    <div><label>Pracovní příkaz</label>
+      <div class="wo-row"><span>WO</span><input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="číslo"></div>
+    </div>
     <div ${errs.nazev?'style="color:#c0392b"':''}>
-      <label>Název ${!errs.nazev?'':'<span style="color:#c0392b">*</span>'}</label>
+      <label>Porucha ${!errs.nazev?'':'<span style="color:#c0392b">*</span>'}</label>
       <input id="e-nazev" value="${esc(o.nazev??'')}" placeholder="co je potřeba udělat">
       ${errs.nazev?`<div class="msg" style="margin-top:.2rem">${esc(errs.nazev)}</div>`:''}
     </div>
     <div><label>Popis</label><textarea id="e-popis" rows="3" placeholder="podrobnosti, co je poškozené / co udělat">${esc(o.popis??'')}</textarea></div>
-    <div><label>Pracovní příkaz</label>
-      <div class="wo-row"><span>WO</span><input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="číslo"></div>
-    </div>
-    <div><label>Druh poruchy</label>
-      <div class="typ-toggle">
-        <button type="button" class="typ-btn ${typOf(o)==='CM'?'on':''}" data-a="set-typ" data-v="CM">Standardní (CM)</button>
-        <button type="button" class="typ-btn ${typOf(o)==='EM'?'on':''}" data-a="set-typ" data-v="EM">Havarijní (EM)</button>
-      </div>
-    </div>
-    <div><label>Obor</label>
-      <div class="row" style="gap:1rem">
-        ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
-      </div>
-    </div>
     <div class="form-grid cols2">
       <div><label>Priorita</label>
         <div class="priority-slider" style="--c:${PRIORITA_COLOR[PRIORITA[pIdxSafe]]}">
@@ -939,11 +924,29 @@ function editForm(o){
           <div class="ps-ticks">${PRIORITA.map((p,i)=>`<span class="ps-tick ${pIdxSafe===i?'on':''}">${esc(PRIORITA_LABEL[p]||p)}</span>`).join('')}</div>
         </div>
       </div>
-      <div><label>Přiřazeno</label>${assignedBtn}</div>
+      <div><label class="check"><input type="checkbox" data-a="prostoj-toggle" ${o.prostojOd?'checked':''}> Prostoj od</label>
+        ${o.prostojOd?`<input type="datetime-local" id="e-prostoj-od" value="${esc(o.prostojOd)}" style="margin-top:.4rem">`:''}
+      </div>
     </div>
     <div class="form-grid cols2">
-      <div><label>Linka</label>${linkaSel}</div>
-      <div><label>Stroj</label>${strojSel}</div>
+      <div ${errs.linka?'style="color:#c0392b"':''}>
+        <label>Linka ${!errs.linka?'':'<span style="color:#c0392b">*</span>'}</label>${linkaSel}
+        ${errs.linka?`<div class="msg" style="margin-top:.2rem">${esc(errs.linka)}</div>`:''}
+      </div>
+      <div ${errs.stroj?'style="color:#c0392b"':''}>
+        <label>Stroj ${!errs.stroj?'':'<span style="color:#c0392b">*</span>'}</label>${strojSel}
+        ${errs.stroj?`<div class="msg" style="margin-top:.2rem">${esc(errs.stroj)}</div>`:''}
+      </div>
+    </div>
+    <div class="form-grid cols2">
+      <div ${errs.obor?'style="color:#c0392b"':''}>
+        <label>Obor ${!errs.obor?'':'<span style="color:#c0392b">*</span>'}</label>
+        <div class="row" style="gap:1rem;flex-wrap:wrap">
+          ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
+        </div>
+        ${errs.obor?`<div class="msg" style="margin-top:.2rem">${esc(errs.obor)}</div>`:''}
+      </div>
+      <div><label>Přiřazeno</label>${assignedBtn}</div>
     </div>
   </div>`;
 }
@@ -953,12 +956,15 @@ function modalView(){
   const canEdit = isNew || canEditDoc(o);
   const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
   const next = NEXT_STATUS[o.status];
-  const tabs = !showEdit ? `<div class="modal-tabs">
+  const tabs = showEdit ? `<div class="modal-tabs">
+    <button type="button" class="modal-tab ${typOf(o)==='EM'?'on typ-em':''}" data-a="set-typ" data-v="EM">Havarijní (EM)</button>
+    <button type="button" class="modal-tab ${typOf(o)==='CM'?'on':''}" data-a="set-typ" data-v="CM">Standardní (CM)</button>
+  </div>` : `<div class="modal-tabs">
     <button type="button" class="modal-tab ${modalTab!=='historie'?'on':''}" data-a="modal-tab" data-v="info">Info</button>
     <button type="button" class="modal-tab ${modalTab==='historie'?'on':''}" data-a="modal-tab" data-v="historie">Historie</button>
-  </div>` : '';
+  </div>`;
   const body = showEdit ? `
-    <div class="hero st-${o.status||'nový'}">
+    <div class="hero st-${o.status||'nový'} notop">
       <div class="hero-top"><span class="badge st-${o.status||'nový'}">${esc(statusLabel(o.status||'nový'))}</span>
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
         ${extraBadges(o)}
@@ -1032,6 +1038,10 @@ function modalView(){
 function validate(){
   errs={}; collect();
   if(!editing.nazev) errs.nazev='Povinné pole';
+  if(!editing.linka) errs.linka='Povinné pole';
+  const sec=sectionByName(editing.linka), machs=sec?(sec.machines||[]):[];
+  if(sec && machs.length && !editing.stroj) errs.stroj='Povinné pole';
+  if(!editing.obor || !editing.obor.length) errs.obor='Povinné pole';
   return Object.keys(errs).length===0;
 }
 
@@ -1089,7 +1099,13 @@ async function act(a,v,el,ev){
       break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
-    case 'set-typ': if(editing) editing.typ=v; break;
+    case 'set-typ': if(editing){ collect(); editing.typ=v; } break;
+    case 'prostoj-toggle':{
+      if(!editing) break;
+      collect();
+      if(editing.prostojOd){ editing.prostojOd=null; }
+      else{ const d=new Date(), p=n=>String(n).padStart(2,'0'); editing.prostojOd=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }
+      break; }
     case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'modal-tab': modalTab=v; break;
     case 'edit': collect(); editMode=true; break;
@@ -1145,7 +1161,7 @@ async function act(a,v,el,ev){
       const item={id,name,color:filterModal.color,typ:filterModal.typ,stav:filterModal.stav,priorita:filterModal.priorita,obor:filterModal.obor,linka:filterModal.linka};
       const list=savedFilters.filter(x=>x.id!==id).concat([item]);
       try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; favLinkaOpen=false; favLinkaQuery=''; toast('Filtr uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
-    case 'assign-open': assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null}; break;
+    case 'assign-open': collect(); assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null}; break;
     case 'assign-close': case 'assign-close-bg':
       if(a==='assign-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
       downOnOverlay=false; assignPicker=null; break;
