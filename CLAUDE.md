@@ -624,6 +624,67 @@ protože:
   var(--border);align-self:center}` — kratší než celá výška řádku
   (16px v 38px kontejneru), zkrácený/vycentrovaný oddělovač, ne čára
   přes celou výšku.
+- **Pole WO + přiřazení víc lidem najednou (2026-10-01, v0.13.0)**:
+  - **`udrzba/{id}.wo`** — nové volitelné pole, jen číslice (`oninput`
+    v `bind()` ořeže vše, co není `\d`, `wo:'e-wo'` v `collect()`-ově
+    `map`). Formulář: `<div><label>Pracovní příkaz</label><div
+    class="wo-row"><span>WO</span><input id="e-wo">...`. Zobrazí se
+    i ve view módu (`<dt>Pracovní příkaz</dt><dd>WO ${o.wo}</dd>`,
+    jen když `o.wo` existuje) a je součástí `matchesSearch()`.
+  - **`assignedTo`/`assignedToName` (string) → pole** — `Array.isArray`
+    check všude přes nové pomocné `assignedUids(o)`/`assignedNames(o)`
+    (zpětně kompatibilní: starší záznam se string hodnotou se zabalí
+    do pole o jednom prvku). Nahrazeno na všech původních místech:
+    `VIEWS` (`unassigned`/`mine`), `matchesSearch`, `unassignedHasEm`/
+    `unassignedHasEmCrit`, `canEditDoc`, karta v seznamu, `<dd>` ve
+    view módu, historie v `updatePrikaz()` (porovnání `assignedUids(old)`
+    vs `assignedUids(editing)`, setříděné a spojené stringem, ne
+    `!==` na celém poli). `collect()` už `e-assigned` nečte — zápis
+    teď dělá přímo `case 'assign-confirm'`.
+  - **Nové okno „Přiřadit pracovníky"** (`assignPicker` stav, `null`
+    když zavřené; `assignPickerView()`) nahrazuje starý `<select
+    id="e-assigned">` — otevírá se tlačítkem `.assign-trigger`
+    (`data-a="assign-open"`, seedne `assignPicker.selected` z
+    `assignedUids(editing)`). Tabulka: zaškrtávátko + jméno/pozice
+    (`u.positions` spojené čárkou) + barevné odznaky „Rozpracováno"
+    (`userWorkload(uid)` — počítá VŽDY přes CELÉ `rows`, ne jen
+    aktuálně vyfiltrované, stejný princip jako čísla na dlaždici
+    Náhradní díl: skutečné vytížení, ne jen to, co zrovna vidíš).
+    Klik na odznak (`assign-drill`) rozbalí/schová seznam konkrétních
+    rozpracovaných příkazů té osoby pod řádkem (`assignPicker.drillUid`,
+    jen jeden najednou). Checkbox a jméno jsou DVA SAMOSTATNÉ prvky
+    s vlastním `data-a="assign-toggle"` (NE `<label>` kolem celého
+    řádku) — řádek má totiž uvnitř i klikací odznaky, a label by na
+    ně klikem omylem přepnul i checkbox (nativní browser chování,
+    který `stopPropagation()` neřeší). Potvrzení (`assign-confirm`)
+    zapíše `assignPicker.selected` do `editing.assignedTo`/
+    `assignedToNames` a teprve PAK se to uloží při `case 'save'` jako
+    obvykle — nic se nezapisuje do Firestore přímo z okna.
+  - **Okno jde otevřít NAD oknem příkazu** (dva `.overlay` v DOM
+    najednou) — `renderShell()` teď přidává `assignPickerView()` za
+    `modalView()` do `#main-host`, a scroll-preserving logika bere
+    POSLEDNÍ `.modal-body` (`querySelectorAll(...)[length-1]`), ne
+    první, ať sleduje to okno, co je navrchu/se zrovna scrolluje.
+    `downOnOverlay` (sdílený mezi `close-bg`/`fav-close-bg`/novým
+    `assign-close-bg`) funguje beze změny — overlaye nejsou vnořené
+    do sebe (sourozenci v `#main-host`), takže si nepřekážejí. Na
+    rozdíl od okna příkazu a oblíbeného filtru tohle okno NENÍ
+    blokované proti zavření kliknutím mimo — dokud nedáš „Přiřadit",
+    nic se nezapisuje do `editing`, takže na tom není co ztratit.
+  - **Mimochodem odhalená a opravená chyba v `header.js`** —
+    `splitEmailName()` dělila vstup jen na `.`/`_`/`-`, ne na mezeru.
+    Kdykoliv `pn()`/`minimoDisplayName()` dostal už hotové "Jméno
+    Příjmení" (ne e-mail/local-part), vzal se celý řetězec jako JEDNO
+    slovo a `cap()` mu zmrzačil druhé slovo na malá písmena ("Martin
+    Valik" → "Martin valik") — přesně tenhle případ nastává teď běžně
+    u `assignedToNames`, co se plní přímo z `u.name` (ten už prošel
+    `minimoDisplayName` při načtení `users`, je tedy hotový). Stejná
+    chyba ale hrozila všude, kde appka `pn()`/`minimoDisplayName()`
+    volá na podobně už hotové jméno — netýká se jen Údržby. Oprava:
+    `local.split(/[._-]+/)` → `local.split(/[._\-\s]+/)` (přidána
+    `\s` do třídy znaků) — e-mailové local-party (tečka/podtržítko/
+    pomlčka) fungují beze změny, jen teď navíc správně rozdělí i
+    mezerou oddělené už-hotové jméno.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

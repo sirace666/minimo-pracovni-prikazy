@@ -35,7 +35,11 @@
   // dá jméno/příjmení odvodit, dokud si ho člověk sám neupraví v Profilu.
   function splitEmailName(email){
     var local = String(email||'').split('@')[0];
-    var parts = local.split(/[._-]+/).filter(Boolean);
+    // i mezera jako oddělovač — o.name poslední záchrana (viz displayName
+    // níž) občas dostane už hotové "Jméno Příjmení", ne e-mailový local-part;
+    // bez tohohle by se to vzalo jako jedno slovo a cap() by zmrzačil
+    // druhé/další slovo na malá písmena ("Martin Valik" → "Martin valik").
+    var parts = local.split(/[._\-\s]+/).filter(Boolean);
     if(parts.length>=2) return {first:cap(parts[0]), last:cap(parts[parts.length-1])};
     return {first:'', last:cap(parts[0]||local)};
   }

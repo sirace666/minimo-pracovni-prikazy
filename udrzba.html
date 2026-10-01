@@ -311,6 +311,38 @@
   .login input{margin-bottom:10px}.login button{width:100%;background:var(--navy-2);color:#fff;padding:.65rem;font-size:14px;font-weight:700}
   .loginerr{background:#fdecea;color:var(--danger);border-radius:8px;padding:8px;font-size:12px;margin-bottom:10px}
   @media(max-width:640px){.form-grid.cols2{grid-template-columns:1fr}}
+
+  /* --- WO (číslo externího pracovního příkazu) --- */
+  .wo-row{display:flex;align-items:center;gap:8px}
+  .wo-row span{font-weight:700;color:var(--muted);flex:none}
+  .wo-row input{width:140px}
+
+  /* --- Přiřazeno: tlačítko otevírající okno s výběrem víc lidí --- */
+  .assign-trigger{width:100%;text-align:left;padding:.5rem .6rem;border:1px solid var(--border);
+    border-radius:8px;background:#fff;font-size:14px;color:var(--text);cursor:pointer;font-family:inherit}
+  .assign-trigger:hover{border-color:var(--accent)}
+  .ap-cols{display:grid;grid-template-columns:26px 1fr auto;gap:10px;padding:6px 1rem;
+    font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+  .ap-rows{max-height:360px;overflow-y:auto}
+  .ap-row{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;
+    padding:9px 1rem;border-top:1px solid var(--border)}
+  .ap-row:hover{background:#f7f8fb}
+  .ap-row input[type=checkbox]{width:16px;height:16px;cursor:pointer}
+  .ap-person{min-width:0;display:flex;flex-direction:column;gap:1px;cursor:pointer}
+  .ap-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ap-pos{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ap-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+  .ap-badge{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;border:none;
+    cursor:pointer;font-family:inherit}
+  .ap-badge.ap-em{background:#fdecea;color:var(--danger)}
+  .ap-badge.ap-cm{background:#eef0f5;color:#4a5170}
+  .ap-badge.ap-none{background:transparent;color:var(--muted);font-weight:600;cursor:default}
+  .ap-drill{background:#f7f8fb;padding:8px 1rem 10px 60px;font-size:12.5px;display:flex;
+    flex-direction:column;gap:5px}
+  .ap-drill-line{display:flex;justify-content:space-between;gap:8px}
+  .ap-drill-typ{font-weight:800;font-size:10.5px}
+  .ap-drill-typ.ap-drill-em{color:var(--danger)}
+  .ap-drill-typ.ap-drill-cm{color:#4a5170}
 </style>
 </head>
 <body>
@@ -365,6 +397,13 @@ const PRIORITA_COLOR = {'nízká':'#2f9e6e','běžná':'#2563a8','vysoká':'#d97
    Starší příkazy pole `typ` nemají — bereme je jako CM (nezmizí z filtrů). */
 const typOf = o => (o && o.typ==='EM') ? 'EM' : 'CM';
 
+/* ===== Přiřazení: víc lidí najednou =====
+   Starší příkazy mají assignedTo/assignedToName jako obyčejný string
+   (jeden člověk) — tyhle dvě funkce to sjednotí na pole, ať se to dá
+   všude číst stejně, beze ztráty starých dat. */
+const assignedUids = o => { if(!o) return []; return Array.isArray(o.assignedTo) ? o.assignedTo.filter(Boolean) : (o.assignedTo ? [o.assignedTo] : []); };
+const assignedNames = o => { if(!o) return []; return Array.isArray(o.assignedToNames) ? o.assignedToNames.filter(Boolean) : (o.assignedToName ? [o.assignedToName] : []); };
+
 /* ===== Obor (víc najednou) ===== */
 const OBOR = [
   {k:'mechanika',    label:'Mechanika'},
@@ -391,8 +430,8 @@ const PRIORITA_LABEL = {'nízká':'Nízká','běžná':'Běžná','vysoká':'Vys
    je to vlastní dlaždice s rozbalovacím panelem (viz ndTileWrap()),
    protože potřebuje tři nezávisle kombinovatelné stavy, ne jeden test. */
 const VIEWS = [
-  {k:'unassigned', icon:'📥', label:'Nepřiřazené', test:o=>!o.assignedTo},
-  {k:'mine',       icon:'👤', label:'Moje',        test:o=>me && (o.author===me.uid || o.assignedTo===me.uid)}
+  {k:'unassigned', icon:'📥', label:'Nepřiřazené', test:o=>assignedUids(o).length===0},
+  {k:'mine',       icon:'👤', label:'Moje',        test:o=>me && (o.author===me.uid || assignedUids(o).includes(me.uid))}
 ];
 
 /* ===== Stav aplikace ===== */
@@ -419,6 +458,20 @@ let favOpen=false;                 // panel se seznamem otevřený/zavřený
 let filterModal=null;              // rozpracovaný nový/upravovaný filtr, nebo null
 const FAV_COLORS=['#2b3a86','#2563a8','#2f9e6e','#15803d','#d97706','#c0392b','#7c3aed','#41506b'];
 function newFilterDraft(){ return {id:null,name:'',color:FAV_COLORS[0],typ:[],stav:[],priorita:[],obor:[],linka:[]}; }
+
+/* ===== Okno "Přiřadit pracovníky" (víc lidí najednou) ===== */
+let assignPicker=null;   // {selected:[uid,...], query:'', drillUid:null} nebo null
+// Kolik má kdo rozpracovaných příkazů (CM/EM) — VŽDY přes všechny příkazy,
+// ne jen podle aktuálně aktivních filtrů seznamu (mistr má vidět skutečné
+// vytížení, ne jen to, co zrovna má vyfiltrované pod tím).
+function userWorkload(uid){
+  const matches=rows.filter(r=>r.status==='rozpracováno' && assignedUids(r).includes(uid));
+  return {
+    em: matches.filter(r=>typOf(r)==='EM').length,
+    cm: matches.filter(r=>typOf(r)==='CM').length,
+    orders: matches.map(r=>({cislo:r.cislo, nazev:r.nazev, typ:typOf(r)}))
+  };
+}
 
 /* ===== pomocné ===== */
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -506,10 +559,14 @@ function renderShell(inner){
   }
   // scroll v otevřeném okně se jinak při každém překreslení ztrácel (nový
   // DOM element = scrollTop 0) — zapamatuje se a hned po překreslení vrátí.
-  const modalBody=document.querySelector('.overlay .modal-body');
+  // Bere se POSLEDNÍ (= navrchu, nejspíš ten, co se zrovna scrolluje) —
+  // okno Přiřadit pracovníky se umí otevřít NAD oknem příkazu, takže
+  // jich může být v DOM víc najednou.
+  const modalBodies=document.querySelectorAll('.overlay .modal-body');
+  const modalBody=modalBodies[modalBodies.length-1];
   const scrollTop=modalBody?modalBody.scrollTop:null;
-  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
-  if(scrollTop!=null){ const nb=document.querySelector('.overlay .modal-body'); if(nb) nb.scrollTop=scrollTop; }
+  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  if(scrollTop!=null){ const nbs=document.querySelectorAll('.overlay .modal-body'); const nb=nbs[nbs.length-1]; if(nb) nb.scrollTop=scrollTop; }
 }
 function loginView(){
   return `<div class="login-wrap"><form class="login" id="loginForm">
@@ -521,7 +578,7 @@ function loginView(){
   </form></div>`;
 }
 /* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
-function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.assignedToName].join(' ').toLowerCase().includes(q); }
+function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.wo,...assignedNames(o)].join(' ').toLowerCase().includes(q); }
 function matchesView(o){ if(!filters.view) return true; if(filters.view==='nd') return !!o.nd; const v=VIEWS.find(x=>x.k===filters.view); return v?v.test(o):true; }
 function matchesTyp(o){ return !filters.typ.length || filters.typ.includes(typOf(o)); }
 function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(s=>filters.stav.includes(s.k)).some(s=>s.test(o)); }
@@ -552,8 +609,8 @@ const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).len
 // měnit podle toho, která dlaždice nahoře je zrovna aktivní, jen podle
 // sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání).
 const countNd=k=>rows.filter(o=>passes(o,'nd','view') && o.nd===k).length;
-const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM');
-const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && !o.assignedTo && typOf(o)==='EM' && o.priorita==='kritická');
+const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
+const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM' && o.priorita==='kritická');
 
 /* ===== řazení ===== */
 const SORT_OPTS=[{k:'created',label:'Datum'},{k:'priorita',label:'Priorita'},{k:'status',label:'Stav'}];
@@ -676,6 +733,47 @@ function favCheckGroup(dim,title,opts){
     </div>
   </div>`;
 }
+function assignPickerView(){
+  const q=(assignPicker.query||'').trim().toLowerCase();
+  const list=users.slice()
+    .sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs'))
+    .filter(u=>!q || (u.name||u.email||'').toLowerCase().includes(q));
+  const rowsHtml = list.length ? list.map(u=>{
+    const w=userWorkload(u._id), sel=assignPicker.selected.includes(u._id);
+    const badges = (w.em===0 && w.cm===0)
+      ? `<span class="ap-badge ap-none">—</span>`
+      : (w.em?`<button type="button" class="ap-badge ap-em" data-a="assign-drill" data-v="${esc(u._id)}">EM ${w.em}</button>`:'')
+        + (w.cm?`<button type="button" class="ap-badge ap-cm" data-a="assign-drill" data-v="${esc(u._id)}">CM ${w.cm}</button>`:'');
+    const drill = (assignPicker.drillUid===u._id && w.orders.length)
+      ? `<div class="ap-drill">${w.orders.map(o=>`<div class="ap-drill-line"><span>${esc(o.cislo)} · ${esc(o.nazev)}</span><span class="ap-drill-typ ap-drill-${o.typ.toLowerCase()}">${o.typ}</span></div>`).join('')}</div>`
+      : '';
+    return `<div class="ap-row">
+      <input type="checkbox" data-a="assign-toggle" data-v="${esc(u._id)}" ${sel?'checked':''}>
+      <span class="ap-person" data-a="assign-toggle" data-v="${esc(u._id)}">
+        <span class="ap-name">${esc(pn(u.name||u.email))}</span>
+        <span class="ap-pos">${esc((u.positions||[]).join(', ')||'—')}</span>
+      </span>
+      <span class="ap-badges">${badges}</span>
+    </div>${drill}`;
+  }).join('') : '<div class="muted" style="padding:16px 1rem">Nikdo nenalezen.</div>';
+  return `<div class="overlay" data-a="assign-close-bg"><div class="modal" style="max-width:560px">
+    <div class="modal-head">Přiřadit pracovníky<button class="x" data-a="assign-close">✕</button></div>
+    <div class="modal-body" style="padding:0">
+      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+        <input type="text" id="ap-q" placeholder="Hledat jméno…" value="${esc(assignPicker.query||'')}">
+      </div>
+      <div class="ap-cols"><span></span><span>Jméno</span><span>Rozpracováno</span></div>
+      <div class="ap-rows">${rowsHtml}</div>
+    </div>
+    <div class="modal-foot">
+      <span class="muted">Vybráno: ${assignPicker.selected.length}</span>
+      <div class="r">
+        <button class="btn-ghost" data-a="assign-close">Zrušit</button>
+        <button class="btn-primary" data-a="assign-confirm">Přiřadit</button>
+      </div>
+    </div>
+  </div></div>`;
+}
 function filterModalView(){
   const f=filterModal, isNew=!f.id;
   return `<div class="overlay" data-a="fav-close-bg"><div class="modal" style="max-width:480px">
@@ -778,7 +876,7 @@ function listView(){
               <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
-            <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${o.assignedToName?esc(pn(o.assignedToName)):'nepřiřazeno'} · zadal ${esc(pn(o.authorName)||'')}</div>
+            <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'nepřiřazeno'} · zadal ${esc(pn(o.authorName)||'')}</div>
           </button>`).join('')}
       </div></div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
@@ -797,25 +895,22 @@ function listView(){
 const g = id => { const el=document.getElementById(id); return el?el.value:undefined; };
 function collect(){
   if(!editing) return;
-  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj'};
+  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj',wo:'e-wo'};
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita-range'); if(p!==undefined) editing.priorita=PRIORITA[+p]||PRIORITA[PRIORITA.indexOf('běžná')];
   if(document.getElementById('e-obor-'+OBOR[0].k)){
     editing.obor = OBOR.map(x=>x.k).filter(k=>{ const el=document.getElementById('e-obor-'+k); return el && el.checked; });
   }
-  const asg=g('e-assigned');
-  if(asg!==undefined){
-    if(!asg){ editing.assignedTo=null; editing.assignedToName=null; }
-    else{ const u=users.find(x=>x._id===asg); editing.assignedTo=asg; editing.assignedToName=u?(u.name||u.email):asg; }
-  }
+  // Přiřazení (víc lidí) se zapisuje přímo do editing.assignedTo/assignedToNames
+  // z okna "Přiřadit pracovníky" (case 'assign-confirm') — není co sbírat tady.
 }
-function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && o.assignedTo===me.uid); }
+function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && assignedUids(o).includes(me.uid)); }
 function editForm(o){
   const pIdx = PRIORITA.indexOf(o.priorita); const pIdxSafe = pIdx>=0?pIdx:PRIORITA.indexOf('běžná');
   const linkaSel = `<select id="e-linka"><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
   const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
   const strojSel = `<select id="e-stroj" ${sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
-  const assignedSel = `<select id="e-assigned"><option value="">— nepřiřazeno —</option>${users.slice().sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs')).map(u=>`<option value="${u._id}" ${o.assignedTo===u._id?'selected':''}>${esc(u.name||u.email)}</option>`).join('')}</select>`;
+  const assignedBtn = `<button type="button" class="assign-trigger" data-a="assign-open">${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
     <div ${errs.nazev?'style="color:#c0392b"':''}>
       <label>Název ${!errs.nazev?'':'<span style="color:#c0392b">*</span>'}</label>
@@ -823,6 +918,9 @@ function editForm(o){
       ${errs.nazev?`<div class="msg" style="margin-top:.2rem">${esc(errs.nazev)}</div>`:''}
     </div>
     <div><label>Popis</label><textarea id="e-popis" rows="3" placeholder="podrobnosti, co je poškozené / co udělat">${esc(o.popis??'')}</textarea></div>
+    <div><label>Pracovní příkaz</label>
+      <div class="wo-row"><span>WO</span><input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="číslo"></div>
+    </div>
     <div><label>Druh poruchy</label>
       <div class="typ-toggle">
         <button type="button" class="typ-btn ${typOf(o)==='CM'?'on':''}" data-a="set-typ" data-v="CM">Standardní (CM)</button>
@@ -841,7 +939,7 @@ function editForm(o){
           <div class="ps-ticks">${PRIORITA.map((p,i)=>`<span class="ps-tick ${pIdxSafe===i?'on':''}">${esc(PRIORITA_LABEL[p]||p)}</span>`).join('')}</div>
         </div>
       </div>
-      <div><label>Přiřazeno</label>${assignedSel}</div>
+      <div><label>Přiřazeno</label>${assignedBtn}</div>
     </div>
     <div class="form-grid cols2">
       <div><label>Linka</label>${linkaSel}</div>
@@ -887,7 +985,8 @@ function modalView(){
       </div>
       <p class="hero-desc">${o.popis?esc(o.popis):'<span class="muted">Bez popisu.</span>'}</p>
       <dl class="meta">
-        <dt>Přiřazeno</dt><dd>${o.assignedToName?esc(pn(o.assignedToName)):'<span class="muted">nepřiřazeno</span>'}</dd>
+        <dt>Přiřazeno</dt><dd>${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'<span class="muted">nepřiřazeno</span>'}</dd>
+        ${o.wo?`<dt>Pracovní příkaz</dt><dd>WO ${esc(o.wo)}</dd>`:''}
         <dt>Linka / stroj</dt><dd>${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
         <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
@@ -948,7 +1047,8 @@ async function createPrikaz(){
 async function updatePrikaz(){
   const id=editing._id; const old=rows.find(r=>r._id===id)||{};
   const hist=(editing.hist||[]).slice();
-  if(old.assignedTo!==editing.assignedTo) hist.push(`${today()} · ${me.name} · přiřazeno: ${editing.assignedToName||'nikdo'}`);
+  const oldUids=assignedUids(old).slice().sort().join(','), newUids=assignedUids(editing).slice().sort().join(',');
+  if(oldUids!==newUids) hist.push(`${today()} · ${me.name} · přiřazeno: ${assignedNames(editing).join(', ')||'nikdo'}`);
   hist.push(`${today()} · ${me.name} · upravil příkaz`);
   const {_id,...data}=editing; data.hist=hist;
   await updateDoc(doc(db,'udrzba',id),data);
@@ -1045,6 +1145,16 @@ async function act(a,v,el,ev){
       const item={id,name,color:filterModal.color,typ:filterModal.typ,stav:filterModal.stav,priorita:filterModal.priorita,obor:filterModal.obor,linka:filterModal.linka};
       const list=savedFilters.filter(x=>x.id!==id).concat([item]);
       try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; favLinkaOpen=false; favLinkaQuery=''; toast('Filtr uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+    case 'assign-open': assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null}; break;
+    case 'assign-close': case 'assign-close-bg':
+      if(a==='assign-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
+      downOnOverlay=false; assignPicker=null; break;
+    case 'assign-toggle':{ const i=assignPicker.selected.indexOf(v); if(i<0) assignPicker.selected.push(v); else assignPicker.selected.splice(i,1); break; }
+    case 'assign-drill': assignPicker.drillUid=(assignPicker.drillUid===v?null:v); break;
+    case 'assign-confirm':{
+      editing.assignedTo=[...assignPicker.selected];
+      editing.assignedToNames=assignPicker.selected.map(uid=>{ const u=users.find(x=>x._id===uid); return u?(u.name||u.email):uid; });
+      assignPicker=null; break; }
   }
   render();
   if(a==='search-open'){ const inp=document.getElementById('f-q'); if(inp) inp.focus(); }
@@ -1072,11 +1182,16 @@ function bind(){
   const fov=document.querySelector('.overlay[data-a="fav-close-bg"]');
   if(fov){ fov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===fov); });
     fov.addEventListener('click',e=>{ if(e.target===fov) act('fav-close-bg',null,fov,e); }); }
+  const apov=document.querySelector('.overlay[data-a="assign-close-bg"]');
+  if(apov){ apov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===apov); });
+    apov.addEventListener('click',e=>{ if(e.target===apov) act('assign-close-bg',null,apov,e); }); }
   document.querySelectorAll('[data-a]').forEach(el=>{ const a=el.dataset.a,v=el.dataset.v;
-    if(a==='login'||a==='logout'||a==='close-bg'||a==='fav-close-bg') return;
+    if(a==='login'||a==='logout'||a==='close-bg'||a==='fav-close-bg'||a==='assign-close-bg') return;
     el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
   });
   const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
+  const wo=document.getElementById('e-wo'); if(wo) wo.oninput=()=>{ wo.value=wo.value.replace(/\D/g,''); };
+  const apq=document.getElementById('ap-q'); if(apq) apq.oninput=()=>{ if(assignPicker){ assignPicker.query=apq.value; const p=apq.selectionStart; render(); const n=document.getElementById('ap-q'); if(n){n.focus();n.setSelectionRange(p,p);} } };
   const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
   const lq=document.getElementById('f-linka-q'); if(lq) lq.oninput=()=>{linkaQuery=lq.value;const p=lq.selectionStart;render();const n=document.getElementById('f-linka-q');if(n){n.focus();n.setSelectionRange(p,p);}};
   const flq=document.getElementById('fv-linka-q'); if(flq) flq.oninput=()=>{favLinkaQuery=flq.value;const p=flq.selectionStart;render();const n=document.getElementById('fv-linka-q');if(n){n.focus();n.setSelectionRange(p,p);}};
