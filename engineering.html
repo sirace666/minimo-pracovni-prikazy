@@ -3728,7 +3728,7 @@ function importView(){
     const isScrap = s.kind==='scrap', isTasks = s.kind==='tasks';
     body=`<div class="body">
       <div class="kindpick">
-        <button class="kind ${isScrap?'':'on'}" data-a="imp-kind" data-v="dt">
+        <button class="kind ${s.kind==='dt'?'on':''}" data-a="imp-kind" data-v="dt">
           <span class="i">⏱️</span><span><b>Prostoje</b><i>report ze Symesticu i z G463 — pozná se sám</i></span></button>
         <button class="kind ${s.kind==='tasks'?'on':''}" data-a="imp-kind" data-v="tasks">
           <span class="i">📋</span><span><b>Akční plán</b><i>úkoly z Excelu ME TASK TRACKER</i></span></button>
