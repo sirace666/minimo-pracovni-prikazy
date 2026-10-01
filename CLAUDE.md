@@ -294,6 +294,32 @@ počet posunů, stav, po termínu, uzavřeno.
 - Rozepsané hodnoty v okně se před překreslením ukládají do paměti
   (`collectTask()`, `moveDraft`) — bez toho by se text ztratil při odmítnutém uložení.
 
+### Import akčního plánu z Excelu (ME TASK TRACKER)
+V okně Import je třetí volba **📋 Akční plán** (`imp.kind==='tasks'`). Nahraje
+Davidův původní excelový tracker (`ME_TASK_TRACKER_Excel.xlsx`) do kolekce `tasks`.
+- Čte se jen `.xlsx` (ne CSV), záložka se jmenuje „Task Tracker". Hlavičku i řádek,
+  kde začíná, hledá `mtParse` podle názvů sloupců v `MT_HEAD` — na pořadí sloupců
+  ani na přesném řádku hlavičky nezáleží.
+- Mapování sloupců (NEMĚŇ bez vyžádání): POPIS PROBLÉMU → `task`,
+  NÁPRAVNÁ OPATŘENÍ → `output` (očekávaný výstup), ZODPOVĚDNÁ OSOBA → `owners`,
+  PLÁN SPLNĚNÍ → `dueOrig`, DATUM VZNIKU → `createdOn`, STATUS → `status`
+  (`MT_STATUS`: Complete → DONE, In Progress → IN PROGRESS, On Hold → OPEN,
+  Cancelled → CANCELLED). Původní číslo, Projekt, Priorita, Typ úkolu, Okamžitá
+  opatření, Dlouhodobé úkoly a Poznámky se slijí do `note`, aby se z Excelu nic
+  neztratilo.
+- Jméno ownera se normalizuje („Tadeáš Rešl" → `tadeas.resl`, bez diakritiky)
+  a páruje se na kolekci `users`. Kdo v Nastavení není, vypíše se v náhledu jako
+  varování — task se stejně založí.
+- Oblast a stroj se HÁDAJÍ z textu popisu (`MT_AREA_TEXT`, `mtMachine`), potom
+  z projektu (`MT_AREA_PROJECT`); když to nejde, dostane task IMM a v poznámce
+  příznak „odhad". David si je pak v plánu opraví.
+- Id dokumentu je `mt_<původní číslo>_<začátek popisu>`, takže **opakovaný import
+  nic nezdvojí** — už existující tasky `runImportTasks()` přeskočí a Davidovy
+  úpravy v aplikaci nepřepíše. Nepřeváděj na `addDoc` s náhodným id.
+- Čísla tasků se rezervují JEDNOU transakcí nad `meta/engcfg.seqTask` (blok čísel
+  dopředu) a zapisují po dávkách 400. Nedělej transakci na každý task.
+- Import se zapíše do `dt_imports` jako ostatní importy.
+
 ## Záložka Problem solving
 Přehled všech 5× proč / A3 z kolekce `problems`. Zakládají se v Řízení tlačítkem
 u linky pod prahem, tady se jen zobrazují a otevírají (stejné okno jako v Řízení).

@@ -592,6 +592,127 @@ function engParse(aoa){
 }
 
 /* ==========================================================
+   Čtení akčního plánu z Excelu (ME TASK TRACKER)
+   Záložka „Task Tracker", hlavička s POPIS PROBLÉMU a ZODPOVĚDNÁ OSOBA.
+   Sloupce se hledají podle názvu, na pořadí nezáleží.
+   ========================================================== */
+const MT_HEAD = {
+  no:      ['číslo úkolu','cislo ukolu'],
+  created: ['datum vzniku'],
+  type:    ['typ úkolu','typ ukolu'],
+  task:    ['popis problému','popis problemu'],
+  project: ['projekt'],
+  prio:    ['priorita'],
+  due:     ['plán splnění','plan splneni'],
+  status:  ['status','stav'],
+  owner:   ['zodpovědná osoba','zodpovedna osoba'],
+  now:     ['okamžitá opatření','okamzita opatreni'],
+  longs:   ['dlouhodobé úkoly','dlouhodobe ukoly'],
+  fix:     ['nápravná opatření','napravna opatreni'],
+  note:    ['poznámky','poznamky']
+};
+const MT_STATUS = {'complete':'DONE','completed':'DONE','hotovo':'DONE','splněno':'DONE',
+  'in progress':'IN PROGRESS','probíhá':'IN PROGRESS','on hold':'OPEN','pozastaveno':'OPEN',
+  'cancelled':'CANCELLED','canceled':'CANCELLED','zrušeno':'CANCELLED'};
+/* Oblast se hádá hlavně z popisu — ten o lince říká víc než sloupec Projekt. */
+const MT_AREA_TEXT = [
+  [/\bimm\s*0*\d{1,2}\b/i,                      'IMM'],
+  [/slush/i,                                    'Slush'],
+  [/scoring|foam|pěn|pen(a|y|ov)/i,             'Foaming'],
+  [/prefix|g\s*-?\s*463|gclass/i,               'Gclass'],
+  [/m\s*-?beam|mbeam/i,                         'Assembly MBEAM'],
+  [/ov\s*-?\s*51|ov\s*-?\s*64/i,                'Assembly OV51/64'],
+  [/sk\s*-?336|po\s*-?45\d|w\s*-?206/i,         'Assembly SK336/PO455/W206'],
+  [/mfa|w\s*-?177|w\s*-?247/i,                  'Assembly MFA2'],
+  [/glove\s*box|glovebox|decopart|\bgb\b|\bdp\b/i,'GB/DP']
+];
+const MT_AREA_PROJECT = {
+  'g463':'Gclass', 'sk336':'Assembly SK336/PO455/W206', 'po455':'Assembly SK336/PO455/W206',
+  'w206':'Assembly SK336/PO455/W206', 'ov51/64':'Assembly OV51/64',
+  'w177':'Assembly MFA2', 'w247':'Assembly MFA2'
+};
+function mtArea(popis, projekt){
+  for(const [re,a] of MT_AREA_TEXT) if(re.test(popis||'')) return a;
+  const p=String(projekt||'').trim().toLowerCase();
+  if(MT_AREA_PROJECT[p]) return MT_AREA_PROJECT[p];
+  return '';
+}
+/* Stroj z popisu: IMM07 i IMM7 je IMM-007, Slush 2, Scoring 3. */
+function mtMachine(popis){
+  const t=String(popis||'');
+  let m=t.match(/\bimm\s*0*(\d{1,2})\b/i);
+  if(m) return 'IMM-'+String(m[1]).padStart(3,'0');
+  m=t.match(/\bslush\s*(\d)\b/i);    if(m) return 'Slush '+m[1];
+  m=t.match(/\bscoring\s*(\d)\b/i);  if(m) return 'Scoring '+m[1];
+  return '';
+}
+/* „Tadeáš Rešl" → „tadeas.resl"; když takový člověk v minimu je, použije se
+   přesně jeho jméno ze seznamu uživatelů. */
+function mtOwner(cell){
+  const raw=String(cell||'').trim();
+  if(!raw) return [];
+  return raw.split(/[,;/]|\ba\b/i).map(x=>x.trim()).filter(Boolean).map(one=>{
+    const key=one.normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean).join('.');
+    const hit=(people||[]).find(u=>String(u.name||'').toLowerCase()===key);
+    return hit ? hit.name : key;
+  }).filter(Boolean);
+}
+function mtParse(wb, XLSX){
+  const name=(wb.SheetNames||[]).find(n=>/task\s*tracker/i.test(n)) || wb.SheetNames[0];
+  const a=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null,blankrows:true});
+  const norm=x=>String(x??'').replace(/\s+/g,' ').trim().toLowerCase();
+  let hi=-1, map=null;
+  for(let i=0;i<Math.min(a.length,40);i++){
+    const cells=(a[i]||[]).map(norm), m={};
+    for(const key of Object.keys(MT_HEAD)){
+      const idx=cells.findIndex(c=>c && MT_HEAD[key].some(h=>c.startsWith(h)));
+      if(idx>=0) m[key]=idx;
+    }
+    if(m.task!=null && m.owner!=null && m.due!=null){ hi=i; map=m; break; }
+  }
+  if(hi<0) return {ok:false, err:'V sešitu nejsou sloupce POPIS PROBLÉMU, ZODPOVĚDNÁ OSOBA a PLÁN SPLNĚNÍ. Je to opravdu ME TASK TRACKER?'};
+  const txt=(r,k)=>map[k]==null?'':String(r[map[k]]??'').replace(/\r/g,'').trim();
+  const dte=(r,k)=>{ if(map[k]==null) return '';
+    const v=r[map[k]];
+    if(typeof v==='number'){ const d=fromSerial(v); return d?d.date:''; }
+    const t=engTime(v); return t?t.date:''; };
+  const out=[], bad=[];
+  for(let i=hi+1;i<a.length;i++){
+    const r=a[i]||[];
+    const task=txt(r,'task');
+    if(!task) continue;
+    const owners=mtOwner(txt(r,'owner'));
+    const due=dte(r,'due'), created=dte(r,'created')||today();
+    const st=MT_STATUS[txt(r,'status').toLowerCase()] || 'OPEN';
+    const area=mtArea(task, txt(r,'project'));
+    /* co se nevejde do našich sloupců, ať se neztratí — jde to do poznámky */
+    const parts=[];
+    const add=(lbl,val)=>{ if(val) parts.push(lbl+': '+val); };
+    add('Původní číslo', txt(r,'no'));
+    add('Projekt', txt(r,'project'));
+    add('Priorita', txt(r,'prio'));
+    add('Typ úkolu', txt(r,'type'));
+    add('Okamžitá opatření', txt(r,'now'));
+    add('Dlouhodobé úkoly', txt(r,'longs'));
+    add('Poznámky', txt(r,'note'));
+    out.push({
+      area: area || TASK_AREAS[0].k, areaGuessed: !area,
+      machine: mtMachine(task), type: /management/i.test(txt(r,'type'))?'System':'Operation',
+      createdOn: created, createdBy: 'ME TASK TRACKER',
+      task, output: txt(r,'fix'), owners,
+      dueOrig: due, moves: [], status: st, closedOn: '',
+      note: parts.join('\n'), files: [], psId:'', psNo:'',
+      _src:'metracker', _row:i+1,
+      _id:'mt_'+slug(txt(r,'no')||String(i))+'_'+slug(task).slice(0,40)
+    });
+    if(!due || !owners.length) bad.push(i+1);
+  }
+  if(!out.length) return {ok:false, err:'V záložce nejsou žádné úkoly s vyplněným popisem.'};
+  return {ok:true, rows:out, bad, sheet:name};
+}
+
+/* ==========================================================
    Čtení reportu z G463 (soubor yftool)
    Jiný formát než Symestic: jeden sešit, v něm záložky „Line - <linka>".
    Report nedává jednotlivé prostoje s časem od–do, ale součet minut
@@ -1384,7 +1505,13 @@ async function takeFile(file){
   imp.err=''; imp.name=file.name; imp.prog='Čtu soubor…'; render();
   try{
     const {aoa, wb, XLSX} = await readFile(file);
-    if(imp.kind==='scrap'){
+    if(imp.kind==='tasks'){
+      if(!wb){ imp.prog=''; imp.err='Akční plán se načítá jen z Excelu (.xlsx), ne z CSV.'; render(); return; }
+      await loadPeople();                       // ať se jména sesouhlasí s uživateli minima
+      const res = mtParse(wb, XLSX);
+      if(!res.ok){ imp.prog=''; imp.err=res.err; render(); return; }
+      imp.rows=res.rows; imp.bad=res.bad; imp.sheet=res.sheet; imp.step=2; imp.prog='';
+    }else if(imp.kind==='scrap'){
       const det = scrapDetect(aoa);
       if(!det.ok){ imp.prog=''; imp.err=det.err; render(); return; }
       imp.aoa=aoa; imp.headRow=det.headRow; imp.map=det.map; imp.headers=det.headers;
@@ -1415,6 +1542,7 @@ function reparseScrap(){
 /* ===== zápis importu ===== */
 async function runImport(){
   if(imp.kind==='scrap') return runImportScrap();
+  if(imp.kind==='tasks') return runImportTasks();
   return runImportDt();
 }
 async function runImportScrap(){
@@ -1445,6 +1573,53 @@ async function runImportScrap(){
     scLoaded=false; await loadScrap(true);
     toast('Import scrapu hotový — '+list.length.toLocaleString('cs-CZ')+' řádků.','ok');
   }catch(e){ imp.prog=''; imp.err=ruleHint(e); render(); }
+}
+/* Zápis akčního plánu z Excelu. Čísla se přidělí jedním zabráním bloku
+   z čítače, ne 115 transakcemi. Co už v plánu je (stejné id), se přeskočí,
+   aby přeimportování nepřepsalo, co se mezitím v aplikaci upravilo. */
+async function runImportTasks(){
+  const list=imp.rows||[];
+  if(!list.length) return;
+  try{
+    imp.prog='Načítám, co už v akčním plánu je…'; render();
+    await loadTasks(true);
+    const have=new Set(tasks.map(t=>t._id));
+    const nove=list.filter(r=>!have.has(r._id));
+    if(!nove.length){
+      imp.done={rows:0, skip:list.length}; imp.step=3; imp.prog='';
+      toast('Všechny úkoly z toho souboru už v akčním plánu jsou.','ok'); render(); return;
+    }
+    /* jedním vrzem si zaberu blok pořadových čísel */
+    imp.prog='Přiděluji čísla úkolů…'; render();
+    const ref=doc(db,'meta','engcfg');
+    const start=await runTransaction(db, async tx=>{
+      const snap=await tx.get(ref);
+      const cur=(((snap.data()||{}).seqTask)||0);
+      const next=cur+nove.length;
+      if(snap.exists()) tx.update(ref,{seqTask:next});
+      else tx.set(ref, Object.assign({}, ENGCFG_DEF, {seqTask:next}));
+      return cur;
+    });
+    const stamp=today();
+    for(let i=0;i<nove.length;i+=400){
+      const b=writeBatch(db);
+      nove.slice(i,i+400).forEach((r,j)=>{
+        const {_id,_src,_row,areaGuessed,...data}=r;
+        data.no=String(start+i+j+1);
+        data.hist=[`${stamp} · ${me.name} · převzato z Excelu ME TASK TRACKER (řádek ${_row})`];
+        b.set(doc(db,'tasks',_id), data);
+      });
+      await b.commit();
+      imp.prog=`Zapisuji úkoly… ${Math.min(i+400,nove.length)} z ${nove.length}`; render();
+    }
+    await addDoc(collection(db,'dt_imports'), {kind:'akční plán', file:imp.name,
+      rows:nove.length, bad:imp.bad.length, skip:list.length-nove.length,
+      at:new Date().toISOString(), by:me.uid, byName:me.name});
+    imp.done={rows:nove.length, skip:list.length-nove.length, from:start+1, to:start+nove.length};
+    imp.step=3; imp.prog='';
+    tLoaded=false; await loadTasks(true);
+    toast('Převzato '+nove.length+' úkolů do akčního plánu.','ok');
+  }catch(e){ imp.prog=''; imp.err=writeHint(e); render(); }
 }
 async function runImportDt(){
   const list=imp.rows||[];
@@ -3550,16 +3725,18 @@ function importView(){
   const s=imp;
   let body='';
   if(s.step===1){
-    const isScrap = s.kind==='scrap';
+    const isScrap = s.kind==='scrap', isTasks = s.kind==='tasks';
     body=`<div class="body">
       <div class="kindpick">
         <button class="kind ${isScrap?'':'on'}" data-a="imp-kind" data-v="dt">
           <span class="i">⏱️</span><span><b>Prostoje</b><i>report ze Symesticu i z G463 — pozná se sám</i></span></button>
+        <button class="kind ${s.kind==='tasks'?'on':''}" data-a="imp-kind" data-v="tasks">
+          <span class="i">📋</span><span><b>Akční plán</b><i>úkoly z Excelu ME TASK TRACKER</i></span></button>
         ${canImport()?`<button class="kind ${isScrap?'on':''}" data-a="imp-kind" data-v="scrap">
           <span class="i">🧾</span><span><b>Scrap</b><i>zmetky v eurech proti tržbám</i></span></button>`:''}
       </div>
       <div class="drop" id="drop">
-        <div class="big">Přetáhni sem ${isScrap?'Excel se scrapem':'report prostojů'}</div>
+        <div class="big">Přetáhni sem ${isScrap?'Excel se scrapem':(isTasks?'Excel s akčním plánem':'report prostojů')}</div>
         <div style="margin:8px 0">nebo <label class="filebtn">Vybrat soubor<input type="file" id="file" accept=".xlsx,.xls,.csv"></label></div>
         <div style="font-size:12px">Formáty <b>.xlsx</b> a <b>.csv</b> · soubor se zpracuje přímo v prohlížeči, nikam se neposílá.</div>
       </div>
@@ -3641,7 +3818,55 @@ function importView(){
       <button class="btn-ok" data-a="imp-run" ${(s.prog||!rows.length)?'disabled':''}>${s.prog?'Importuji…':'Importovat '+rows.length.toLocaleString('cs-CZ')+' řádků'}</button>
     </div>`;
   }
-  if(s.step===2 && s.kind!=='scrap'){
+  if(s.step===2 && s.kind==='tasks'){
+    const rows=s.rows||[];
+    const bezTerm=rows.filter(r=>!r.dueOrig).length;
+    const bezOwn=rows.filter(r=>!r.owners.length).length;
+    const hadane=rows.filter(r=>r.areaGuessed).length;
+    const nezn=[...new Set(rows.flatMap(r=>r.owners).filter(o=>!(people||[]).some(u=>u.name===o)))];
+    const stavy={}; rows.forEach(r=>stavy[r.status]=(stavy[r.status]||0)+1);
+    body=`<div class="body">
+      <div class="file"><span class="nm">${esc(s.name)}</span>
+        <span class="sz">záložka „${esc(s.sheet||'')}" · ${rows.length} úkolů</span>
+        <button class="btn-ghost" style="margin-left:auto" data-a="imp-reset">Vybrat jiný soubor</button></div>
+      <div class="cards">
+        <div class="kcard" style="border-left-color:#1f9254"><div class="lbl">Načteno úkolů</div>
+          <div class="val">${rows.length}</div><div class="note">${Object.entries(stavy).map(([k,v])=>v+'× '+k).join(' · ')}</div></div>
+        <div class="kcard" style="border-left-color:${bezOwn?'#b7791f':'#1f9254'}"><div class="lbl">Bez ownera</div>
+          <div class="val">${bezOwn}</div><div class="note">${bezOwn?'doplň je potom v plánu':'všichni přiřazeni'}</div></div>
+        <div class="kcard" style="border-left-color:${bezTerm?'#b7791f':'#1f9254'}"><div class="lbl">Bez termínu</div>
+          <div class="val">${bezTerm}</div><div class="note">${bezTerm?'termín doplníš v plánu':'termín má každý'}</div></div>
+        <div class="kcard" style="border-left-color:${hadane?'#b7791f':'#1f9254'}"><div class="lbl">Oblast odhadnuta</div>
+          <div class="val">${hadane}</div><div class="note">z popisu nešla poznat, dal jsem ${esc(TASK_AREAS[0].k)}</div></div>
+      </div>
+      <div class="notice"><b>Jak to napasuju:</b> popis problému → <b>Task</b> · nápravná opatření → <b>Očekávaný výstup</b> ·
+        zodpovědná osoba → <b>Owner</b> · plán splnění → <b>Termín původní</b> · datum vzniku → <b>Zadáno</b> ·
+        status → <b>Stav</b>. Projekt, priorita, typ úkolu, okamžitá opatření, dlouhodobé úkoly a poznámky se složí
+        do <b>Poznámky</b>, ať se nic neztratí. Oblast a stroj hádám z popisu.</div>
+      ${nezn.length?`<div class="notice warn"><b>Tihle lidé nejsou v Nastavení minima:</b> ${nezn.map(x=>esc(x)).join(', ')}.
+        Úkoly se jim přiřadí i tak, ale ve filtrech se objeví jako samostatná jména — buď je do Nastavení přidej,
+        nebo jim potom ownera přepiš.</div>`:''}
+      ${s.err?`<div class="notice warn">${esc(s.err)}</div>`:''}
+      <div class="tblwrap" style="border:1px solid var(--line);border-radius:var(--radius)">
+        <table><thead><tr><th>Oblast</th><th>Stroj</th><th>Task</th><th>Očekávaný výstup</th><th>Owner</th><th>Zadáno</th><th>Termín</th><th>Stav</th></tr></thead>
+        <tbody>${rows.slice(0,12).map(r=>`<tr>
+          <td data-label="Oblast" class="nowrap">${esc(r.area)}${r.areaGuessed?' <span class="badge b-amber">odhad</span>':''}</td>
+          <td data-label="Stroj" class="nowrap">${esc(r.machine||'—')}</td>
+          <td data-label="Task" class="desc"><b>${esc(r.task)}</b></td>
+          <td data-label="Výstup" class="desc muted">${esc((r.output||'').slice(0,70))}</td>
+          <td data-label="Owner" class="nowrap">${r.owners.length?esc(r.owners.join(', ')):'<span class="badge b-amber">chybí</span>'}</td>
+          <td data-label="Zadáno" class="nowrap">${dateCz(r.createdOn)}</td>
+          <td data-label="Termín" class="nowrap">${r.dueOrig?dateCz(r.dueOrig):'<span class="badge b-amber">chybí</span>'}</td>
+          <td data-label="Stav"><span class="badge ${stDef(r.status).cls}">${esc(r.status)}</span></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      ${rows.length>12?`<div class="muted" style="font-size:11.5px;margin-top:8px">Ukázka prvních 12 z ${rows.length}.</div>`:''}
+      <div class="run">
+        <button class="btn-ok" data-a="imp-run" ${s.prog?'disabled':''}>${s.prog?'Zapisuji…':'Převzít '+rows.length+' úkolů do akčního plánu'}</button>
+      </div>
+    </div>`;
+  }
+  if(s.step===2 && s.kind!=='scrap' && s.kind!=='tasks'){
     const rows=s.rows||[];
     const dates=[...new Set(rows.map(r=>r.date))].sort();
     const segs=[...new Set(rows.map(r=>r.seg))].sort((a,b)=>a.localeCompare(b,'cs'));
@@ -3690,12 +3915,17 @@ function importView(){
     body=`<div class="body" style="text-align:center;padding:30px 18px">
       <div style="font-size:40px;line-height:1;color:#1f9254">✓</div>
       <div style="font-size:18px;font-weight:800;margin:8px 0 6px">Import hotový</div>
-      <div class="muted">${s.kind==='scrap'
+      <div class="muted">${s.kind==='tasks'
+        ? `Do akčního plánu přibylo <b>${(d.rows||0)}</b> ${(d.rows===1?'úkol':(d.rows<5?'úkoly':'úkolů'))}${
+            d.rows?` s čísly ${d.from}–${d.to}`:''}.${d.skip?` ${d.skip} už tam ${d.skip===1?'byl':'bylo'} z dřívějška, ${d.skip===1?'ten jsem nechal':'ty jsem nechal'} být.`:''}`
+        : s.kind==='scrap'
         ? `Uloženo <b>${(d.rows||0).toLocaleString('cs-CZ')}</b> řádků scrapu za ${d.days} ${d.days===1?'měsíc':(d.days<5?'měsíce':'měsíců')}
            (${monthCz(d.from||'')} – ${monthCz(d.to||'')}), celkem ${eur(d.scrapEur||0)}.`
         : `Uloženo <b>${(d.rows||0).toLocaleString('cs-CZ')}</b> prostojů za ${d.days} dní (${dayCz(d.from||'')} – ${dayCz(d.to||'')}).`}</div>
       <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        ${s.kind==='scrap'
+        ${s.kind==='tasks'
+          ? `<button class="btn-primary" data-a="tab" data-v="tasks">Zobrazit akční plán</button>`
+          : s.kind==='scrap'
           ? `<a class="btn-primary" style="display:inline-block;padding:8px 14px;border-radius:var(--radius);text-decoration:none;font-size:12px;font-weight:600" href="${SCRAP_URL}">Otevřít Quality loss report ↗</a>`
           : `<button class="btn-primary" data-a="tab" data-v="dash">Zobrazit přehled</button>`}
         <button class="btn-ghost" data-a="imp-reset">Importovat další soubor</button>
@@ -3705,7 +3935,7 @@ function importView(){
   const stepsHtml = `<ul class="steps">${[['1','Vybrat a nahrát'],['2','Kontrola'],['3','Hotovo']].map(([n,t],i)=>{
     const idx=i+1; return `<li class="${idx===s.step?'on':''} ${idx<s.step?'done':''}"><b>${idx<s.step?'✓':n}</b>${t}</li>`;}).join('')}</ul>`;
   return stepsHtml + `
-  <div class="panel"><h2>Import — ${s.kind==='scrap'?'scrap':(s.src==='g463'?'prostoje z G463':'prostoje')}<span class="right">krok ${s.step} ze 3</span></h2>${body}</div>
+  <div class="panel"><h2>Import — ${s.kind==='scrap'?'scrap':(s.kind==='tasks'?'akční plán':(s.src==='g463'?'prostoje z G463':'prostoje'))}<span class="right">krok ${s.step} ze 3</span></h2>${body}</div>
   <div class="panel">
     <h2>Historie importů</h2>
     <div class="tblwrap"><table>
