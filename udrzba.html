@@ -309,9 +309,7 @@
   @media(max-width:640px){.form-grid.cols2{grid-template-columns:1fr}}
 
   /* --- WO (číslo externího pracovního příkazu) --- */
-  .wo-row{display:flex;align-items:center;gap:8px}
-  .wo-row span{font-weight:700;color:var(--muted);flex:none}
-  .wo-row input{width:140px}
+  input.wo-input{width:140px}
 
   /* --- Přiřazeno: tlačítko otevírající okno s výběrem víc lidí --- */
   .assign-trigger{width:100%;text-align:left;padding:.5rem .6rem;border:1px solid var(--border);
@@ -905,15 +903,16 @@ function editForm(o){
   const pIdx = PRIORITA.indexOf(o.priorita); const pIdxSafe = pIdx>=0?pIdx:PRIORITA.indexOf('běžná');
   const linkaSel = `<select id="e-linka"><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
   const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
-  const strojSel = `<select id="e-stroj" ${sec?'':'disabled'}><option value="">${sec?(machs.length?'— celá linka —':'linka nemá stroje'):'nejdřív vyber linku'}</option>${machs.map(m=>`<option ${o.stroj===m?'selected':''}>${esc(m)}</option>`).join('')}${(o.stroj&&sec&&!machs.includes(o.stroj))?`<option selected>${esc(o.stroj)}</option>`:''}</select>`;
+  const strojRequired = !!(sec && machs.length);
+  const strojSel = `<input type="text" id="e-stroj" list="e-stroj-list" value="${esc(o.stroj??'')}" autocomplete="off" ${sec?'':'disabled'} placeholder="${sec?(machs.length?'hledat stroj…':'linka nemá stroje'):'nejdřív vyber linku'}"><datalist id="e-stroj-list">${machs.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>`;
   const assignedBtn = `<button type="button" class="assign-trigger" data-a="assign-open">${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
     <div><label>Pracovní příkaz</label>
-      <div class="wo-row"><span>WO</span><input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="číslo"></div>
+      <input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="WO" class="wo-input">
     </div>
     <div ${errs.nazev?'style="color:#c0392b"':''}>
-      <label>Porucha ${!errs.nazev?'':'<span style="color:#c0392b">*</span>'}</label>
-      <input id="e-nazev" value="${esc(o.nazev??'')}" placeholder="co je potřeba udělat">
+      <label>Porucha <span style="color:#c0392b">*</span></label>
+      <input id="e-nazev" value="${esc(o.nazev??'')}" placeholder="co se porouchalo">
       ${errs.nazev?`<div class="msg" style="margin-top:.2rem">${esc(errs.nazev)}</div>`:''}
     </div>
     <div><label>Popis</label><textarea id="e-popis" rows="3" placeholder="podrobnosti, co je poškozené / co udělat">${esc(o.popis??'')}</textarea></div>
@@ -930,17 +929,17 @@ function editForm(o){
     </div>
     <div class="form-grid cols2">
       <div ${errs.linka?'style="color:#c0392b"':''}>
-        <label>Linka ${!errs.linka?'':'<span style="color:#c0392b">*</span>'}</label>${linkaSel}
+        <label>Linka <span style="color:#c0392b">*</span></label>${linkaSel}
         ${errs.linka?`<div class="msg" style="margin-top:.2rem">${esc(errs.linka)}</div>`:''}
       </div>
       <div ${errs.stroj?'style="color:#c0392b"':''}>
-        <label>Stroj ${!errs.stroj?'':'<span style="color:#c0392b">*</span>'}</label>${strojSel}
+        <label>Stroj ${strojRequired?'<span style="color:#c0392b">*</span>':''}</label>${strojSel}
         ${errs.stroj?`<div class="msg" style="margin-top:.2rem">${esc(errs.stroj)}</div>`:''}
       </div>
     </div>
     <div class="form-grid cols2">
       <div ${errs.obor?'style="color:#c0392b"':''}>
-        <label>Obor ${!errs.obor?'':'<span style="color:#c0392b">*</span>'}</label>
+        <label>Obor <span style="color:#c0392b">*</span></label>
         <div class="row" style="gap:1rem;flex-wrap:wrap">
           ${OBOR.map(x=>`<label class="check"><input type="checkbox" id="e-obor-${x.k}" ${oborOf(o).includes(x.k)?'checked':''}>${esc(x.label)}</label>`).join('')}
         </div>

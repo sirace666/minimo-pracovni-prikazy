@@ -635,10 +635,12 @@ protože:
 - **Pole WO + přiřazení víc lidem najednou (2026-10-01, v0.13.0)**:
   - **`udrzba/{id}.wo`** — nové volitelné pole, jen číslice (`oninput`
     v `bind()` ořeže vše, co není `\d`, `wo:'e-wo'` v `collect()`-ově
-    `map`). Formulář: `<div><label>Pracovní příkaz</label><div
-    class="wo-row"><span>WO</span><input id="e-wo">...`. Zobrazí se
-    i ve view módu (`<dt>Pracovní příkaz</dt><dd>WO ${o.wo}</dd>`,
-    jen když `o.wo` existuje) a je součástí `matchesSearch()`.
+    `map`). Formulář (HISTORICKÉ, od v0.14.1 jinak — viz bod
+    „Čtyři drobná doladění formuláře" níž): `<div><label>Pracovní
+    příkaz</label><div class="wo-row"><span>WO</span><input
+    id="e-wo">...`. Zobrazí se i ve view módu (`<dt>Pracovní
+    příkaz</dt><dd>WO ${o.wo}</dd>`, jen když `o.wo` existuje) a je
+    součástí `matchesSearch()`.
   - **`assignedTo`/`assignedToName` (string) → pole** — `Array.isArray`
     check všude přes nové pomocné `assignedUids(o)`/`assignedNames(o)`
     (zpětně kompatibilní: starší záznam se string hodnotou se zabalí
@@ -744,7 +746,42 @@ protože:
     (`errs.klíč` → `<span>*</span>` + `.msg` div) — STEJNÁ nekonzistence
     jako předtím: hvězdička/červeně se ukáže až PO neúspěšném pokusu
     o uložení, ne preventivně předem (nikdo nežádal o změnu tohohle
-    chování, jen o rozšíření na víc polí).
+    chování, jen o rozšíření na víc polí). **HISTORICKÉ — Martin si
+    toho hned všiml a vyžádal opravu, viz v0.14.1 níž: hvězdičky jsou
+    teď vidět VŽDY, červené orámování/`.msg` zůstává reaktivní (jen
+    po neúspěšném uložení).**
+- **Čtyři drobná doladění formuláře příkazu (2026-10-01, v0.14.1)** —
+  reakce na Martinovy postřehy hned po vyzkoušení v0.14.0:
+  - **WO přesunuto z `<span>` prefixu do placeholderu** — `.wo-row`
+    (flex řádek se span `WO` + input) zrušen, je to teď JEDEN
+    `<input id="e-wo" placeholder="WO" class="wo-input">` (`wo-input`
+    jen drží šířku 140px, dřív to dělalo `.wo-row input`). Stejné
+    `id`, takže `collect()`/`bind()`'s číslicový filtr (`wo.oninput`)
+    fungují beze změny.
+  - **Placeholder pole Porucha** — „co je potřeba udělat" (zbytek
+    z doby, kdy se pole jmenovalo „Název") → „co se porouchalo".
+    Martin navrhoval „co se stalo", ale výslovně chtěl jinou
+    formulaci — zvoleno slovo ze stejného kořene jako název pole.
+  - **Hledání u pole Stroj** — `<select id="e-stroj">` nahrazeno
+    `<input type="text" id="e-stroj" list="e-stroj-list">` +
+    `<datalist id="e-stroj-list">` (nativní HTML5 filtrování při
+    psaní, žádný vlastní JS/panel jako u Linky — stačí to, protože
+    na rozdíl od Linky tohle pole je JEDNOVÝBĚROVÉ, ne sada
+    kombinovatelných filtrů, takže `linkaPickerCore()` vzor sem
+    nepasuje 1:1). `id="e-stroj"` zůstalo stejné, `collect()` čte
+    `.value` stejně jako u `<select>`, žádná změna tam potřeba.
+    Placeholder se mění podle stavu (`hledat stroj…` / `linka nemá
+    stroje` / `nejdřív vyber linku`), `disabled` dokud není vybraná
+    linka — stejná logika jako dřív, jen jiný element.
+  - **Hvězdičky povinných polí vidět hned** — Porucha/Linka/Obor mají
+    `<span>*</span>` natvrdo (ne přes `errs.klíč` podmínku). Stroj má
+    hvězdičku JEN když `sec && machs.length` (stejná podmínka, za
+    které je pole opravdu povinné podle `validate()`) — proměnná
+    `strojRequired` v `editForm()`. Červené orámování pole a `.msg`
+    chybová hláška POD polem zůstávají beze změny — pořád se objeví
+    až po neúspěšném „Založit"/„Uložit změny" (`errs.klíč`), teď jen
+    dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
+    červená = „tohle konkrétně teď chybí".
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
