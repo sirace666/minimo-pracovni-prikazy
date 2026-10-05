@@ -821,6 +821,22 @@ protože:
     sedí přesně nad textem „Potřeba objednat díl"/„Čeká na díl" u VŠECH řádků,
     i když odznak chybí; záhlaví Porucha má stejné odsazení (`.hc[data-v="nazev"]`).
     Změníš-li padding `.trow .badge`, změň i tohle.
+  - **Pevný horní blok, rolují jen řádky (Martin):** od 861 px šířky a 560 px
+    výšky se stránka sama nescrolluje. `#app` je flex sloupec o výšce okna
+    (`100dvh`, `overflow:hidden`), `#main-host` → `main` → `.board2` → `.listcard2`
+    se táhnou přes `flex:1; min-height:0`, hlavička portálu, `.pagehead`,
+    `.sbar` (štítky filtrů) i `.thd` (záhlaví sloupců) zůstávají vždy vidět a
+    posouvá se jen `.tscroller` (`overflow:auto`). `.thd` je `position:sticky;
+    top:0` UVNITŘ toho posuvníku — proto se při vodorovném posunu hýbe spolu
+    s řádky. Zkoušel jsem nejdřív sticky na stránce, ale `.tscroller` s
+    `overflow-x:auto` i `.listcard2{overflow:hidden}` jsou posuvné kontejnery,
+    ke kterým by se sticky přilepilo místo k oknu; proto celý tenhle „app shell".
+    `.listcard2` má `max-height:100%` (ne stretch), takže při pár řádcích není
+    karta zbytečně vysoká. Na nízkém okně (<560 px) se vrací běžné
+    scrollování stránky. `renderShell()` zachovává `scrollTop` i `scrollLeft`
+    `.tscroller` při překreslení (otevření okna příkazu, filtr…); když filtr
+    seznam zkrátí, posun se logicky zkrátí taky. Menu sloupce je `fixed` a
+    drží se u záhlaví, které se při svislém posunu nehýbe.
   - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
     mít obrys) — zůstává jen lehce červené pozadí u EM + kritická
     (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu

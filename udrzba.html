@@ -408,6 +408,22 @@
   .fchip b{font-weight:800}
   .fchip:hover{background:#e0e4f8}
   .tscroller{overflow-x:auto}
+  /* Pevný horní blok: na dostatečně velké obrazovce se stránka sama nescrolluje. Hlavička portálu, nadpis s
+     dlaždicemi, štítky filtrů a záhlaví sloupců zůstávají na místě a rolují jen řádky tabulky (.tscroller).
+     Záhlaví sloupců (.thd) je sticky uvnitř tohoto posuvníku, takže se vodorovně posouvá spolu s řádky.
+     Na nízkých oknech (<560 px) se vrací běžné scrollování celé stránky. */
+  @media (min-width:861px) and (min-height:560px){
+    #app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+    #uh-host{flex:none}
+    #main-host{flex:1;min-height:0;display:flex;flex-direction:column}
+    #main-host>main{flex:1;min-height:0;display:flex;flex-direction:column}
+    #main-host>main>.pagehead{flex:none}
+    .board2{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+    .listcard2{align-self:start;max-height:100%;min-height:0;display:flex;flex-direction:column}
+    .sbar{flex:none}
+    .tscroller{flex:0 1 auto;min-height:0;overflow:auto}
+    .thd{position:sticky;top:0;z-index:5}
+  }
   /* Sloupce bez mezer: odsazení textu dělá padding-left 8px na každé buňce (.tc) i na tlačítku záhlaví (.hc),
      takže text záhlaví i řádků začíná na stejné svislici a tlačítka záhlaví se nikdy nepřekrývají
      (mezi nimi zůstává 2px díky padding 0 1px na obalu). Šířky sloupců počítají s tím odsazením. */
@@ -694,11 +710,12 @@ function renderShell(inner){
   const modalBodies=document.querySelectorAll('.overlay .modal-body');
   const modalBody=modalBodies[modalBodies.length-1];
   const scrollTop=modalBody?modalBody.scrollTop:null;
-  // tabulka: vodorovný posun se při překreslení (třeba po zaškrtnutí filtru) jinak vracel na začátek
-  const tsOld=document.querySelector('.tscroller'), tsLeft=tsOld?tsOld.scrollLeft:0;
+  // tabulka: posun (vodorovný i svislý) se při překreslení (třeba po zaškrtnutí filtru nebo zavření okna
+  // příkazu) jinak vracel na začátek
+  const tsOld=document.querySelector('.tscroller'), tsLeft=tsOld?tsOld.scrollLeft:0, tsTop=tsOld?tsOld.scrollTop:0;
   mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   if(scrollTop!=null){ const nbs=document.querySelectorAll('.overlay .modal-body'); const nb=nbs[nbs.length-1]; if(nb) nb.scrollTop=scrollTop; }
-  if(tsLeft){ const tsNew=document.querySelector('.tscroller'); if(tsNew) tsNew.scrollLeft=tsLeft; }
+  if(tsLeft||tsTop){ const tsNew=document.querySelector('.tscroller'); if(tsNew){ tsNew.scrollLeft=tsLeft; tsNew.scrollTop=tsTop; } }
 }
 function loginView(){
   return `<div class="login-wrap"><form class="login" id="loginForm">
