@@ -440,7 +440,11 @@
     font-size:13px;line-height:20px}
   .tc b{font-weight:800;font-size:13px;line-height:20px}
   .tc small{display:block;font-size:11.5px;line-height:16px;color:#6b7290;font-weight:400}
-  .tc .tt{font-weight:800;font-size:13.5px;line-height:20px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Název poruchy je odsazený o stejných 9px jako text uvnitř odznaku (.trow .badge níž), takže jeho levý
+     okraj sedí přesně nad textem „Potřeba objednat díl" / „Čeká na díl" — a to u VŠECH řádků, i tam, kde
+     odznak pod názvem není. Záhlaví sloupce Porucha je odsazené stejně. */
+  .tc .tt{font-weight:800;font-size:13.5px;line-height:20px;max-width:100%;padding-left:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hc[data-v="nazev"]{padding-left:16px}
   .tc.tx{font-size:12.5px;color:var(--muted);font-weight:600}
   .tc .dash{color:#9aa0b8}
   .tc .none{font-style:italic;color:#6b7290;font-weight:400}

@@ -816,7 +816,11 @@ protože:
     takže první řádky všech sloupců leží na jedné čáře; vertikální centrování
     buněk s různým počtem řádků tohle rozhazovalo. Odznaky `p-kritická`
     a `nd-potreba` mají v tabulce tmavší růžové pozadí, jinak by na růžovém řádku
-    (EM + kritická) zmizely a jejich text by vypadal posunutý.
+    (EM + kritická) zmizely a jejich text by vypadal posunutý. Název poruchy
+    (`.tt`) je odsazený o 9 px (stejně jako padding odznaku), takže jeho text
+    sedí přesně nad textem „Potřeba objednat díl"/„Čeká na díl" u VŠECH řádků,
+    i když odznak chybí; záhlaví Porucha má stejné odsazení (`.hc[data-v="nazev"]`).
+    Změníš-li padding `.trow .badge`, změň i tohle.
   - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
     mít obrys) — zůstává jen lehce červené pozadí u EM + kritická
     (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
