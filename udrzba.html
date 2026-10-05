@@ -429,11 +429,11 @@
   .trow.st-nový{--st:#6366f1}
   .trow.st-rozpracováno{--st:#ea7317}
   .trow.st-hotovo{--st:var(--ok)}
-  .trow.em{box-shadow:inset 4px 0 0 var(--st),inset 0 0 0 1.5px var(--danger)}
+  /* v tabulce nemá havarijka (EM) červený obrys — jen EM + kritická má lehce červenou výplň */
   .trow.em.crit{background:#fdecea}
   .tc{min-width:0;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
   .tc b{font-weight:800;font-size:13px}
-  .tc small{font-size:11.5px;color:#6b7290;font-weight:600}
+  .tc small{font-size:11.5px;color:#6b7290;font-weight:400}
   .tc .tt{font-weight:800;font-size:13.5px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tc.tx{font-size:12.5px;color:var(--muted);font-weight:600}
   .tc .dash{color:#9aa0b8}
@@ -757,7 +757,7 @@ const SORT_VAL={
   typ:o=>typOf(o)==='EM'?1:0,
   wo:o=>o.wo?Number(o.wo):null,
   nazev:o=>(o.nazev||'').toLowerCase(),
-  linka:o=>o.linka?((o.linka+' '+(o.stroj||'')).toLowerCase()):null,
+  linka:o=>(o.stroj||o.linka)?(((o.stroj||o.linka)+' '+(o.linka||'')).toLowerCase()):null,
   obor:o=>{ const k=oborOf(o)[0]; return k?OBOR.findIndex(x=>x.k===k):null; },
   who:o=>{ const n=assignedNames(o)[0]; return n?pn(n).toLowerCase():null; },
   prostoj:o=>o.prostojOd||null
@@ -969,7 +969,7 @@ const COLS=[
   {k:'priorita',label:'Priorita',      dim:'priorita', sort:'priorita', s:['Nízká → Kritická','Kritická → Nízká']},
   {k:'wo',      label:'WO',            dim:'wo',       sort:'wo',       s:['Nejnižší číslo první','Nejvyšší číslo první']},
   {k:'nazev',   label:'Porucha',       dim:null,       sort:'nazev',    s:['A → Z','Z → A']},
-  {k:'linka',   label:'Linka / stroj', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'], search:true},
+  {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'], search:true},
   {k:'obor',    label:'Obor',          dim:'obor',     sort:'obor',     s:['Mechanika první','Nástrojárna první']},
   {k:'who',     label:'Přiřazeno',     dim:'who',      sort:'who',      s:['A → Z','Z → A'], search:true},
   {k:'prostoj', label:'Prostoj od',    dim:'prostoj',  sort:'prostoj',  s:['Nejstarší první','Nejnovější první']},
@@ -1036,7 +1036,7 @@ function trHTML(o){
     <span class="tc"><span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span></span>
     <span class="tc">${o.wo?`<b>${esc(o.wo)}</b>`:'<span class="dash">–</span>'}<small>${esc(o.cislo||'')}</small></span>
     <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}</span>
-    <span class="tc">${o.linka?`<b>${esc(o.linka)}</b>${o.stroj?`<small>${esc(o.stroj)}</small>`:''}`:'<span class="dash">bez linky</span>'}</span>
+    <span class="tc">${o.stroj?`<b>${esc(o.stroj)}</b><small>${esc(o.linka||'')}</small>`:(o.linka?`<b>${esc(o.linka)}</b>`:'<span class="dash">bez linky</span>')}</span>
     <span class="tc tx">${obory?esc(obory):'<span class="dash">–</span>'}</span>
     <span class="tc tx">${names.length?esc(names.join(', ')):'<span class="none">nepřiřazeno</span>'}</span>
     <span class="tc tx" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?esc(prostojCz(o.prostojOd)):'<span class="dash">–</span>'}</span>
@@ -1062,8 +1062,9 @@ function colMenuHTML(){
 }
 /* ===== levý panel oblíbených (jen na počítači) ===== */
 const svgIc=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
-const IC_EYE_ON=svgIc('<path class="ic-on" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="ic-on" cx="12" cy="12" r="3"/>');
-const IC_EYE_OFF=svgIc('<path class="ic-off" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><path class="ic-off" d="M4 4l16 16"/>');
+// JEDNA ikona (obrys oka + zornička pro zapnuto / přeškrtnutí pro vypnuto, přepíná CSS) — dvě SVG
+// vedle sebe by oko v tlačítku posunuly ke straně, i kdyby jedna z nich byla prázdná.
+const IC_EYE=svgIc('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="ic-on" cx="12" cy="12" r="3"/><path class="ic-off" d="M4 4l16 16"/>');
 const IC_PLUS=svgIc('<path d="M12 5v14M5 12h14"/>');
 const eyeTitle=on=>on?'Panel se vysouvá po najetí myší (klikni pro vypnutí)':'Panel zůstává zasunutý (klikni pro zapnutí vysouvání)';
 function favIsOn(f){
@@ -1074,7 +1075,7 @@ function favIsOn(f){
 function favPanelHTML(){
   const items=savedFilters.length?savedFilters.map(f=>`<button type="button" class="fp-item${favIsOn(f)?' on':''}" data-a="fav-apply" data-v="${esc(f.id)}"><span class="fav-dot" style="background:${esc(f.color)}"></span><span class="fav-label">${esc(f.name)}</span><span class="fav-edit" data-a="fav-edit" data-v="${esc(f.id)}" title="Upravit">✎</span></button>`).join(''):'<div class="fp-empty">Zatím žádné uložené filtry.</div>';
   const dots=savedFilters.map(f=>`<button type="button" class="fp-dotbtn${favIsOn(f)?' on':''}" data-a="fav-apply" data-v="${esc(f.id)}" title="${esc(f.name)}"><i style="background:${esc(f.color)}"></i></button>`).join('');
-  const eye=`<button type="button" class="fp-ic fp-eyebtn" data-a="panel-eye" aria-pressed="${panelEye}" title="${eyeTitle(panelEye)}">${IC_EYE_ON}${IC_EYE_OFF}</button>`;
+  const eye=`<button type="button" class="fp-ic fp-eyebtn" data-a="panel-eye" aria-pressed="${panelEye}" title="${eyeTitle(panelEye)}">${IC_EYE}</button>`;
   return `<aside class="favpanel" aria-label="Oblíbené filtry">
     <div class="fp-strip">
       ${eye}

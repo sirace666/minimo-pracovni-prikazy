@@ -796,10 +796,17 @@ protože:
     má `old-only`. Společná zůstává hlavička stránky, dlaždice, hledání
     a všechna okna. Žádný JS test šířky, čistě CSS media query.
   - **Sloupce** (`COLS`): Stav, Typ, Priorita, WO (pod ním malé číslo
-    příkazu PP-…), Porucha, Linka/stroj, Obor, Přiřazeno, Prostoj od,
-    Vytvořeno. Řádek je `button.trow` s `data-a="open"` (klik otevře okno
-    příkazu jako dřív). Pozor: třída `.row` v appce je flex pomocník, proto
-    tabulka používá `.trow`/`.thd`/`.tc`.
+    příkazu PP-…), Porucha, **Stroj / linka**, Obor, Přiřazeno, Prostoj od,
+    Vytvořeno. Ve sloupci Stroj / linka je nahoře STROJ tučně a pod ním linka
+    netučně drobně (Martin to chtěl obráceně než na kartách); bez stroje je
+    jen linka tučně. Filtr v tom sloupci pořád filtruje podle LINKY, řazení
+    podle stroje (pak linky). Řádek je `button.trow` s `data-a="open"` (klik
+    otevře okno příkazu jako dřív). Pozor: třída `.row` v appce je flex
+    pomocník, proto tabulka používá `.trow`/`.thd`/`.tc`.
+  - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
+    mít obrys) — zůstává jen lehce červené pozadí u EM + kritická
+    (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
+    (`.order-item.em`) obrys mají dál, beze změny.
   - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
     s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže
     to samé `filters` a `passes()`); Linka a Přiřazeno mají hledání (`cm-q`),
