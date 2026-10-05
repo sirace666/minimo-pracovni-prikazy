@@ -408,11 +408,14 @@
   .fchip b{font-weight:800}
   .fchip:hover{background:#e0e4f8}
   .tscroller{overflow-x:auto}
-  .tbl{min-width:1020px;--cols:98px 52px 84px 92px minmax(150px,1.8fr) minmax(118px,1fr) 88px minmax(104px,1fr) 96px 92px}
-  .thd,.trow{display:grid;grid-template-columns:var(--cols);column-gap:6px;align-items:center;padding:0 12px}
-  .thd{background:#f7f8fc;border-bottom:1px solid var(--border);height:44px}
-  .thd>div{min-width:0}
-  .hc{display:flex;align-items:center;gap:5px;width:calc(100% + 12px);margin-left:-6px;height:30px;padding:0 6px;border:0;
+  /* Sloupce bez mezer: odsazení textu dělá padding-left 8px na každé buňce (.tc) i na tlačítku záhlaví (.hc),
+     takže text záhlaví i řádků začíná na stejné svislici a tlačítka záhlaví se nikdy nepřekrývají
+     (mezi nimi zůstává 2px díky padding 0 1px na obalu). Šířky sloupců počítají s tím odsazením. */
+  .tbl{min-width:1100px;--cols:124px 60px 92px 92px minmax(170px,1.8fr) minmax(128px,1fr) 88px minmax(110px,1fr) 114px 108px}
+  .thd,.trow{display:grid;grid-template-columns:var(--cols);column-gap:0;align-items:start;padding:0 12px}
+  .thd{background:#f7f8fc;border-bottom:1px solid var(--border);height:44px;align-items:center}
+  .thd>div{min-width:0;padding:0 1px}
+  .hc{display:flex;align-items:center;gap:5px;width:100%;height:30px;padding:0 6px 0 7px;border:0;
     border-radius:8px;background:transparent;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
     color:var(--muted);white-space:nowrap;text-align:left}
   .hc .hc-l{overflow:hidden;text-overflow:ellipsis}
@@ -423,7 +426,7 @@
   .hc.on{background:var(--accent);color:#fff}
   .hc.on .hc-i{color:#fff}
   .trow{width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);border-radius:0;background:#fff;
-    padding-block:9px;min-height:56px;font-size:13px;color:var(--text);box-shadow:inset 4px 0 0 var(--st,#94a3b8)}
+    padding-block:10px;min-height:58px;font-size:13px;color:var(--text);box-shadow:inset 4px 0 0 var(--st,#94a3b8)}
   .trow:hover{background:#fafbfd}
   .trow:last-child{border-bottom:0}
   .trow.st-nový{--st:#6366f1}
@@ -431,13 +434,19 @@
   .trow.st-hotovo{--st:var(--ok)}
   /* v tabulce nemá havarijka (EM) červený obrys — jen EM + kritická má lehce červenou výplň */
   .trow.em.crit{background:#fdecea}
-  .tc{min-width:0;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
-  .tc b{font-weight:800;font-size:13px}
-  .tc small{font-size:11.5px;color:#6b7290;font-weight:400}
-  .tc .tt{font-weight:800;font-size:13.5px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Buňky jsou zarovnané SHORA a první řádek každé buňky má stejnou výšku 20px (text i odznaky),
+     takže první řádky ve všech sloupcích leží na jedné čáře; druhý řádek je drobný (16px). */
+  .tc{min-width:0;padding-left:8px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;
+    font-size:13px;line-height:20px}
+  .tc b{font-weight:800;font-size:13px;line-height:20px}
+  .tc small{display:block;font-size:11.5px;line-height:16px;color:#6b7290;font-weight:400}
+  .tc .tt{font-weight:800;font-size:13.5px;line-height:20px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tc.tx{font-size:12.5px;color:var(--muted);font-weight:600}
   .tc .dash{color:#9aa0b8}
-  .tc .none{font-style:italic;color:#6b7290}
+  .tc .none{font-style:italic;color:#6b7290;font-weight:400}
+  .trow .badge{padding:0 9px;line-height:20px}
+  /* světle červené odznaky by na růžovém řádku (EM + kritická) zmizely a text by vypadal posunutý */
+  .trow .badge.p-kritická,.trow .badge.nd-potreba{background:#f8d2cd}
 
   /* --- rozbalovací menu sloupce (filtr + řazení) --- */
   .colmenu{position:fixed;z-index:55;width:252px;background:#fff;border:1px solid var(--border);border-radius:12px;
@@ -1040,7 +1049,7 @@ function trHTML(o){
     <span class="tc tx">${obory?esc(obory):'<span class="dash">–</span>'}</span>
     <span class="tc tx">${names.length?esc(names.join(', ')):'<span class="none">nepřiřazeno</span>'}</span>
     <span class="tc tx" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?esc(prostojCz(o.prostojOd)):'<span class="dash">–</span>'}</span>
-    <span class="tc tx">${esc(dateCz(o.created))}</span>
+    <span class="tc tx">${esc(dateCz(o.created))}${o.authorName?`<small title="Vytvořil">${esc(pn(o.authorName))}</small>`:''}</span>
   </button>`;
 }
 function colMenuHTML(){

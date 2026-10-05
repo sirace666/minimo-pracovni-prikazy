@@ -800,9 +800,23 @@ protože:
     Vytvořeno. Ve sloupci Stroj / linka je nahoře STROJ tučně a pod ním linka
     netučně drobně (Martin to chtěl obráceně než na kartách); bez stroje je
     jen linka tučně. Filtr v tom sloupci pořád filtruje podle LINKY, řazení
-    podle stroje (pak linky). Řádek je `button.trow` s `data-a="open"` (klik
+    podle stroje (pak linky). Sloupec **Vytvořeno** ukazuje datum a pod ním
+    drobně jméno autora (`authorName` přes `pn()`). Řádek je `button.trow` s `data-a="open"` (klik
     otevře okno příkazu jako dřív). Pozor: třída `.row` v appce je flex
     pomocník, proto tabulka používá `.trow`/`.thd`/`.tc`.
+  - **Zarovnání tabulky (Martin: „špatné odsazení, překrývá se"):** sloupce
+    jsou BEZ mezer (`column-gap:0`), odsazení textu dělá `padding-left:8px`
+    na `.tc` i na tlačítku záhlaví `.hc` (+ `padding:0 1px` na obalu záhlaví,
+    díky tomu mezi tlačítky zůstává 2 px a dva sousední aktivní filtry se
+    nelepí). Dřív měla tlačítka záporný margin a přesah a překrývala se.
+    Šířky v `--cols` počítají s tím odsazením — když přidáš sloupec nebo
+    změníš text záhlaví, zkontroluj, že se `.hc-l` nezkracuje (`scrollWidth >
+    clientWidth`). Buňky jsou zarovnané SHORA (`align-items:start`) a první
+    řádek každé buňky má 20 px (`line-height`, i odznaky), druhý drobný 16 px,
+    takže první řádky všech sloupců leží na jedné čáře; vertikální centrování
+    buněk s různým počtem řádků tohle rozhazovalo. Odznaky `p-kritická`
+    a `nd-potreba` mají v tabulce tmavší růžové pozadí, jinak by na růžovém řádku
+    (EM + kritická) zmizely a jejich text by vypadal posunutý.
   - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
     mít obrys) — zůstává jen lehce červené pozadí u EM + kritická
     (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
