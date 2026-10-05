@@ -782,6 +782,63 @@ protože:
     až po neúspěšném „Založit"/„Uložit změny" (`errs.klíč`), teď jen
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
+- **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05, větev
+  `test-tabulka-filtry`, `VERSION` = `0.15.0-test`)** — Martin to chtěl
+  „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
+  v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
+  Až to Martin potvrdí: sloučit do `main`, `VERSION` na `0.15.0`, release,
+  doplnit `docs/pro-davida.md`. Náhled, který se schvaloval, byl artefakt
+  „Filtry ve sloupcích".
+  - **Platí od 861 px šířky.** Pod tím je dnešní rozložení beze změny
+    (karty + levý panel filtrů). `listView()` vykresluje OBĚ větve naráz:
+    `.board2` (nová, na mobilu `display:none`) a `.board.old-only`
+    (původní, na počítači schovaná přes `!important`); stejně `.sortbox`
+    má `old-only`. Společná zůstává hlavička stránky, dlaždice, hledání
+    a všechna okna. Žádný JS test šířky, čistě CSS media query.
+  - **Sloupce** (`COLS`): Stav, Typ, Priorita, WO (pod ním malé číslo
+    příkazu PP-…), Porucha, Linka/stroj, Obor, Přiřazeno, Prostoj od,
+    Vytvořeno. Řádek je `button.trow` s `data-a="open"` (klik otevře okno
+    příkazu jako dřív). Pozor: třída `.row` v appce je flex pomocník, proto
+    tabulka používá `.trow`/`.thd`/`.tc`.
+  - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
+    s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže
+    to samé `filters` a `passes()`); Linka a Přiřazeno mají hledání (`cm-q`),
+    WO textové pole jen s číslicemi (`cm-wo`, `filters.wo`). Menu je
+    `position:fixed`, polohu mu dává `placeColMenu()` na konci `bind()`
+    (a při scrollu/resize), ne CSS — kdyby bylo `absolute`, ořízl by ho
+    `.tscroller{overflow-x:auto}`. **Zavírání:** `[data-a]` tlačítka mají
+    `stopPropagation()`, takže na ně dokumentový listener nedosáhne —
+    proto `act()` na začátku zavře menu u jakékoli akce kromě
+    `col-open/col-sort/col-clear/col-close`. Klik do prázdna a Esc řeší
+    dokumentové listenery dole.
+  - **Nové filtrovací dimenze** `filters.who` (uid, `_none` = nepřiřazeno),
+    `filters.prostoj` (`ano`/`ne`), `filters.wo` (řetězec). Jsou v `passes()`
+    s `skip`, mají `countWho`/`countProstoj` a počítají se do
+    `activeFilterCount()` (štítek u „FILTRY", tlačítko Zrušit). **Do uložené
+    oblíbené sady NEPATŘÍ** (schéma `udrzbaFilters` se nezměnilo, žádná změna
+    pravidel): `favApply()` je při použití sady vynuluje a „Uložit aktuální
+    výběr" při jejich zapnutí upozorní toastem.
+  - **Řazení:** `SORT_VAL` + `sortRows()` — prázdná hodnota (bez WO/prostoje/
+    přiřazení) jde vždy na konec, ať je směr jakýkoli; při shodě se řadí podle
+    data vytvoření. Stejné `sortKey`/`sortDir` používá výběr „Řadit" na mobilu,
+    proto má `SORT_OPTS` všech 10 klíčů.
+  - **Levý panel oblíbených** (`favPanelHTML()`): tři režimy v `panelMode`,
+    uložené v `localStorage` (`udrzbaPanelMode`): `open` (vysunutý, 220 px),
+    `rail` (zasunutý do pruhu 44 px s barevnými tečkami oblíbených, tlačítko
+    „vysunout"), `auto` (pruh, po najetí myší/fokusu vyjede přes tabulku,
+    připínáček ho vrátí do `open`). `setPanelMode()` jen přepíná třídu
+    `fp-open|fp-rail|fp-auto` na `#board2` a `act('panel-mode')` se vrací
+    PŘED `render()` — kdyby se překreslovalo, CSS animace šířky sloupce by
+    nikdy neproběhla (nový DOM začíná v cílovém stavu). Režim `auto` je čistě
+    CSS (`:hover`/`:focus-within` + zpoždění 250 ms), takže ho překreslení
+    nerozhodí. „+ Nový filtr"/✎ používají stejné okno jako dřív.
+  - **Past, na kterou jsem narazil:** třída režimu `fp-rail` na `.board2`
+    se shodovala s třídou prvku pruhu uvnitř, takže styl pruhu (flex, šířka
+    44 px) přepsal celý grid. Prvek pruhu se proto jmenuje `fp-strip`.
+    Při testu v panelu prohlížeče: skrytý panel zastavuje CSS animace, takže
+    šířky měř s `transition:none`.
+  - Vodorovný posun tabulky (`.tscroller`) se při překreslení zachovává
+    v `renderShell()`, stejně jako scroll okna příkazu.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
