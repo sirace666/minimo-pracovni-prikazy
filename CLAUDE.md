@@ -321,10 +321,21 @@ Davidův původní excelový tracker (`ME_TASK_TRACKER_Excel.xlsx`) do kolekce `
 - Import se zapíše do `dt_imports` jako ostatní importy.
 
 ## Záložka Problem solving
-Přehled všech 5× proč / A3 z kolekce `problems`. Zakládají se v Řízení tlačítkem
-u linky pod prahem, tady se jen zobrazují a otevírají (stejné okno jako v Řízení).
-Řadí se podle naléhavosti: eskalace → opatření po termínu → nejstarší. Sloupec
-Opatření ukazuje `hotovo/celkem` a značku `P!`, když chybí preventivní opatření.
+Přehled všech 5× proč / A3 z kolekce `problems`.
+- **Zakládat A3 smí kdokoli, kdo do modulu smí, na cokoli.** Tlačítko
+  „+ Nový A3 problem solving" je v hlavičce seznamu (a v prázdném stavu).
+  Otevře `psNewModal()` — linka/stroj (našeptávač `psLineOpts()`: linky z importu
+  + stroje z `meta/engcfg.machines` + linky už založených problémů, dá se napsat
+  i linka, která v datech ještě není), týden (`psWeekOpts()`), spouštěč
+  (`PS_TRIGGERS`) a krátký popis. Po založení se problém rovnou otevře.
+  Rozepsané hodnoty drží `collectPsNew()`, aby je chybová hláška nesmazala.
+- Když o vybrané lince máme data za ten týden, převezme se z nich výkon a prostoj;
+  jinak zůstanou prázdné (`perf:null`). `createProblem(wk, line, trigger, opts)`
+  bere vlastní titulek v `opts.title`.
+- Druhá cesta zůstává: na **Hlavní stránce** se A3 nabídne sám u linky, která
+  spadla pod práh výkonu. Nerušit ani jedno.
+- Řadí se podle naléhavosti: eskalace → opatření po termínu → nejstarší. Sloupec
+  Opatření ukazuje `hotovo/celkem` a značku `P!`, když chybí preventivní opatření.
 
 ## Chování, které se NESMÍ rozbít
 - KAŽDÝ nově založený požadavek má VŽDY stav „nový", pro všechny role bez výjimky

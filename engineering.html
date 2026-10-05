@@ -1940,13 +1940,79 @@ function canClose(p){
   return '';
 }
 
+/* ---------- ruční založení A3 ze záložky Problem solving ----------
+   Dřív se problém dal založit jen u linky pod prahem na hlavní stránce.
+   Tohle okno dovolí komukoli otevřít A3 na jakýkoli problém. */
+const PS_TRIGGERS = ['výkon pod prahem','opakovaný problém','porucha stroje','kvalita / zmetky',
+  'bezpečnost','přestavba / seřízení','podnět z auditu','jiný důvod'];
+let psNew=null;        // rozepsané založení: {line, week, trigger, title, err}
+
+/* Linky a stroje na výběr: co přišlo z importu prostojů + stroje z nastavení
+   + linky už založených problémů. Slug držíme stejný jako v importu, aby se
+   problém spároval se svým procesem v KPI. */
+function psLineOpts(){
+  const m=new Map();
+  const put=(label,sl)=>{ const l=String(label||'').trim(); if(l && !m.has(l)) m.set(l, sl||slug(l)); };
+  mgDays.forEach(d=>Object.entries(d.segs||{}).forEach(([k,v])=>put(v.label||k,k)));
+  Object.values(engcfg.machines||{}).forEach(arr=>(arr||[]).forEach(x=>put(x)));
+  problems.forEach(p=>put(p.line,p.lineSlug));
+  return [...m].map(([label,sl])=>({label,slug:sl})).sort((a,b)=>a.label.localeCompare(b.label,'cs'));
+}
+/* Týdny na výběr: co je v datech, doplněné o posledních osm týdnů do dneška. */
+function psWeekOpts(){
+  const set=new Set(mgDays.map(d=>isoWeekOf(d.date)));
+  let wk=isoWeekOf(today());
+  for(let i=0;i<8;i++){ set.add(wk); wk=weekPrev(wk); }
+  return [...set].sort().reverse();
+}
+/* Rozepsané hodnoty do paměti, ať se neztratí při překreslení (toast, chyba…). */
+function collectPsNew(){
+  if(!psNew) return;
+  const g=id=>{const e=document.getElementById(id); return e?e.value.trim():undefined;};
+  for(const [k,id] of [['line','psn-line'],['week','psn-week'],['trigger','psn-trigger'],['title','psn-title']]){
+    const v=g(id); if(v!==undefined) psNew[k]=v;
+  }
+}
+function psNewModal(){
+  if(!psNew) return '';
+  const lines=psLineOpts(), weeks=psWeekOpts();
+  return `<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true"
+      aria-label="Nový problem solving" style="max-width:620px">
+    <h3>Nový A3 problem solving<button class="x" data-a="ps-newclose" aria-label="Zavřít">✕</button></h3>
+    ${psNew.err?`<div class="robar" style="color:var(--red);font-weight:700">${esc(psNew.err)}</div>`:''}
+    <div class="form">
+      <div class="f span2"><label>Linka nebo stroj <span style="color:var(--red)">*</span></label>
+        <input id="psn-line" list="psn-lines" value="${esc(psNew.line||'')}" autocomplete="off"
+          placeholder="Začni psát nebo vyber">
+        <datalist id="psn-lines">${lines.map(l=>`<option>${esc(l.label)}</option>`).join('')}</datalist>
+        <div class="muted" style="font-size:11px">můžeš napsat i linku, která v datech ještě není</div></div>
+      <div class="f span2"><label>Týden, ke kterému problém patří</label>
+        <select id="psn-week">${weeks.map(w=>`<option value="${w}" ${psNew.week===w?'selected':''}>${esc(weekLabel(w))}</option>`).join('')}</select></div>
+      <div class="f span2"><label>Spouštěč</label>
+        <select id="psn-trigger">${PS_TRIGGERS.map(t=>`<option ${psNew.trigger===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="f span4"><label>Krátký popis problému <span style="color:var(--red)">*</span></label>
+        <input id="psn-title" value="${esc(psNew.title||'')}" placeholder="např. IMM07 — opakovaná porucha manipulátoru">
+        <div class="muted" style="font-size:11px">jedna věta, uvidíš ji v seznamu</div></div>
+    </div>
+    <div class="foot">
+      <span class="muted" style="font-size:11.5px">Zbytek — okamžité opatření, kořenovou příčinu,
+        nápravná opatření i fotky — vyplníš hned po založení.</span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-ok" data-a="ps-newgo">Založit a otevřít</button>
+        <button class="btn-ghost" data-a="ps-newclose">Zrušit</button></span>
+    </div>
+  </div></div>`;
+}
+
 /* ---------- zakládání a ukládání ---------- */
-async function createProblem(wk, line, trigger){
+async function createProblem(wk, line, trigger, opts){
   try{
     const no=await nextNo('seqPs','PS');
     const eff=new Date(); eff.setDate(eff.getDate()+(engcfg.effectivenessDays||28));
     const rec={no, week:wk, line:line.label, lineSlug:line.slug,
-      title:`${line.label} — výkon ${num(line.perf,1)} % v ${weekShort(wk)}`,
+      title:(opts&&opts.title) ? opts.title
+        : (line.perf!=null ? `${line.label} — výkon ${num(line.perf,1)} % v ${weekShort(wk)}`
+                           : `${line.label} — ${trigger||'problém'} (${weekShort(wk)})`),
       trigger: trigger||'výkon pod prahem', status:'nový',
       owner:engEngineers()[0]||'', coordinator:engCoordinators()[0]||'',
       opened:today(), downtimeSec:Math.round(line.sec||0), perf:line.perf==null?null:+line.perf.toFixed(1),
@@ -2818,9 +2884,11 @@ function psView(){
     return `<div class="panel"><div class="body" style="text-align:center;padding:32px 18px">
       <div style="font-size:34px">🔎</div>
       <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Zatím žádný problem solving</div>
-      <p class="muted" style="max-width:560px;margin:0 auto 14px">Zakládá se v záložce <b>Hlavní stránka</b> tlačítkem
-        <b>Vytvořit A3 problem solving</b> u linky, která spadla pod práh výkonu. Tady pak uvidíš všechny otevřené A3 pohromadě.</p>
-      <button class="btn-primary" data-a="tab" data-v="mgmt">Přejít na hlavní stránku</button>
+      <p class="muted" style="max-width:560px;margin:0 auto 14px">Nový A3 si otevřeš tlačítkem níž na jakýkoli problém.
+        Sám se taky nabídne na <b>Hlavní stránce</b> u linky, která spadla pod práh výkonu.</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" data-a="ps-new">+ Nový A3 problem solving</button>
+        <button class="btn-ghost" data-a="tab" data-v="mgmt">Přejít na hlavní stránku</button></div>
     </div></div>`;
   }
   const rows=psVisible();
@@ -2854,6 +2922,7 @@ function psView(){
   <div class="panel">
     <h2>Problem solving — A3<span class="right">${rows.length} z ${problems.length} · klikni na řádek pro detail</span></h2>
     <div class="filters">
+      <button class="btn-primary" data-a="ps-new">+ Nový A3 problem solving</button>
       <input class="grow" id="ps-q" placeholder="Hledat v problému, lince, příčině…" value="${esc(psF.q)}">
       <select id="ps-fline"><option value="">Všechny linky</option>${lines.map(l=>`<option ${psF.line===l?'selected':''}>${esc(l)}</option>`).join('')}</select>
       <select id="ps-fowner"><option value="">Všichni owneři</option>${owners.map(o=>`<option ${psF.owner===o?'selected':''}>${esc(o)}</option>`).join('')}</select>
@@ -3991,7 +4060,7 @@ function render(){
       <button class="tab ${engTab==='par'?'on':''}" data-a="tab" data-v="par">Generovat pareto</button>
       <a class="tab" href="${SCRAP_URL}" title="Otevře aplikaci Quality loss report — Scrap">Scrap ↗</a>
       <span class="sp">
-        ${engTab==='ps'?'<span class="muted" style="font-size:11.5px">Problem solving zakládáš na hlavní stránce u linky pod prahem.</span>'
+        ${engTab==='ps'?'<span class="muted" style="font-size:11.5px">Nový A3 založíš tlačítkem v seznamu — na jakoukoli linku i stroj.</span>'
           :engTab==='tasks'?'<span class="muted" style="font-size:11.5px">Akční plán je nezávislý na období — vidíš všechny tasky.</span>'
           :engTab==='mgmt'?'<span class="muted" style="font-size:11.5px">Hlavní stránka počítá po týdnech z posledních 12 týdnů.</span>'
           :engTab==='scrap'?'<span class="muted" style="font-size:11.5px">Scrap se počítá po měsících — posledních 12.</span>'
@@ -4004,7 +4073,7 @@ function render(){
     </div>
     ${errMsg?`<div class="notice warn">${esc(errMsg)}</div>`:''}
     ${busy?`<div class="notice">${esc(busy)}</div>`:''}
-    ${inner}`) + (openPs?problemModal():'') + (openTask?taskModal():'') + parPickModal() + parDetailModal()
+    ${inner}`) + (openPs?problemModal():'') + (openTask?taskModal():'') + psNewModal() + parPickModal() + parDetailModal()
     + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   bind();
 }
@@ -4126,7 +4195,7 @@ function bind(){
   const oo=document.getElementById('mg-onlyopen');
   if(oo) oo.onchange=()=>{ mgOnlyOpen=oo.checked; render(); };
   const ovl=document.getElementById('ovl');
-  if(ovl) ovl.onclick=e=>{ if(e.target.id==='ovl'){ openPs=null; psMsg=''; openTask=null; tMsg=''; render(); } };
+  if(ovl) ovl.onclick=e=>{ if(e.target.id==='ovl'){ collectPsNew(); openPs=null; psMsg=''; openTask=null; tMsg=''; psNew=null; render(); } };
 
   const fi=document.getElementById('file');
   if(fi) fi.onchange=()=>{ if(fi.files&&fi.files[0]) takeFile(fi.files[0]); };
@@ -4138,6 +4207,7 @@ function bind(){
   }
 }
 async function act(a,v){
+  collectPsNew();
   switch(a){
     case 'tab':
       engTab=v;
@@ -4244,6 +4314,27 @@ async function act(a,v){
     case 'ps-submit':  await submitPsForApproval(); return;
     case 'ps-approve': await approvePs(); return;
     case 'ps-reject':  await rejectPs(); return;
+    case 'ps-new':
+      psNew={line:'', week:isoWeekOf(today()), trigger:PS_TRIGGERS[0], title:'', err:''};
+      await loadTasks();
+      break;
+    case 'ps-newclose': psNew=null; break;
+    case 'ps-newgo':{
+      const d=psNew; if(!d) break;
+      if(!d.line){ d.err='Napiš, o kterou linku nebo stroj jde.'; break; }
+      if(!d.title){ d.err='Napiš krátký popis problému.'; break; }
+      d.err='';
+      const wk=d.week||isoWeekOf(today());
+      const known=psLineOpts().find(l=>l.label.toLowerCase()===d.line.toLowerCase());
+      const label=known?known.label:d.line, sl=known?known.slug:slug(d.line);
+      /* když o té lince máme data za vybraný týden, vezmi z nich výkon a prostoj */
+      const w=weeklyPerf(mgDays, engcfg)[wk];
+      const found=w && Object.values(w.lines).find(l=>l.slug===sl);
+      const line=found || {label, slug:sl, perf:null, sec:0};
+      psNew=null;
+      await createProblem(wk, line, d.trigger, {title:d.title});
+      return;
+    }
     case 'mg-create':{
       const [wk,slug]=String(v).split('|');
       const weeks=weeklyPerf(mgDays, engcfg);
