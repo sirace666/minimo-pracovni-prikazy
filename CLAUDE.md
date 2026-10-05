@@ -822,21 +822,37 @@ protože:
     přiřazení) jde vždy na konec, ať je směr jakýkoli; při shodě se řadí podle
     data vytvoření. Stejné `sortKey`/`sortDir` používá výběr „Řadit" na mobilu,
     proto má `SORT_OPTS` všech 10 klíčů.
-  - **Levý panel oblíbených** (`favPanelHTML()`): tři režimy v `panelMode`,
-    uložené v `localStorage` (`udrzbaPanelMode`): `open` (vysunutý, 220 px),
-    `rail` (zasunutý do pruhu 44 px s barevnými tečkami oblíbených, tlačítko
-    „vysunout"), `auto` (pruh, po najetí myší/fokusu vyjede přes tabulku,
-    připínáček ho vrátí do `open`). `setPanelMode()` jen přepíná třídu
-    `fp-open|fp-rail|fp-auto` na `#board2` a `act('panel-mode')` se vrací
-    PŘED `render()` — kdyby se překreslovalo, CSS animace šířky sloupce by
-    nikdy neproběhla (nový DOM začíná v cílovém stavu). Režim `auto` je čistě
-    CSS (`:hover`/`:focus-within` + zpoždění 250 ms), takže ho překreslení
-    nerozhodí. „+ Nový filtr"/✎ používají stejné okno jako dřív.
-  - **Past, na kterou jsem narazil:** třída režimu `fp-rail` na `.board2`
-    se shodovala s třídou prvku pruhu uvnitř, takže styl pruhu (flex, šířka
-    44 px) přepsal celý grid. Prvek pruhu se proto jmenuje `fp-strip`.
-    Při testu v panelu prohlížeče: skrytý panel zastavuje CSS animace, takže
-    šířky měř s `transition:none`.
+  - **Levý panel oblíbených** (`favPanelHTML()`) je VŽDY úzký pruh 44 px
+    (sloupec gridu je pevný, tabulka má celou šířku). Hvězdička v pruhu
+    NENÍ (Martin ji nechtěl, jen v rozbaleném panelu je v nadpisu). V pruhu je
+    nahoře **oko**, pod ním barevné tečky oblíbených (klik = použít filtr,
+    `title` = název) a dole „+" (`fav-save-current`: nový filtr z aktuálního
+    výběru, bez výběru prázdný). **Oko zapnuté** (`panelEye`, výchozí): po
+    najetí myší vyjede plný panel (`.fp-full`, názvy, ✎, + Nový filtr, Uložit
+    aktuální výběr) PŘES tabulku a po odjetí se schová. **Oko vypnuté:**
+    zůstává jen pruh a filtry se berou tečkami; úpravu/přejmenování oblíbené
+    sady pak jde udělat jen po zapnutí oka (✎ je v plném panelu). Oko je i
+    v hlavičce plného panelu. Stav v `localStorage` (`udrzbaPanelEye`, '0' =
+    vypnuto). `setPanelEye()` jen přepíná třídy `fp-eye`/`fp-noeye` na
+    `#board2` a `act('panel-eye')` se vrací PŘED `render()` (dvě SVG ikony
+    oka se přepínají CSS). Vysouvání je čistě CSS (`:hover` + zpoždění 250 ms;
+    pro klávesnici `:has(:focus-visible)`, ne `:focus-within` — to by po
+    kliknutí myší nechalo panel otevřený, dokud se nekliknne jinam), takže
+    ho překreslení nerozhodí. Dřívější ruční zasouvání (šipka, režimy
+    open/rail/auto, připínáček) je pryč.
+  - **Barva oblíbeného filtru:** v okně Nový/Upravit filtr je za 8 hotovými
+    kolečky duhové kolečko = vlastní barva (`<input type="color" id="fv-color">`
+    přes celé kolečko, systémová paleta se spektrem a posuvníkem odstínu).
+    `oninput` zapisuje `filterModal.color` a mění vzhled kolečka BEZ `render()`
+    — překreslení by paletu uprostřed výběru zavřelo. Uložená barva se používá
+    všude jako obyčejný hex (`style="background:…"`), schéma `udrzbaFilters`
+    se nezměnilo. Okno je sdílené, takže vlastní barva jde i ze starého
+    levého panelu (mobil).
+  - **Past, na kterou jsem narazil:** třída na kontejneru (dřív režim `fp-rail`
+    na `.board2`) se shodovala s třídou prvku uvnitř, takže styl pruhu (flex,
+    šířka 44 px) přepsal celý grid. Proto se pruh jmenuje `fp-strip` a režimy
+    jsou `fp-eye`/`fp-noeye`. Při testu v panelu prohlížeče: skrytý panel
+    zastavuje CSS animace, takže případné šířky měř s `transition:none`.
   - Vodorovný posun tabulky (`.tscroller`) se při překreslení zachovává
     v `renderShell()`, stejně jako scroll okna příkazu.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení

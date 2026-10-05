@@ -124,6 +124,13 @@
   .color-row{display:flex;gap:6px;flex-wrap:wrap;padding-top:2px}
   .color-dot{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
   .color-dot.on{border-color:var(--text);box-shadow:0 0 0 2px #fff inset}
+  /* vlastní barva: kolečko s duhou, které otevře systémovou paletu (spektrum + posuvník odstínu);
+     po výběru se vybarví zvolenou barvou */
+  .color-custom{position:relative;display:block;flex:none;width:26px;height:26px;margin:0;border-radius:50%;
+    border:2px solid transparent;cursor:pointer;
+    background:conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+  .color-custom.on{border-color:var(--text);box-shadow:0 0 0 2px #fff inset}
+  .color-custom input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
   .filtergroup{display:flex;flex-direction:column;gap:3px;padding-top:11px;border-top:1px solid #eef0f5}
   .filtergroup:first-child{padding-top:0;border-top:none}
   .filtergroup-head{display:flex;align-items:center;gap:6px;padding:0 6px 3px}
@@ -340,45 +347,39 @@
 
   /* ===== TEST (větev test-tabulka-filtry): rozložení pro počítač =====
      Od 861 px šířky: tabulka s filtrem+řazením v záhlaví každého sloupce a
-     úzký zasouvací panel jen s oblíbenými filtry. Pod tím zůstává dnešní
-     rozložení (karty + levý panel filtrů) beze změny — `.old-only` se na
-     počítači schová, `.board2` na mobilu neexistuje. */
+     úzký panel jen s oblíbenými filtry. Pod tím zůstává dnešní rozložení
+     (karty + levý panel filtrů) beze změny — .old-only se na počítači
+     schová, .board2 na mobilu neexistuje. */
   .board2{display:none}
   @media(min-width:861px){
     .old-only{display:none!important}
     .pagehead{grid-template-columns:auto 1fr}
-    .board2{display:grid;grid-template-columns:var(--fp-w,220px) minmax(0,1fr);gap:16px;align-items:start;
-      transition:grid-template-columns .22s ease}
+    .board2{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start}
   }
-  .board2.fp-open{--fp-w:220px}
-  .board2.fp-rail,.board2.fp-auto{--fp-w:44px}
-  .board2:not(.fp-open) .only-open,.board2:not(.fp-auto) .only-auto,.board2:not(.fp-rail) .only-rail{display:none}
 
-  /* --- panel oblíbených: otevřený / zasunutý do pruhu / automaticky skrývaný --- */
-  .favpanel{position:sticky;top:14px;align-self:start;min-width:0}
-  .favpanel{width:100%}
-  .board2:not(.fp-auto) .favpanel{overflow:hidden}   /* při vysouvání/zasouvání se obsah jen odkrývá, nezalamuje */
-  .fp-full{background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px;display:flex;
-    flex-direction:column;gap:2px;width:220px}
+  /* --- panel oblíbených: vždy úzký pruh (44 px) s barevnými tečkami.
+     Oko v pruhu zapíná/vypíná vysouvání: zapnuté = po najetí myší vyjede
+     plný panel přes tabulku, po odjetí se schová; vypnuté = zůstává pruh a
+     filtry se vybírají tečkami. Třída fp-eye/fp-noeye na #board2, čistě CSS. --- */
+  .favpanel{position:sticky;top:14px;align-self:start;min-width:0;width:100%}
   .fp-strip{background:#fff;border:1px solid var(--border);border-radius:9px;width:44px;padding:6px 0;
     display:flex;flex-direction:column;align-items:center;gap:4px}
-  .board2.fp-open .fp-strip{display:none}
-  .board2.fp-rail .fp-full{display:none}
-  /* automatický režim: panel vyjede přes tabulku, když na pruh najedeš myší
-     (nebo do něj přijde klávesnicí); čistě CSS, takže ho nerozhodí překreslení */
-  .board2.fp-auto .fp-full{position:absolute;left:0;top:0;width:220px;z-index:45;box-shadow:0 12px 30px rgba(15,23,42,.2);
+  .fp-full{position:absolute;left:0;top:0;width:220px;z-index:45;background:#fff;border:1px solid var(--border);
+    border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:2px;box-shadow:0 12px 30px rgba(15,23,42,.2);
     visibility:hidden;opacity:0;transform:translateX(-6px);
     transition:opacity .15s ease,transform .15s ease,visibility 0s linear .15s}
-  .board2.fp-auto .favpanel:hover .fp-full,.board2.fp-auto .favpanel:focus-within .fp-full{visibility:visible;opacity:1;
+  .board2.fp-eye .favpanel:hover .fp-full,.board2.fp-eye .favpanel:has(:focus-visible) .fp-full{visibility:visible;opacity:1;
     transform:none;transition:opacity .15s ease .25s,transform .15s ease .25s,visibility 0s linear .25s}
+  .board2.fp-noeye .fp-full{display:none}
+  .fp-eyebtn{color:var(--muted)}
+  .board2.fp-eye .fp-eyebtn{color:var(--accent);background:#eceefb}
+  .board2.fp-eye .fp-eyebtn .ic-off,.board2.fp-noeye .fp-eyebtn .ic-on{display:none}
   .fp-head{display:flex;align-items:center;gap:2px;padding:0 0 6px 6px;min-height:30px}
   .fp-head .sidebar-title{flex:1}
   .fp-ic{width:28px;height:28px;padding:0;border:none;background:transparent;border-radius:7px;color:var(--muted);
     display:flex;align-items:center;justify-content:center;flex:none}
   .fp-ic:hover{background:#eef0f8;color:var(--accent)}
   .fp-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .fp-ic.pinned svg{fill:currentColor}
-  .fp-star{color:#e8a317;font-size:15px;line-height:28px;text-align:center;width:28px}
   .fp-dotbtn{width:28px;height:28px;padding:0;border:none;background:transparent;border-radius:7px;
     display:flex;align-items:center;justify-content:center}
   .fp-dotbtn:hover{background:#eef0f8}
@@ -553,11 +554,11 @@ let appVersion='';
 fetch('VERSION').then(r=>r.text()).then(t=>{ appVersion=t.trim(); render(); }).catch(()=>{});
 let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],nd:[],who:[],prostoj:[],wo:''}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
-// Tabulka na počítači: otevřené menu sloupce (+ hledání v něm) a režim levého panelu
-// oblíbených (open = vysunutý, rail = zasunutý do pruhu, auto = vyjíždí po najetí myší).
+// Tabulka na počítači: otevřené menu sloupce (+ hledání v něm) a "oko" levého panelu
+// oblíbených (zapnuté = panel po najetí myší vyjede přes tabulku, vypnuté = zůstává úzký pruh).
 let colOpen=null, colQuery='';
-const PANEL_KEY='udrzbaPanelMode';
-let panelMode=(()=>{ try{ const v=localStorage.getItem(PANEL_KEY); return ['open','rail','auto'].includes(v)?v:'open'; }catch(e){ return 'open'; } })();
+const PANEL_KEY='udrzbaPanelEye';
+let panelEye=(()=>{ try{ return localStorage.getItem(PANEL_KEY)!=='0'; }catch(e){ return true; } })();
 let linkaOpen=false, linkaQuery='';
 let ndOpen=false;
 let favLinkaOpen=false, favLinkaQuery='';
@@ -935,6 +936,7 @@ function filterModalView(){
         <div><label>Barva</label>
           <div class="color-row">
             ${FAV_COLORS.map(c=>`<button type="button" class="color-dot ${f.color===c?'on':''}" style="background:${c}" data-a="fav-color" data-v="${c}"></button>`).join('')}
+            <label class="color-custom ${FAV_COLORS.includes(f.color)?'':'on'}" title="Vlastní barva" ${FAV_COLORS.includes(f.color)?'':`style="background:${esc(f.color)}"`}><input type="color" id="fv-color" value="${esc(f.color)}" aria-label="Vlastní barva"></label>
           </div>
         </div>
         ${favCheckGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)',color:'#41506b'},{k:'EM',label:'Havarijní (EM)',color:'#c0392b'}])}
@@ -1060,8 +1062,10 @@ function colMenuHTML(){
 }
 /* ===== levý panel oblíbených (jen na počítači) ===== */
 const svgIc=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
-const IC_LEFT=svgIc('<path d="m15 6-6 6 6 6"/>'), IC_RIGHT=svgIc('<path d="m9 6 6 6-6 6"/>');
-const IC_PIN=svgIc('<path d="M9 3h6l-1 6 3 3v2h-4v6l-1 1-1-1v-6H7v-2l3-3-1-6z"/>');
+const IC_EYE_ON=svgIc('<path class="ic-on" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="ic-on" cx="12" cy="12" r="3"/>');
+const IC_EYE_OFF=svgIc('<path class="ic-off" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><path class="ic-off" d="M4 4l16 16"/>');
+const IC_PLUS=svgIc('<path d="M12 5v14M5 12h14"/>');
+const eyeTitle=on=>on?'Panel se vysouvá po najetí myší (klikni pro vypnutí)':'Panel zůstává zasunutý (klikni pro zapnutí vysouvání)';
 function favIsOn(f){
   return activeFilterCount()>0
     && ['typ','stav','priorita','obor','linka'].every(d=>{ const a=filters[d], b=f[d]||[]; return a.length===b.length&&a.every(x=>b.includes(x)); })
@@ -1070,19 +1074,17 @@ function favIsOn(f){
 function favPanelHTML(){
   const items=savedFilters.length?savedFilters.map(f=>`<button type="button" class="fp-item${favIsOn(f)?' on':''}" data-a="fav-apply" data-v="${esc(f.id)}"><span class="fav-dot" style="background:${esc(f.color)}"></span><span class="fav-label">${esc(f.name)}</span><span class="fav-edit" data-a="fav-edit" data-v="${esc(f.id)}" title="Upravit">✎</span></button>`).join(''):'<div class="fp-empty">Zatím žádné uložené filtry.</div>';
   const dots=savedFilters.map(f=>`<button type="button" class="fp-dotbtn${favIsOn(f)?' on':''}" data-a="fav-apply" data-v="${esc(f.id)}" title="${esc(f.name)}"><i style="background:${esc(f.color)}"></i></button>`).join('');
+  const eye=`<button type="button" class="fp-ic fp-eyebtn" data-a="panel-eye" aria-pressed="${panelEye}" title="${eyeTitle(panelEye)}">${IC_EYE_ON}${IC_EYE_OFF}</button>`;
   return `<aside class="favpanel" aria-label="Oblíbené filtry">
     <div class="fp-strip">
-      <button type="button" class="fp-ic only-rail" data-a="panel-mode" data-v="open" title="Vysunout panel">${IC_RIGHT}</button>
-      <button type="button" class="fp-ic only-auto" data-a="panel-mode" data-v="open" title="Připnout panel (vypnout automatické skrývání)">${IC_PIN}</button>
-      <span class="fp-star" aria-hidden="true">★</span>
+      ${eye}
       ${dots}
+      <button type="button" class="fp-ic" data-a="fav-save-current" title="${activeFilterCount()?'Uložit aktuální výběr jako oblíbený filtr':'Nový oblíbený filtr'}">${IC_PLUS}</button>
     </div>
     <div class="fp-full">
       <div class="fp-head">
         <span class="sidebar-title">★ OBLÍBENÉ FILTRY</span>
-        <button type="button" class="fp-ic pinned only-open" data-a="panel-mode" data-v="auto" title="Automaticky skrývat panel">${IC_PIN}</button>
-        <button type="button" class="fp-ic only-auto" data-a="panel-mode" data-v="open" title="Připnout panel">${IC_PIN}</button>
-        <button type="button" class="fp-ic only-open" data-a="panel-mode" data-v="rail" title="Zasunout panel">${IC_LEFT}</button>
+        ${eye}
       </div>
       ${items}
       <button type="button" class="fp-item" style="color:var(--accent)" data-a="fav-new">+ Nový filtr</button>
@@ -1090,11 +1092,12 @@ function favPanelHTML(){
     </div>
   </aside>`;
 }
-function setPanelMode(m){
-  panelMode=m;
-  try{ localStorage.setItem(PANEL_KEY,m); }catch(e){}
+function setPanelEye(on){
+  panelEye=on;
+  try{ localStorage.setItem(PANEL_KEY,on?'1':'0'); }catch(e){}
   const b=document.getElementById('board2');
-  if(b){ b.classList.remove('fp-open','fp-rail','fp-auto'); b.classList.add('fp-'+m); }
+  if(b){ b.classList.toggle('fp-eye',on); b.classList.toggle('fp-noeye',!on); }
+  document.querySelectorAll('.fp-eyebtn').forEach(x=>{ x.title=eyeTitle(on); x.setAttribute('aria-pressed',on); });
 }
 function placeColMenu(){
   const m=document.getElementById('colmenu'), b=document.querySelector('.hc.open');
@@ -1145,7 +1148,7 @@ function listView(){
     </div>
   </div>
 
-  <div class="board2 fp-${panelMode}" id="board2">
+  <div class="board2 ${panelEye?'fp-eye':'fp-noeye'}" id="board2">
     ${favPanelHTML()}
     <section class="listcard2">
       <div class="sbar">${sbarHTML(rr.length)}</div>
@@ -1402,7 +1405,7 @@ async function act(a,v,el,ev){
     case 'col-clear': if(v==='wo') filters.wo=''; else if(Array.isArray(filters[v])) filters[v]=[]; break;
     case 'chip-rm':{ const i=v.indexOf('|'), d=v.slice(0,i), k=v.slice(i+1);
       if(d==='wo') filters.wo=''; else if(Array.isArray(filters[d])){ const j=filters[d].indexOf(k); if(j>=0) filters[d].splice(j,1); } break; }
-    case 'panel-mode': setPanelMode(v); return;   // jen přepne třídu — bez překreslení, ať se panel zasune plynule
+    case 'panel-eye': setPanelEye(!panelEye); return;   // jen přepne třídu na #board2, bez překreslení
     case 'fav-save-current':{
       filterModal={...newFilterDraft(),typ:[...filters.typ],stav:[...filters.stav],priorita:[...filters.priorita],obor:[...filters.obor],linka:[...filters.linka]};
       favOpen=false; favLinkaOpen=false; favLinkaQuery='';
@@ -1554,6 +1557,13 @@ function bind(){
   // Jméno filtru se nepřekresluje při psaní (nemusí), jen se drží v paměti,
   // ať se neztratí při dalším render() vyvolaném jinou akcí (barva/checkbox).
   const fvn=document.getElementById('fv-name'); if(fvn) fvn.oninput=()=>{ if(filterModal){ filterModal.name=fvn.value; filterModal.err=null; } };
+  // Vlastní barva: schválně BEZ render() — překreslení by zavřelo systémovou paletu uprostřed výběru.
+  const fvc=document.getElementById('fv-color'); if(fvc) fvc.oninput=()=>{
+    if(!filterModal) return;
+    filterModal.color=fvc.value;
+    const lab=fvc.closest('.color-custom'); lab.classList.add('on'); lab.style.background=fvc.value;
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('on'));
+  };
   document.querySelectorAll('[data-flt]').forEach(el=>{ el.onchange=()=>{
     const dim=el.dataset.flt, k=el.value, arr=filters[dim], i=arr.indexOf(k);
     if(el.checked){ if(i<0) arr.push(k); } else if(i>=0) arr.splice(i,1);
