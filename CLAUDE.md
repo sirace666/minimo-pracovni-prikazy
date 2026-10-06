@@ -805,7 +805,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.9`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.10`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -844,7 +844,12 @@ protože:
     seznamů delších než 7 položek)
     (`colOnly`, akce `col-only`; vypnutý, dokud nic není vybráno; resetuje se
     při otevření menu i přepnutí záložky; kombinuje se s hledáním; odškrtnutá
-    položka při zapnutém přepínači hned zmizí). Sloupec **Vytvořeno** ukazuje datum a pod ním
+    položka při zapnutém přepínači hned zmizí). **Past, na kterou jsem narazil
+    (v0.15.10):** pravidlo `:not(:disabled):hover` mělo vyšší specificitu než
+    `.cm-onlybtn.on`, takže zapnuté tlačítko při najetí myší dostalo světlé
+    pozadí a zůstalo bílé písmo (nečitelné). U každého prvku s `.on` stavem a
+    `:hover` hlídej specificitu (`.on:hover` zvlášť, nebo `:not(.on)` v hoveru).
+    Sloupec **Vytvořeno** ukazuje datum a pod ním
     drobně jméno autora (`authorName` přes `pn()`). Řádek je `button.trow` s `data-a="open"` (klik
     otevře okno příkazu jako dřív). Pozor: třída `.row` v appce je flex
     pomocník, proto tabulka používá `.trow`/`.thd`/`.tc`.
