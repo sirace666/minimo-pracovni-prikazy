@@ -784,7 +784,10 @@ protože:
     z doby, kdy se pole jmenovalo „Název") → „co se porouchalo".
     Martin navrhoval „co se stalo", ale výslovně chtěl jinou
     formulaci — zvoleno slovo ze stejného kořene jako název pole.
-  - **Hledání u pole Stroj** — `<select id="e-stroj">` nahrazeno
+  - **(HISTORICKÉ — od v0.16.0 jsou Linka i Stroj tlačítka, co otevřou
+    okno výběru, viz „Okno Vybrat linku / stroj" níž; `#e-linka`/`#e-stroj`
+    ani datalist už neexistují, `collect()` je nesbírá.)** **Hledání u pole
+    Stroj** — `<select id="e-stroj">` nahrazeno
     `<input type="text" id="e-stroj" list="e-stroj-list">` +
     `<datalist id="e-stroj-list">` (nativní HTML5 filtrování při
     psaní, žádný vlastní JS/panel jako u Linky — stačí to, protože
@@ -805,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.10`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.16.0`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -844,7 +847,15 @@ protože:
     seznamů delších než 7 položek)
     (`colOnly`, akce `col-only`; vypnutý, dokud nic není vybráno; resetuje se
     při otevření menu i přepnutí záložky; kombinuje se s hledáním; odškrtnutá
-    položka při zapnutém přepínači hned zmizí). **Past, na kterou jsem narazil
+    položka při zapnutém přepínači hned zmizí). **Sloupec Porucha / díl** má
+    stejně dvě záložky **Porucha | Díl** (`COLS[].tabs` s `nazev` a `nd`):
+    Porucha = textové hledání v názvu, Díl = zaškrtávátka stavu dílu (potřeba
+    objednat / čeká objednáno / přišel; sdílí `filters.nd` s dlaždicí
+    Náhradní díl nahoře, ale počty v menu se počítají i podle dlaždic, ne jako
+    na dlaždici). Text a seznam se v záložkách přepínají přes `TEXT_FILTERS[dim]`.
+    **Filtr Stav v tabulce už NEMÁ volbu „Čeká na díl"** (`colOptions('stav')`
+    ji vynechává — patří do záložky Díl); v `STAV_FILTER_OPTS` zůstává kvůli
+    levému panelu na mobilu a oknu oblíbených filtrů. **Past, na kterou jsem narazil
     (v0.15.10):** pravidlo `:not(:disabled):hover` mělo vyšší specificitu než
     `.cm-onlybtn.on`, takže zapnuté tlačítko při najetí myší dostalo světlé
     pozadí a zůstalo bílé písmo (nečitelné). U každého prvku s `.on` stavem a
@@ -918,6 +929,21 @@ protože:
     výběr" při jejich zapnutí upozorní toastem. Při přidání další dimenze ji
     dej i do `clear-filters`, `favApply`, `favIsOn`, `activeFilterCount` a
     toastu u `fav-save-current`.
+  - **Okno „Vybrat linku" / „Vybrat stroj" ve formuláři příkazu (v0.16.0):**
+    Linka a Stroj už nejsou `<select>`/`<input>`, ale tlačítka `.assign-trigger`
+    (`data-a="pick-open"`), která otevřou okno stejného vzhledu jako Přiřadit
+    pracovníky (`pickPickerView()`, stav `pickPicker`; tabulka, hledání `#pk-q`,
+    sloupec Rozpracováno s EM/CM a rozkliknutím příkazů, tlačítko Jen vybrané).
+    Příkaz má JEDNU linku a JEDEN stroj, proto je výběr jednopoložkový
+    (zaškrtnutí další položky nahradí předchozí) a „Jen vybrané" ukazuje tu
+    jednu — Martin to chtěl jako u Přiřazeno; kdyby chtěl víc strojů na příkaz,
+    je to změna datového modelu (`stroj` by byl pole) a filtrů. Stroje se berou
+    jen z vybrané linky; změna linky vynuluje stroj (dřív to dělal `onchange`
+    u `<select>`); linka bez strojů má tlačítko Stroj zakázané. Okno se
+    otevírá NAD oknem příkazu jako `assignPicker` (`renderShell`, overlay
+    `pick-close-bg`, `downOnOverlay`), `pick-open` volá `collect()` jako
+    `assign-open`, výsledek zapisuje `case 'pick-confirm'` přímo do `editing`.
+    Přiřazení pracovníků „Jen vybrané" zatím nemá (nebylo žádáno).
   - **Z-index:** `.favpanel` má `z-index:40` (nad `.thd` = 5), jinak by
     záhlaví sloupců překrývalo vysunutý panel oblíbených; pod menu sloupce
     (55), hlavičkou portálu (60) a okny (70).

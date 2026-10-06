@@ -321,7 +321,8 @@
   /* --- Přiřazeno: tlačítko otevírající okno s výběrem víc lidí --- */
   .assign-trigger{width:100%;text-align:left;padding:.5rem .6rem;border:1px solid var(--border);
     border-radius:8px;background:#fff;font-size:14px;color:var(--text);cursor:pointer;font-family:inherit}
-  .assign-trigger:hover{border-color:var(--accent)}
+  .assign-trigger:hover:not(:disabled){border-color:var(--accent)}
+  .assign-trigger:disabled{background:#f3f4f8;color:var(--muted);cursor:not-allowed}
   .ap-cols{display:grid;grid-template-columns:26px 1fr auto;gap:10px;padding:6px 1rem;
     font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
   .ap-rows{max-height:360px;overflow-y:auto}
@@ -619,6 +620,9 @@ function newFilterDraft(){ return {id:null,name:'',color:FAV_COLORS[0],typ:[],st
 
 /* ===== Okno "Přiřadit pracovníky" (víc lidí najednou) ===== */
 let assignPicker=null;   // {selected:[uid,...], query:'', drillUid:null} nebo null
+// Okno výběru linky / stroje ve formuláři příkazu (stejný vzhled jako Přiřadit pracovníky, ale výběr JEDNÉ položky):
+// {kind:'linka'|'stroj', sel:'', query:'', only:false, drill:null} nebo null
+let pickPicker=null;
 // Kolik má kdo rozpracovaných příkazů (CM/EM) — VŽDY přes všechny příkazy,
 // ne jen podle aktuálně aktivních filtrů seznamu (mistr má vidět skutečné
 // vytížení, ne jen to, co zrovna má vyfiltrované pod tím).
@@ -726,7 +730,7 @@ function renderShell(inner){
   // tabulka: posun (vodorovný i svislý) se při překreslení (třeba po zaškrtnutí filtru nebo zavření okna
   // příkazu) jinak vracel na začátek
   const tsOld=document.querySelector('.tscroller'), tsLeft=tsOld?tsOld.scrollLeft:0, tsTop=tsOld?tsOld.scrollTop:0;
-  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (pickPicker?pickPickerView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   if(scrollTop!=null){ const nbs=document.querySelectorAll('.overlay .modal-body'); const nb=nbs[nbs.length-1]; if(nb) nb.scrollTop=scrollTop; }
   if(tsLeft||tsTop){ const tsNew=document.querySelector('.tscroller'); if(tsNew){ tsNew.scrollLeft=tsLeft; tsNew.scrollTop=tsTop; } }
 }
@@ -974,6 +978,70 @@ function assignPickerView(){
     </div>
   </div></div>`;
 }
+/* ===== Okno "Vybrat linku" / "Vybrat stroj" ve formuláři příkazu =====
+   Vzhled i chování jako okno Přiřadit pracovníky (tabulka, hledání, rozpracováno EM/CM, rozkliknutí příkazů),
+   jen s výběrem JEDNÉ položky (příkaz má jednu linku a jeden stroj) a s tlačítkem Jen vybrané. */
+const strojeText=n=>n===0?'bez strojů':n===1?'1 stroj':(n<=4?n+' stroje':n+' strojů');
+function pickItems(){
+  const kind=pickPicker.kind;
+  if(kind==='linka'){
+    const names=(cfg.sections||[]).map(s=>s.name).filter(Boolean);
+    if(editing.linka && !names.includes(editing.linka)) names.push(editing.linka);
+    return names.map(n=>({k:n,sub:strojeText(((sectionByName(n)||{}).machines||[]).length)}));
+  }
+  const machs=((sectionByName(editing.linka)||{}).machines||[]).slice();
+  if(editing.stroj && !machs.includes(editing.stroj)) machs.push(editing.stroj);
+  return machs.map(m=>({k:m,sub:editing.linka||''}));
+}
+function pickWorkload(name){
+  const kind=pickPicker.kind;
+  const m=rows.filter(r=>r.status==='rozpracováno' && (kind==='linka'?r.linka===name:r.stroj===name));
+  return {em:m.filter(r=>typOf(r)==='EM').length, cm:m.filter(r=>typOf(r)==='CM').length,
+          orders:m.map(r=>({cislo:r.cislo,nazev:r.nazev,typ:typOf(r)}))};
+}
+function pickPickerView(){
+  const kind=pickPicker.kind, q=(pickPicker.query||'').trim().toLowerCase(), sel=pickPicker.sel;
+  let items=pickItems().sort((a,b)=>a.k.localeCompare(b.k,'cs',{numeric:true}));
+  if(pickPicker.only) items=items.filter(i=>i.k===sel);
+  if(q) items=items.filter(i=>i.k.toLowerCase().includes(q));
+  const rowsHtml=items.length?items.map(i=>{
+    const w=pickWorkload(i.k), on=sel===i.k;
+    const badges=(w.em===0&&w.cm===0)
+      ? '<span class="ap-badge ap-none">—</span>'
+      : (w.em?`<button type="button" class="ap-badge ap-em" data-a="pick-drill" data-v="${esc(i.k)}">EM ${w.em}</button>`:'')
+        + (w.cm?`<button type="button" class="ap-badge ap-cm" data-a="pick-drill" data-v="${esc(i.k)}">CM ${w.cm}</button>`:'');
+    const drill=(pickPicker.drill===i.k && w.orders.length)
+      ? `<div class="ap-drill">${w.orders.map(o=>`<div class="ap-drill-line"><span>${esc(o.cislo)} · ${esc(o.nazev)}</span><span class="ap-drill-typ ap-drill-${o.typ.toLowerCase()}">${o.typ}</span></div>`).join('')}</div>`
+      : '';
+    return `<div class="ap-row">
+      <input type="checkbox" data-a="pick-toggle" data-v="${esc(i.k)}" ${on?'checked':''}>
+      <span class="ap-person" data-a="pick-toggle" data-v="${esc(i.k)}">
+        <span class="ap-name">${esc(i.k)}</span>
+        <span class="ap-pos">${esc(i.sub||'—')}</span>
+      </span>
+      <span class="ap-badges">${badges}</span>
+    </div>${drill}`;
+  }).join(''):`<div class="muted" style="padding:16px 1rem">${pickPicker.only&&!sel?'Nic není vybráno.':'Nic nenalezeno.'}</div>`;
+  const title=kind==='linka'?'Vybrat linku':`Vybrat stroj · ${esc(editing.linka||'')}`;
+  return `<div class="overlay" data-a="pick-close-bg"><div class="modal" style="max-width:560px">
+    <div class="modal-head">${title}<button class="x" data-a="pick-close">✕</button></div>
+    <div class="modal-body" style="padding:0">
+      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+        <input type="text" id="pk-q" placeholder="Hledat…" autocomplete="off" value="${esc(pickPicker.query||'')}">
+        <div class="cm-only" style="padding:.5rem 0 0"><button type="button" class="cm-onlybtn${pickPicker.only?' on':''}" data-a="pick-only" aria-pressed="${pickPicker.only}"${(sel||pickPicker.only)?'':' disabled'}>Jen vybrané${sel?' · 1':''}</button></div>
+      </div>
+      <div class="ap-cols"><span></span><span>${kind==='linka'?'Linka':'Stroj'}</span><span>Rozpracováno</span></div>
+      <div class="ap-rows">${rowsHtml}</div>
+    </div>
+    <div class="modal-foot">
+      <span class="muted">Vybráno: ${sel?1:0}</span>
+      <div class="r">
+        <button class="btn-ghost" data-a="pick-close">Zrušit</button>
+        <button class="btn-primary" data-a="pick-confirm">Vybrat</button>
+      </div>
+    </div>
+  </div></div>`;
+}
 function filterModalView(){
   const f=filterModal, isNew=!f.id;
   return `<div class="overlay" data-a="fav-close-bg"><div class="modal" style="max-width:480px">
@@ -1019,7 +1087,8 @@ const COLS=[
   {k:'typ',     label:'Typ',           dim:'typ',      sort:'typ',      s:['Standardní první','Havarijní první']},
   {k:'priorita',label:'Priorita',      dim:'priorita', sort:'priorita', s:['Nízká → Kritická','Kritická → Nízká']},
   {k:'wo',      label:'WO',            dim:'wo',       sort:'wo',       s:['Nejnižší číslo první','Nejvyšší číslo první']},
-  {k:'nazev',   label:'Porucha',       dim:'nazev',    sort:'nazev',    s:['A → Z','Z → A']},
+  {k:'nazev',   label:'Porucha / díl', dim:'nazev',    sort:'nazev',    s:['A → Z','Z → A'],
+   tabs:[{dim:'nazev',label:'Porucha'},{dim:'nd',label:'Díl'}]},
   {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'],
    tabs:[{dim:'stroj',label:'Stroj'},{dim:'linka',label:'Linka'}]},
   {k:'obor',    label:'Obor',          dim:'obor',     sort:'obor',     s:['Mechanika první','Nástrojárna první']},
@@ -1029,7 +1098,7 @@ const COLS=[
 ];
 const PROSTOJ_OPTS=[{k:'ano',label:'S prostojem'},{k:'ne',label:'Bez prostoje'}];
 const DIM_LABEL={typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
-const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,who:countWho,prostoj:countProstoj,autor:countAutor};
+const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,nd:k=>rows.filter(o=>passes(o,'nd') && o.nd===k).length,who:countWho,prostoj:countProstoj,autor:countAutor};
 // textové filtry sloupců (hledání místo zaškrtávátek): wo = jen číslice, nazev = volný text
 const TEXT_FILTERS={wo:{ph:'Hledat číslo WO',digits:true},nazev:{ph:'Hledat v poruchách',digits:false}};
 // "2026-10-01T17:32" → "1. 10. 17:32" (do tabulky) / "1. 10. 2026 17:32" (do popisku)
@@ -1058,7 +1127,9 @@ function strojOptions(){
 function colOptions(dim){
   switch(dim){
     case 'typ': return [{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}];
-    case 'stav': return STAV_FILTER_OPTS.map(s=>({k:s.k,label:s.label}));
+    // „Čeká na díl" tu schválně není — stav dílu se filtruje v záložce Díl u sloupce Porucha / díl
+    case 'stav': return STAV_FILTER_OPTS.filter(s=>s.k!=='ceka-dil').map(s=>({k:s.k,label:s.label}));
+    case 'nd': return [{k:'potreba',label:NDLABEL.potreba,color:'#c0392b'},{k:'objednano',label:NDLABEL.objednano,color:'#b45309'},{k:'prisel',label:NDLABEL.prisel,color:'#1e7d4b'}];
     case 'priorita': return PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]}));
     case 'obor': return OBOR;
     case 'linka': return linkaOptions().map(n=>({k:n,label:n}));
@@ -1091,7 +1162,7 @@ function sbarHTML(n){
 }
 function theadHTML(){
   return COLS.map(c=>{
-    const on=c.tabs?c.tabs.some(t=>filters[t.dim].length>0):(c.dim?(TEXT_FILTERS[c.dim]?!!filters[c.dim]:filters[c.dim].length>0):false), isS=sortKey===c.sort;
+    const on=c.tabs?c.tabs.some(t=>TEXT_FILTERS[t.dim]?!!filters[t.dim]:filters[t.dim].length>0):(c.dim?(TEXT_FILTERS[c.dim]?!!filters[c.dim]:filters[c.dim].length>0):false), isS=sortKey===c.sort;
     return `<div role="columnheader"><button type="button" class="hc${on?' on':''}${isS?' sorted':''}${colOpen===c.k?' open':''}" data-a="col-open" data-v="${c.k}" aria-haspopup="true" aria-expanded="${colOpen===c.k}" title="${on?'Filtr je zapnutý':'Filtr a řazení'}"><span class="hc-l">${esc(c.label)}</span><span class="hc-i" aria-hidden="true">${isS?(sortDir==='asc'?'↑':'↓'):'▾'}</span></button></div>`;
   }).join('');
 }
@@ -1114,14 +1185,15 @@ function trHTML(o){
 function colMenuHTML(){
   const c=COLS.find(x=>x.k===colOpen); if(!c) return '';
   const sorts=['asc','desc'].map((d,i)=>`<button type="button" class="cm-sort${sortKey===c.sort&&sortDir===d?' on':''}" data-a="col-sort" data-v="${c.sort}|${d}"><span aria-hidden="true">${d==='asc'?'↑':'↓'}</span>${esc(c.s[i])}</button>`).join('');
-  const dim=c.tabs?colTab:c.dim;   // u sloupce se záložkami (Stroj | Linka) se filtruje podle zvolené záložky
-  const tabs=c.tabs?`<div class="cm-tabs" role="tablist">${c.tabs.map(t=>`<button type="button" role="tab" aria-selected="${dim===t.dim}" class="cm-tab${dim===t.dim?' on':''}" data-a="col-tab" data-v="${t.dim}">${esc(t.label)}${filters[t.dim].length?`<span class="cm-tabn">${filters[t.dim].length}</span>`:''}</button>`).join('')}</div>`:'';
+  const dim=c.tabs?colTab:c.dim;   // u sloupce se záložkami (Stroj | Linka, Porucha | Díl) se filtruje podle zvolené záložky
+  const tabCount=t=>TEXT_FILTERS[t.dim]?(filters[t.dim]?1:0):filters[t.dim].length;   // textová záložka = 1, když je v ní něco napsané
+  const tabs=c.tabs?`<div class="cm-tabs" role="tablist">${c.tabs.map(t=>`<button type="button" role="tab" aria-selected="${dim===t.dim}" class="cm-tab${dim===t.dim?' on':''}" data-a="col-tab" data-v="${t.dim}">${esc(t.label)}${tabCount(t)?`<span class="cm-tabn">${tabCount(t)}</span>`:''}</button>`).join('')}</div>`:'';
   let body='';
-  if(TEXT_FILTERS[c.dim]){
-    const tf=TEXT_FILTERS[c.dim];
-    body=`<div class="cm-sep"></div>
-      <div class="cm-search"><input type="text" ${tf.digits?'inputmode="numeric" ':''}id="cm-text" data-d="${c.dim}" placeholder="${esc(tf.ph)}" autocomplete="off" value="${esc(filters[c.dim])}"></div>
-      <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${c.dim}">Vymazat</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
+  if(TEXT_FILTERS[dim]){
+    const tf=TEXT_FILTERS[dim];
+    body=`<div class="cm-sep"></div>${tabs}
+      <div class="cm-search"><input type="text" ${tf.digits?'inputmode="numeric" ':''}id="cm-text" data-d="${dim}" placeholder="${esc(tf.ph)}" autocomplete="off" value="${esc(filters[dim])}"></div>
+      <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
   }else if(dim){
     const all=colOptions(dim), q=colQuery.trim().toLowerCase(), sel=filters[dim];
     let shown=colOnly?all.filter(o=>sel.includes(o.k)):all;
@@ -1297,7 +1369,8 @@ function listView(){
 const g = id => { const el=document.getElementById(id); return el?el.value:undefined; };
 function collect(){
   if(!editing) return;
-  const map={nazev:'e-nazev',popis:'e-popis',linka:'e-linka',stroj:'e-stroj',wo:'e-wo',prostojOd:'e-prostoj-od'};
+  // linka a stroj se sem nesbírají — nastavuje je přímo okno výběru (case 'pick-confirm')
+  const map={nazev:'e-nazev',popis:'e-popis',wo:'e-wo',prostojOd:'e-prostoj-od'};
   Object.keys(map).forEach(k=>{ const v=g(map[k]); if(v!==undefined) editing[k]=v; });
   const p=g('e-priorita-range'); if(p!==undefined) editing.priorita=PRIORITA[+p]||PRIORITA[PRIORITA.indexOf('běžná')];
   if(document.getElementById('e-obor-'+OBOR[0].k)){
@@ -1309,10 +1382,10 @@ function collect(){
 function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && assignedUids(o).includes(me.uid)); }
 function editForm(o){
   const pIdx = PRIORITA.indexOf(o.priorita); const pIdxSafe = pIdx>=0?pIdx:PRIORITA.indexOf('běžná');
-  const linkaSel = `<select id="e-linka"><option value="">— vyber linku —</option>${(cfg.sections||[]).map(s=>`<option ${o.linka===s.name?'selected':''}>${esc(s.name)}</option>`).join('')}${(o.linka&&!sectionByName(o.linka))?`<option selected>${esc(o.linka)}</option>`:''}</select>`;
+  const linkaSel = `<button type="button" class="assign-trigger" data-a="pick-open" data-v="linka">${o.linka?esc(o.linka):'— vyber linku —'}</button>`;
   const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
   const strojRequired = !!(sec && machs.length);
-  const strojSel = `<input type="text" id="e-stroj" list="e-stroj-list" value="${esc(o.stroj??'')}" autocomplete="off" ${sec?'':'disabled'} placeholder="${sec?(machs.length?'hledat stroj…':'linka nemá stroje'):'nejdřív vyber linku'}"><datalist id="e-stroj-list">${machs.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>`;
+  const strojSel = `<button type="button" class="assign-trigger" data-a="pick-open" data-v="stroj"${(sec&&machs.length)?'':' disabled'}>${o.stroj?esc(o.stroj):(sec?(machs.length?'— vyber stroj —':'linka nemá stroje'):'nejdřív vyber linku')}</button>`;
   const assignedBtn = `<button type="button" class="assign-trigger" data-a="assign-open">${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
     <div><label>Pracovní příkaz</label>
@@ -1588,6 +1661,17 @@ async function act(a,v,el,ev){
       const item={id,name,color:filterModal.color,typ:filterModal.typ,stav:filterModal.stav,priorita:filterModal.priorita,obor:filterModal.obor,linka:filterModal.linka};
       const list=savedFilters.filter(x=>x.id!==id).concat([item]);
       try{ await setDoc(doc(db,'udrzbaFilters',me.uid),{list}); filterModal=null; favLinkaOpen=false; favLinkaQuery=''; toast('Filtr uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+    case 'pick-open': collect(); pickPicker={kind:v,sel:(v==='linka'?(editing.linka||''):(editing.stroj||'')),query:'',only:false,drill:null}; break;
+    case 'pick-close': case 'pick-close-bg':
+      if(a==='pick-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
+      downOnOverlay=false; pickPicker=null; break;
+    case 'pick-toggle': pickPicker.sel=(pickPicker.sel===v?'':v); break;   // jedna položka: další zaškrtnutí nahradí předchozí
+    case 'pick-only': pickPicker.only=!pickPicker.only; break;
+    case 'pick-drill': pickPicker.drill=(pickPicker.drill===v?null:v); break;
+    case 'pick-confirm':{
+      if(pickPicker.kind==='linka'){ if(editing.linka!==pickPicker.sel) editing.stroj=''; editing.linka=pickPicker.sel; }   // jiná linka = jiné stroje
+      else editing.stroj=pickPicker.sel;
+      pickPicker=null; break; }
     case 'assign-open': collect(); assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null}; break;
     case 'assign-close': case 'assign-close-bg':
       if(a==='assign-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
@@ -1626,14 +1710,17 @@ function bind(){
   const fov=document.querySelector('.overlay[data-a="fav-close-bg"]');
   if(fov){ fov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===fov); });
     fov.addEventListener('click',e=>{ if(e.target===fov) act('fav-close-bg',null,fov,e); }); }
+  const pkov=document.querySelector('.overlay[data-a="pick-close-bg"]');
+  if(pkov){ pkov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===pkov); });
+    pkov.addEventListener('click',e=>{ if(e.target===pkov) act('pick-close-bg',null,pkov,e); }); }
   const apov=document.querySelector('.overlay[data-a="assign-close-bg"]');
   if(apov){ apov.addEventListener('mousedown',e=>{ downOnOverlay=(e.target===apov); });
     apov.addEventListener('click',e=>{ if(e.target===apov) act('assign-close-bg',null,apov,e); }); }
   document.querySelectorAll('[data-a]').forEach(el=>{ const a=el.dataset.a,v=el.dataset.v;
-    if(a==='login'||a==='logout'||a==='close-bg'||a==='fav-close-bg'||a==='assign-close-bg') return;
+    if(a==='login'||a==='logout'||a==='close-bg'||a==='fav-close-bg'||a==='assign-close-bg'||a==='pick-close-bg') return;
     el.onclick=ev=>{ev.stopPropagation();act(a,v,el,ev);};
   });
-  const lk=document.getElementById('e-linka'); if(lk) lk.onchange=()=>{collect(); editing.stroj=''; render();};
+  const pkq=document.getElementById('pk-q'); if(pkq) pkq.oninput=()=>{ if(pickPicker){ pickPicker.query=pkq.value; const p=pkq.selectionStart; render(); const n=document.getElementById('pk-q'); if(n){n.focus();n.setSelectionRange(p,p);} } };
   const wo=document.getElementById('e-wo'); if(wo) wo.oninput=()=>{ wo.value=wo.value.replace(/\D/g,''); };
   const apq=document.getElementById('ap-q'); if(apq) apq.oninput=()=>{ if(assignPicker){ assignPicker.query=apq.value; const p=apq.selectionStart; render(); const n=document.getElementById('ap-q'); if(n){n.focus();n.setSelectionRange(p,p);} } };
   const q=document.getElementById('f-q'); if(q) q.oninput=()=>{filters.q=q.value;const p=q.selectionStart;render();const n=document.getElementById('f-q');if(n){n.focus();n.setSelectionRange(p,p);}};
