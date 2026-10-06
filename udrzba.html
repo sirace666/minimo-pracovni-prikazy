@@ -474,6 +474,12 @@
   .tc .who .more{margin-left:5px;font-size:11.5px;font-weight:600;color:#6b7290}
   .sd{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:400;color:var(--muted);line-height:20px;white-space:nowrap}
   .sd i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c)}
+  /* Stav: barvu nese jen tečka, písmo se odstupňuje podle toho, kolik pozornosti příkaz potřebuje —
+     nový nejtučněji (nikdo se ho ještě nechopil), rozpracováno polotučně, hotovo tence a světle. */
+  .sd.s-novy{font-weight:700;color:var(--text)}
+  .sd.s-roz{font-weight:600;color:var(--text)}
+  .sd.s-hot{font-weight:400;color:#6b7290}
+  .sd.s-hot i{opacity:.5}
   .emtag{display:inline-flex;align-items:center;height:18px;margin-block:1px;padding:0 6px;border-radius:4px;background:var(--danger);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em}
   .cmtx{font-size:12.5px;font-weight:400;color:#6b7290;line-height:20px}
   .dec{display:inline-flex;align-items:center;gap:8px;min-width:0}
@@ -1208,7 +1214,9 @@ const ND_BARVA={potreba:'#c0392b',objednano:'#b45309',prisel:'#1e7d4b'};
 const svgBars=n=>`<svg viewBox="0 0 14 14" aria-hidden="true">${[0,1,2,3].map(i=>`<rect class="${i<n?'on':''}" x="${i*3.6}" y="${13-(4+i*3)}" width="2.6" height="${4+i*3}" rx="1"/>`).join('')}</svg>`;
 const SVG_BOX='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 3.5 6 1.5l4.5 2v5L6 10.5l-4.5-2z"/><path d="M1.5 3.5 6 5.5l4.5-2M6 5.5v5"/></svg>';
 const SVG_CLOCK='<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.2l2 1.3"/></svg>';
-const stavHtml=(key,label)=>`<span class="sd" style="--c:${STAV_BARVA[key]||'#94a3b8'}"><i></i>${esc(label)}</span>`;
+// Třída podle stavu (klíč může být 'nový' i 'novy'), podle ní se odstupňuje písmo: nový nejtučněji, hotovo nejtlumeněji.
+const stavTrida=k=>/^nov/.test(k)?'s-novy':/^rozp/.test(k)?'s-roz':/^hot/.test(k)?'s-hot':'';
+const stavHtml=(key,label)=>`<span class="sd ${stavTrida(key)}" style="--c:${STAV_BARVA[key]||'#94a3b8'}"><i></i>${esc(label)}</span>`;
 const typHtml=t=>t==='EM'?'<span class="emtag">EM</span>':'<span class="cmtx">CM</span>';
 const prioHtml=p=>`<span class="pr k-${esc(p||'')}" style="--c:${PRIORITA_TEXT[p]||'#4a5170'}">${svgBars((PRIORITA_RANK[p]??1)+1)}${esc(PRIORITA_LABEL[p]||p||'')}</span>`;
 const ndLineHtml=k=>`<span class="dl" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;     // v řádku pod názvem poruchy (ikona visí vlevo)

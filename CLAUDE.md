@@ -808,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.0`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.1`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -881,7 +881,11 @@ protože:
   - **Vzhled buněk: text a barva, ne tabletky (v0.17.0, Martin: „dnes všechno
     jsou tabletky = odstraň, splývá to")**. Jediná „tabletka" v tabulce je
     štítek **EM** (`.emtag`, červený). Zbytek řeší barva a typografie:
-    `Stav` = barevná tečka + text (`stavHtml`, `STAV_BARVA`), `Typ` = CM šedý
+    `Stav` = barevná tečka + text odstupňovaný podle toho, kolik pozornosti
+    příkaz potřebuje (v0.17.1, „varianta A": Nový 700, Rozpracováno 600, oboje
+    tmavé písmo; Hotovo 400 světle šedé `#6b7290` a tečka s `opacity:.5`;
+    barvu nese jen tečka, ne písmo — třídy `.sd.s-novy/.s-roz/.s-hot`
+    podle `stavTrida()`, volá je `stavHtml`, `STAV_BARVA`), `Typ` = CM šedý
     obyčejný text / EM červený štítek (`typHtml`), `Priorita` = ikona 1–4
     sloupečků + text barvy podle závažnosti, kritická tučně (`prioHtml`,
     `PRIORITA_TEXT`, třídy `.k-vysoká`/`.k-kritická`), stav dílu = barevný
