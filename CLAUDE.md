@@ -805,7 +805,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.8`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.9`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -838,7 +838,10 @@ protože:
     `max-height` = místo do spodku okna minus ostatní části menu, min 110 px,
     max 420 px), takže „Hotovo" nikdy nevyjede pod okraj ani na nízkém okně;
     CSS `max-height:240px` je jen výchozí hodnota před prvním výpočtem.
-    U seznamů delších než 7 položek je pod hledáním přepínač **Jen vybrané · N**
+    VE VŠECH filtrech se zaškrtávátky (Stav, Typ, Priorita, Stroj/linka, Obor,
+    Přiřazeno, Prostoj, Vytvořeno), i u 2 položek, je stejně pod hledáním
+    přepínač **Jen vybrané · N** (Martin chtěl jednotná menu; původně byl jen u
+    seznamů delších než 7 položek)
     (`colOnly`, akce `col-only`; vypnutý, dokud nic není vybráno; resetuje se
     při otevření menu i přepnutí záložky; kombinuje se s hledáním; odškrtnutá
     položka při zapnutém přepínači hned zmizí). Sloupec **Vytvořeno** ukazuje datum a pod ním
@@ -884,7 +887,8 @@ protože:
     (`.order-item.em`) obrys mají dál, beze změny.
   - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
     s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže
-    to samé `filters` a `passes()`); Linka a Přiřazeno mají hledání (`cm-q`),
+    to samé `filters` a `passes()`); každé takové menu má hledání (`cm-q`;
+    příznak `search` v `COLS` už neexistuje, hledání je vždy),
     sloupce WO a Porucha mají místo zaškrtávátek TEXTOVÉ hledání
     (`TEXT_FILTERS`, jedno pole `#cm-text` s `data-d`; WO jen číslice,
     Porucha volný text, hledá se v názvu poruchy bez ohledu na velikost

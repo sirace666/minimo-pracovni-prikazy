@@ -1019,12 +1019,12 @@ const COLS=[
   {k:'priorita',label:'Priorita',      dim:'priorita', sort:'priorita', s:['Nízká → Kritická','Kritická → Nízká']},
   {k:'wo',      label:'WO',            dim:'wo',       sort:'wo',       s:['Nejnižší číslo první','Nejvyšší číslo první']},
   {k:'nazev',   label:'Porucha',       dim:'nazev',    sort:'nazev',    s:['A → Z','Z → A']},
-  {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'], search:true,
+  {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'],
    tabs:[{dim:'stroj',label:'Stroj'},{dim:'linka',label:'Linka'}]},
   {k:'obor',    label:'Obor',          dim:'obor',     sort:'obor',     s:['Mechanika první','Nástrojárna první']},
-  {k:'who',     label:'Přiřazeno',     dim:'who',      sort:'who',      s:['A → Z','Z → A'], search:true},
+  {k:'who',     label:'Přiřazeno',     dim:'who',      sort:'who',      s:['A → Z','Z → A']},
   {k:'prostoj', label:'Prostoj od',    dim:'prostoj',  sort:'prostoj',  s:['Nejstarší první','Nejnovější první']},
-  {k:'created', label:'Vytvořeno',     dim:'autor',    sort:'created',  s:['Nejstarší první','Nejnovější první'], search:true}
+  {k:'created', label:'Vytvořeno',     dim:'autor',    sort:'created',  s:['Nejstarší první','Nejnovější první']}
 ];
 const PROSTOJ_OPTS=[{k:'ano',label:'S prostojem'},{k:'ne',label:'Bez prostoje'}];
 const DIM_LABEL={typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
@@ -1125,10 +1125,10 @@ function colMenuHTML(){
     const all=colOptions(dim), q=colQuery.trim().toLowerCase(), sel=filters[dim];
     let shown=colOnly?all.filter(o=>sel.includes(o.k)):all;
     if(q) shown=shown.filter(o=>o.label.toLowerCase().includes(q));
-    // přepínač má smysl jen u delších seznamů (do ~7 položek je vidět všechno naráz)
-    const onlyBtn=all.length>7?`<div class="cm-only"><button type="button" class="cm-onlybtn${colOnly?' on':''}" data-a="col-only" aria-pressed="${colOnly}"${(sel.length||colOnly)?'':' disabled'}>Jen vybrané${sel.length?` · ${sel.length}`:''}</button></div>`:'';
+    // hledání i „Jen vybrané" jsou ve VŠECH filtrech se zaškrtávátky, ať je každé menu stejné (Martin)
+    const onlyBtn=`<div class="cm-only"><button type="button" class="cm-onlybtn${colOnly?' on':''}" data-a="col-only" aria-pressed="${colOnly}"${(sel.length||colOnly)?'':' disabled'}>Jen vybrané${sel.length?` · ${sel.length}`:''}</button></div>`;
     body=`<div class="cm-sep"></div>${tabs}
-      ${c.search?`<div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>`:''}
+      <div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>
       ${onlyBtn}
       <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):`<div class="muted" style="padding:6px 8px;font-size:12px">${colOnly&&!sel.length?'Nic není vybráno.':'Nic nenalezeno.'}</div>`}</div>
       <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
