@@ -808,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.1`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.2`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -914,6 +914,39 @@ protože:
     navy jako dřív — na tmavém pozadí by barevné ikony a písmo zmizely.
     Kdykoli přidáš nový sloupec s barevnou hodnotou, přidej pomocníka a použij
     ho na obou místech (řádek + menu), ať se barvy nerozejdou.
+  - **Hotové příkazy, záhlaví a pruh nad ním (v0.17.2, Martin vybral „záhlaví A"
+    a „variantu 3")** — tři věci, které spolu souvisejí:
+    1. **Hotové řádky ustoupí do pozadí** (`.trow.st-hotovo:not(:hover) …`): světle
+       šedé pozadí `#f5f6fa`, bledě zelený pruh vlevo jen 3 px, žádná růžová ani
+       u EM + kritická (`.trow.em.crit:not(.st-hotovo)`), název 600 a šedší, priorita
+       a prostoj šedě, štítek EM světle červený, jména ztlumeně modrá. Po najetí
+       myší se vrátí plné barvy (proto `:not(:hover)`). Ztlumený text má kontrast
+       aspoň 4,65:1 na šedém pozadí — proto `#676e8c`, ne `#6b7290` (na `#f5f6fa`
+       má jen 4,38). Změníš-li pozadí hotových řádků, změř kontrast znovu.
+    2. **Záhlaví sloupců je ovládací pás** (`.thd`): modrošedé `#e9ecf8`, tmavě
+       modré písmo a silnější spodní linka (2 px); sloupec se zapnutým filtrem
+       je plně tmavě modrý (`.hc.on`), otevřený sloupec `#cdd4f0`. Musí se lišit od
+       hotových řádků, jejich šedá by jinak splynula s původním `#f7f8fc`.
+       Tmavě modré záhlaví (varianta B) Martin nechtěl — pod tmavou hlavičkou
+       portálu by byly dva těžké pruhy nad sebou.
+    3. **Pruh nad záhlavím `.sbar`**: vlevo „Zobrazeno N z M" a štítky filtrů,
+       vpravo přepínač **Skrýt hotové**. Bez filtru je bílý a tichý (dřívější trvalý
+       návod „Klikni na záhlaví…" je pryč), se zapnutým filtrem dostane třídu
+       `filtered` (teplé `#fff8e6`) a „Zrušit filtry" je tlačítko `.sb-clear`.
+       `sbarHTML(n)` teď vrací `{filtered, html}`, ne řetězec.
+       **Skrýt hotové** (`hideDone`, klíč `localStorage` `udrzbaHideDone`, výchozí
+       ZAPNUTO, akce `hide-done`) skrývá hotové jen v TABULCE na počítači
+       (`tableRows(rr)` v `listView()`); mobilní karty používají celé `rr` a přepínač
+       nemají. Není to filtr: `clear-filters` ho NEMĚNÍ, do `activeFilterCount()` se
+       nepočítá a není v oblíbených sadách (Martin: „Zrušit filtry zruší jen filtry,
+       na Skrýt hotové to nemá vliv"). Když je ve filtru Stav zaškrtnuté Hotovo,
+       přepínač hotové neskrývá (`doneShown()`), jinak by je nešlo najít — přepínač
+       zůstane zapnutý a dostane popisek proč. „Zobrazeno N" počítá viditelné řádky,
+       M je celkem. Počet skrytých hotových se záměrně NEPÍŠE (Martin to nechtěl).
+       Zbudou-li po skrytí jen hotové (třeba hledání trefí jen hotový), místo
+       prázdné tabulky se ukáže hláška „Zbývají jen hotové příkazy" s tlačítkem
+       Zobrazit hotové (`.empty2` větev v `listView()`).
+       Čísla na dlaždicích nahoře a počty v menu filtrů se přepínačem NEMĚNÍ.
   - **Pevný horní blok, rolují jen řádky (Martin):** od 861 px šířky a 560 px
     výšky se stránka sama nescrolluje. `#app` je flex sloupec o výšce okna
     (`100dvh`, `overflow:hidden`), `#main-host` → `main` → `.board2` → `.listcard2`
@@ -932,7 +965,8 @@ protože:
     drží se u záhlaví, které se při svislém posunu nehýbe.
   - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
     mít obrys) — zůstává červený štítek EM ve sloupci Typ, lehce červené
-    pozadí u EM + kritická (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
+    pozadí u EM + kritická, která NENÍ hotová (`.trow.em.crit:not(.st-hotovo)`;
+    u hotové poplach skončil, viz níž) a barevný pruh vlevo podle stavu. Karty na mobilu
     (`.order-item.em`) obrys mají dál, beze změny.
   - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
     s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže

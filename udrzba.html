@@ -401,15 +401,30 @@
   .listcard2{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
     overflow:hidden;min-width:0}
   .listcard2 .empty2{border:0;border-radius:0}
-  .sbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);
-    min-height:48px;font-size:13px}
-  .sbar .sb-count{color:var(--muted);margin-right:4px}
-  .sbar .sb-count b{color:var(--text)}
-  .sbar .sb-hint{color:#6b7290}
+  /* Pruh nad záhlavím: vlevo Zobrazeno N z M a štítky zapnutých filtrů, vpravo přepínač Skrýt hotové.
+     Bez filtru je bílý a tichý, se zapnutým filtrem se podbarví teple, ať je hned vidět, že seznam je vyfiltrovaný. */
+  .sbar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:6px 14px;border-bottom:1px solid var(--border);
+    min-height:44px;font-size:12.5px;font-weight:600;background:#fff}
+  .sbar .sb-l{display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0}
+  .sbar .sb-count{color:var(--muted)}
+  .sbar .sb-count b{color:var(--text);font-weight:800}
+  .sbar.filtered{background:#fff8e6;border-bottom-color:#efddac}
+  .sbar.filtered .fchip{background:#fff}
+  .sbar.filtered .fchip:hover{background:#f3f5fd}
   .fchip{display:inline-flex;gap:6px;align-items:center;border:1px solid #c9cff0;background:#eceefb;color:var(--accent-dark);
-    border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600}
+    border-radius:999px;padding:3px 6px 3px 11px;font-size:12.5px;font-weight:600}
   .fchip b{font-weight:800}
   .fchip:hover{background:#e0e4f8}
+  .fchip>span[aria-hidden="true"]{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:800;background:#eceefb}
+  .sb-clear{border:1px solid #d9c98f;background:transparent;color:#7a5a07;font:inherit;font-size:12px;font-weight:800;border-radius:8px;padding:3px 10px;cursor:pointer}
+  .sb-clear:hover{background:rgba(217,201,143,.25)}
+  /* přepínač Skrýt hotové (jen tabulka na počítači) */
+  .sb-switch{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;
+    color:var(--text);cursor:pointer;padding:4px 2px;flex:none}
+  .sb-switch .tr{width:36px;height:20px;border-radius:999px;background:#c5cadc;position:relative;flex:none;transition:background .15s}
+  .sb-switch .tr::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.3);transition:left .15s}
+  .sb-switch[aria-checked="true"] .tr{background:var(--accent)}
+  .sb-switch[aria-checked="true"] .tr::after{left:18px}
   .tscroller{overflow-x:auto}
   /* Pevný horní blok: na dostatečně velké obrazovce se stránka sama nescrolluje. Hlavička portálu, nadpis s
      dlaždicemi, štítky filtrů a záhlaví sloupců zůstávají na místě a rolují jen řádky tabulky (.tscroller).
@@ -432,16 +447,18 @@
      (mezi nimi zůstává 2px díky padding 0 1px na obalu). Šířky sloupců počítají s tím odsazením. */
   .tbl{min-width:1130px;--cols:112px 56px 96px 92px minmax(190px,2fr) minmax(128px,1fr) 88px minmax(130px,1fr) 110px 108px}
   .thd,.trow{display:grid;grid-template-columns:var(--cols);column-gap:0;align-items:start;padding:0 12px}
-  .thd{background:#f7f8fc;border-bottom:1px solid var(--border);height:44px;align-items:center}
+  /* Záhlaví sloupců je ovládací pás: jemně modrošedé podbarvení a pevnější spodní linka, ať se liší od řádků
+     (včetně zešedlých hotových) i od pruhu nad ním. Sloupec se zapnutým filtrem je plně tmavě modrý. */
+  .thd{background:#e9ecf8;border-bottom:2px solid #c4cbe8;height:44px;align-items:center}
   .thd>div{min-width:0;padding:0 1px}
   .hc{display:flex;align-items:center;gap:5px;width:100%;height:30px;padding:0 6px 0 7px;border:0;
     border-radius:8px;background:transparent;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
-    color:var(--muted);white-space:nowrap;text-align:left}
+    color:var(--accent-dark);white-space:nowrap;text-align:left}
   .hc .hc-l{overflow:hidden;text-overflow:ellipsis}
-  .hc .hc-i{margin-left:auto;font-size:12px;color:#8a90ab;letter-spacing:0}
-  .hc:hover{background:#eceefa}
+  .hc .hc-i{margin-left:auto;font-size:12px;color:#6f7ab0;letter-spacing:0}
+  .hc:hover{background:#dce1f4}
   .hc.sorted,.hc.sorted .hc-i{color:var(--accent)}
-  .hc.open{background:#e0e4f8;color:var(--accent-dark)}
+  .hc.open{background:#cdd4f0;color:var(--accent-dark)}
   .hc.on{background:var(--accent);color:#fff}
   .hc.on .hc-i{color:#fff}
   .trow{width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);border-radius:0;background:#fff;
@@ -452,7 +469,7 @@
   .trow.st-rozpracováno{--st:#ea7317}
   .trow.st-hotovo{--st:var(--ok)}
   /* v tabulce nemá havarijka (EM) červený obrys — jen EM + kritická má lehce červenou výplň */
-  .trow.em.crit{background:#fdecea}
+  .trow.em.crit:not(.st-hotovo){background:#fdecea}   /* u hotového už poplach skončil — žádná růžová */
   /* Buňky jsou zarovnané SHORA a první řádek každé buňky má stejnou výšku 20px, takže první řádky ve všech
      sloupcích leží na jedné čáře; druhý řádek je drobný (16px). Stav, typ, priorita, stav dílu a prostoj
      jsou TEXT A BARVA, ne tabletky — štítku (tabletku) má jen havarijka EM. Stejné prvky (.sd .emtag .cmtx
@@ -499,6 +516,22 @@
   .pj svg *{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .pj.on{font-weight:700}
   .pj.off{color:#6b7290;font-weight:400}   /* u hotového příkazu je prostoj už nejspíš za námi — ztlumeně */
+  /* Hotové řádky ustoupí do pozadí: světle šedé pozadí, slabší bledě zelený pruh vlevo, ztlumené barvy, název o stupeň
+     lehčí a štítek EM jemně červený. Po najetí myší se vrátí plné barvy. Ztlumený text má kontrast aspoň 4,5:1
+     i na šedém pozadí (proto #676e8c, ne #6b7290). */
+  .trow.st-hotovo:not(:hover){background:#f5f6fa;box-shadow:inset 3px 0 0 #b7d9c3}
+  .trow.st-hotovo:not(:hover) .tt{font-weight:600;color:#5b6385}
+  .trow.st-hotovo:not(:hover) .tc b{color:#5b6385}
+  .trow.st-hotovo:not(:hover) .tc.tx,.trow.st-hotovo:not(:hover) .tc small,.trow.st-hotovo:not(:hover) .cmtx,
+  .trow.st-hotovo:not(:hover) .pj.off,.trow.st-hotovo:not(:hover) .sd.s-hot{color:#676e8c}
+  .trow.st-hotovo:not(:hover) .pr{color:#676e8c;font-weight:400}
+  .trow.st-hotovo:not(:hover) .pr svg rect{fill:#dde0ea}
+  .trow.st-hotovo:not(:hover) .pr svg rect.on{fill:#8f96b2}
+  .trow.st-hotovo:not(:hover) .emtag{background:#f6dedc;color:#a3382f}
+  .trow.st-hotovo:not(:hover) .who{color:#5f6aa0}
+  .trow.st-hotovo:not(:hover) .who .more{color:#676e8c}
+  .trow.st-hotovo:not(:hover) .dl{color:#676e8c;font-weight:400}
+  .trow.st-hotovo:not(:hover) .dl svg *{stroke:#676e8c}
 
   /* --- rozbalovací menu sloupce (filtr + řazení) --- */
   .colmenu{position:fixed;z-index:55;width:252px;background:#fff;border:1px solid var(--border);border-radius:12px;
@@ -637,6 +670,10 @@ let sortKey='created', sortDir='desc', searchOpen=false;
 let colOpen=null, colQuery='', colTab=null, colOnly=false;   // colOnly = v menu zobrazit jen zaškrtnuté položky
 const PANEL_KEY='udrzbaPanelEye';
 let panelEye=(()=>{ try{ return localStorage.getItem(PANEL_KEY)!=='0'; }catch(e){ return true; } })();
+// Přepínač „Skrýt hotové" (jen tabulka na počítači; mobilní karty ho nemají). Výchozí zapnuto, pamatuje se v prohlížeči.
+// NENÍ filtr: „Zrušit filtry" ho nemění a nepočítá se do počtu filtrů.
+const HIDE_KEY='udrzbaHideDone';
+let hideDone=(()=>{ try{ return localStorage.getItem(HIDE_KEY)!=='0'; }catch(e){ return true; } })();
 let linkaOpen=false, linkaQuery='';
 let ndOpen=false;
 let favLinkaOpen=false, favLinkaQuery='';
@@ -1190,14 +1227,18 @@ function chipLabel(dim,k){
 }
 // štítek zapnutého filtru nad tabulkou: stejný vzhled jako položka ve filtru (barva, ikona), jinak tučný text
 function chipHtml(dim,k){ const op=colOptions(dim).find(x=>x.k===k); return (op&&op.html)||`<b>${esc(chipLabel(dim,k))}</b>`; }
+// Skrýt hotové platí, dokud ve filtru Stav není zaškrtnuté Hotovo — to je výslovná žádost vidět hotové, přepínač ji nepřebije.
+const doneShown=()=>!hideDone || filters.stav.includes('hotovo');
+const tableRows=rr=>doneShown()?rr:rr.filter(o=>o.status!=='hotovo');
 function sbarHTML(n){
   const chips=[];
   ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd'].forEach(d=>filters[d].forEach(k=>
     chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: ${chipHtml(d,k)}<span aria-hidden="true">✕</span></button>`)));
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
-  return `<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
-    +(chips.length?chips.join('')+`<button type="button" class="clear-filters" style="margin-left:4px" data-a="clear-filters">Zrušit filtry</button>`
-                  :`<span class="sb-hint">Klikni na záhlaví sloupce a vyber, co chceš vidět.</span>`);
+  const overridden=hideDone && filters.stav.includes('hotovo');   // přepínač je zapnutý, ale filtr Stav hotové výslovně chce
+  const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}><span class="tr"></span>Skrýt hotové</button>`;
+  return {filtered:chips.length>0, html:`<div class="sb-l"><span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
+    +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit filtry</button>`:'')+`</div>${sw}`};
 }
 function theadHTML(){
   return COLS.map(c=>{
@@ -1324,6 +1365,8 @@ function placeColMenu(){
 function listView(){
   if(!dataReady) return `<div class="empty">Načítám data…</div>`;
   const rr=visibleRows();
+  const tr=tableRows(rr);   // tabulka na počítači bez hotových, když je zapnuté Skrýt hotové; mobilní karty používají celé rr
+  const sbar=sbarHTML(tr.length);
   const totalActive=activeFilterCount();
   const searchIsOpen=searchOpen||!!filters.q;
   return `
@@ -1365,12 +1408,20 @@ function listView(){
   <div class="board2 ${panelEye?'fp-eye':'fp-noeye'}" id="board2">
     ${favPanelHTML()}
     <section class="listcard2">
-      <div class="sbar">${sbarHTML(rr.length)}</div>
+      <div class="sbar${sbar.filtered?' filtered':''}">${sbar.html}</div>
       <div class="tscroller"><div class="tbl" role="table">
         <div class="thd" role="row">${theadHTML()}</div>
-        ${rr.map(trHTML).join('')}
+        ${tr.map(trHTML).join('')}
       </div></div>
-      ${rr.length?'':`<div class="empty2">
+      ${tr.length?'':(rr.length?`<div class="empty2">
+        <div class="empty2-icon">📋</div>
+        <h3>Zbývají jen hotové příkazy.</h3>
+        <p>Je zapnuté „Skrýt hotové". Vypni ho a hotové příkazy uvidíš.</p>
+        <div class="actions">
+          <button class="btn-ghost" data-a="hide-done">Zobrazit hotové</button>
+          <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
+        </div>
+      </div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
         <h3>Žádné pracovní příkazy neodpovídají filtru.</h3>
         <p>Zkuste upravit filtry nebo vytvořte nový příkaz.</p>
@@ -1378,7 +1429,7 @@ function listView(){
           ${totalActive?`<button class="btn-ghost" data-a="clear-filters">Zrušit filtry</button>`:''}
           <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
         </div>
-      </div>`}
+      </div>`)}
     </section>
     ${colMenuHTML()}
   </div>
@@ -1627,6 +1678,7 @@ async function act(a,v,el,ev){
     case 'chip-rm':{ const i=v.indexOf('|'), d=v.slice(0,i), k=v.slice(i+1);
       if(TEXT_FILTERS[d]) filters[d]=''; else if(Array.isArray(filters[d])){ const j=filters[d].indexOf(k); if(j>=0) filters[d].splice(j,1); } break; }
     case 'panel-eye': setPanelEye(!panelEye); return;   // jen přepne třídu na #board2, bez překreslení
+    case 'hide-done': hideDone=!hideDone; try{ localStorage.setItem(HIDE_KEY,hideDone?'1':'0'); }catch(e){} break;   // není filtr, „Zrušit filtry" ho nemění
     case 'fav-save-current':{
       filterModal={...newFilterDraft(),typ:[...filters.typ],stav:[...filters.stav],priorita:[...filters.priorita],obor:[...filters.obor],linka:[...filters.linka]};
       favOpen=false; favLinkaOpen=false; favLinkaQuery='';
