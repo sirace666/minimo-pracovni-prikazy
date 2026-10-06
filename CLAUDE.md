@@ -808,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.4`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.5`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -932,10 +932,13 @@ protože:
     3. **Pruh nad záhlavím `.sbar`**: vlevo „Zobrazeno N z M" a štítky filtrů,
        vpravo přepínač **Skrýt hotové**. Bez filtru je bílý a tichý (dřívější trvalý
        návod „Klikni na záhlaví…" je pryč), se zapnutým filtrem dostane třídu
-       `filtered` (jemně teplá krémová `#fffaeb` s okrajem `#ecdca4`, ať nepůsobí jako
-       varování; v0.17.3 byla `#fffbee`, ale ta se od bílé liší o ~3,6 % jasu a na
-       běžném monitoru splývala — Martin: „řádek je stále bílý"; původní sytější
-       byla `#fff8e6`, rozdíl od bílé ~5,8 %, teď ~4,3 %) a „Zrušit filtry" je tlačítko `.sb-clear`.
+       `filtered` (tlumená krémová `#fcfaf3` s okrajem `#ebe2c6`, ať nepůsobí jako
+       varování) a „Zrušit filtry" je tlačítko `.sb-clear`. **Past při ladění barvy:**
+       zjemňovat se má ubráním žlutosti, NE zesvětlením. `#fffbee` (v0.17.3) se od
+       bílé liší o ~3,6 % jasu a na běžném monitoru splývala (Martin: „řádek je stále
+       bílý"); `#fffaeb` (v0.17.4) a `#fcfaf3` (v0.17.5) mají stejný rozdíl ~4,4 %,
+       druhá je ale méně žlutá. Původní sytá byla `#fff8e6` (~5,8 %). Při další změně
+       hlídej, aby rozdíl od bílé neklesl pod ~4 %.
        `sbarHTML(n)` teď vrací `{filtered, html}`, ne řetězec.
        **Skrýt hotové** (`hideDone`, klíč `localStorage` `udrzbaHideDone`, výchozí
        ZAPNUTO, akce `hide-done`) skrývá hotové jen v TABULCE na počítači
