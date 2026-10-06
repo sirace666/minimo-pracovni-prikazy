@@ -808,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.5`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.6`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -930,8 +930,11 @@ protože:
        Tmavě modré záhlaví (varianta B) Martin nechtěl — pod tmavou hlavičkou
        portálu by byly dva těžké pruhy nad sebou.
     3. **Pruh nad záhlavím `.sbar`**: vlevo „Zobrazeno N z M" a štítky filtrů,
-       vpravo přepínač **Skrýt hotové**. Bez filtru je bílý a tichý (dřívější trvalý
-       návod „Klikni na záhlaví…" je pryč), se zapnutým filtrem dostane třídu
+       vpravo přepínač **Skrýt hotové**. Bez filtru má velmi světlou modrošedou
+       `#f4f5fa` (v0.17.6; dřív byl bílý a splýval s bílou kartou, Martin: „je divný,
+       jen bílý a splývá"), vlevo ikonu filtru (`.sb-ico`) a za počtem šedé „· bez filtru"
+       (`.sb-nof`); dřívější trvalý návod „Klikni na záhlaví…" je pryč. Se zapnutým
+       filtrem ikona zmodrá, „bez filtru" zmizí a pruh dostane třídu
        `filtered` (tlumená krémová `#fcfaf3` s okrajem `#ebe2c6`, ať nepůsobí jako
        varování) a „Zrušit filtry" je tlačítko `.sb-clear`. **Past při ladění barvy:**
        zjemňovat se má ubráním žlutosti, NE zesvětlením. `#fffbee` (v0.17.3) se od

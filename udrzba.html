@@ -404,10 +404,14 @@
   /* Pruh nad záhlavím: vlevo Zobrazeno N z M a štítky zapnutých filtrů, vpravo přepínač Skrýt hotové.
      Bez filtru je bílý a tichý, se zapnutým filtrem se podbarví teple, ať je hned vidět, že seznam je vyfiltrovaný. */
   .sbar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:6px 14px;border-bottom:1px solid var(--border);
-    min-height:44px;font-size:12.5px;font-weight:600;background:#fff}
+    min-height:44px;font-size:12.5px;font-weight:600;background:#f4f5fa}   /* bez filtru velmi světlá modrošedá, ať nesplývá s bílou kartou */
   .sbar .sb-l{display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0}
   .sbar .sb-count{color:var(--muted)}
   .sbar .sb-count b{color:var(--text);font-weight:800}
+  .sbar .sb-ico{width:15px;height:15px;flex:none;color:#7a81a0}
+  .sbar .sb-ico *{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .sbar.filtered .sb-ico{color:var(--accent)}
+  .sbar .sb-nof{color:#636a88;font-weight:600}
   .sbar.filtered{background:#fcfaf3;border-bottom-color:#ebe2c6}   /* krémová: stejně světlá jako #fffaeb (od bílé ~4 % jasu, ať nesplyne), ale s méně žlutosti */
   .sbar.filtered .fchip{background:#fff}
   .sbar.filtered .fchip:hover{background:#f3f5fd}
@@ -1237,8 +1241,9 @@ function sbarHTML(n){
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
   const overridden=hideDone && filters.stav.includes('hotovo');   // přepínač je zapnutý, ale filtr Stav hotové výslovně chce
   const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}><span class="tr"></span>Skrýt hotové</button>`;
-  return {filtered:chips.length>0, html:`<div class="sb-l"><span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
-    +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit filtry</button>`:'')+`</div>${sw}`};
+  const funnel='<svg class="sb-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z"/></svg>';
+  return {filtered:chips.length>0, html:`<div class="sb-l">${funnel}<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
+    +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit filtry</button>`:'<span class="sb-nof">· bez filtru</span>')+`</div>${sw}`};
 }
 function theadHTML(){
   return COLS.map(c=>{
