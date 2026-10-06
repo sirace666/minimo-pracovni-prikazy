@@ -487,7 +487,11 @@
   .cm-tab:not(.on) .cm-tabn{background:var(--accent);color:#fff}
   .cm-search{padding:0 2px 6px}
   .cm-search input{height:34px;padding:0 10px;font-weight:600;font-size:13px}
-  .cm-list{max-height:240px;overflow-y:auto}
+  .cm-list{max-height:240px;overflow-y:auto}   /* výchozí; placeColMenu() ji upraví podle výšky okna */
+  .cm-only{padding:0 2px 6px}
+  .cm-onlybtn{height:26px;padding:0 11px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;font-weight:800;color:var(--muted)}
+  .cm-onlybtn:not(:disabled):hover{background:#f3f4fa}
+  .cm-onlybtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .cm-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 6px 2px;border-top:1px solid var(--border);margin-top:6px}
   .cm-link{border:0;background:none;padding:4px 6px;color:var(--accent);font-weight:800;font-size:12.5px;text-decoration:underline}
   .cm-done{border:0;background:var(--accent);color:#fff;font-weight:800;font-size:12.5px;padding:6px 14px;border-radius:8px}
@@ -593,7 +597,7 @@ let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],stroj:[],n
 let sortKey='created', sortDir='desc', searchOpen=false;
 // Tabulka na počítači: otevřené menu sloupce (+ hledání v něm) a "oko" levého panelu
 // oblíbených (zapnuté = panel po najetí myší vyjede přes tabulku, vypnuté = zůstává úzký pruh).
-let colOpen=null, colQuery='', colTab=null;
+let colOpen=null, colQuery='', colTab=null, colOnly=false;   // colOnly = v menu zobrazit jen zaškrtnuté položky
 const PANEL_KEY='udrzbaPanelEye';
 let panelEye=(()=>{ try{ return localStorage.getItem(PANEL_KEY)!=='0'; }catch(e){ return true; } })();
 let linkaOpen=false, linkaQuery='';
@@ -1118,10 +1122,15 @@ function colMenuHTML(){
       <div class="cm-search"><input type="text" ${tf.digits?'inputmode="numeric" ':''}id="cm-text" data-d="${c.dim}" placeholder="${esc(tf.ph)}" autocomplete="off" value="${esc(filters[c.dim])}"></div>
       <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${c.dim}">Vymazat</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
   }else if(dim){
-    const all=colOptions(dim), q=colQuery.trim().toLowerCase(), shown=q?all.filter(o=>o.label.toLowerCase().includes(q)):all;
+    const all=colOptions(dim), q=colQuery.trim().toLowerCase(), sel=filters[dim];
+    let shown=colOnly?all.filter(o=>sel.includes(o.k)):all;
+    if(q) shown=shown.filter(o=>o.label.toLowerCase().includes(q));
+    // přepínač má smysl jen u delších seznamů (do ~7 položek je vidět všechno naráz)
+    const onlyBtn=all.length>7?`<div class="cm-only"><button type="button" class="cm-onlybtn${colOnly?' on':''}" data-a="col-only" aria-pressed="${colOnly}"${(sel.length||colOnly)?'':' disabled'}>Jen vybrané${sel.length?` · ${sel.length}`:''}</button></div>`:'';
     body=`<div class="cm-sep"></div>${tabs}
       ${c.search?`<div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>`:''}
-      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}</div>
+      ${onlyBtn}
+      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):`<div class="muted" style="padding:6px 8px;font-size:12px">${colOnly&&!sel.length?'Nic není vybráno.':'Nic nenalezeno.'}</div>`}</div>
       <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
   }
   return `<div class="colmenu" id="colmenu" tabindex="-1" role="dialog" aria-label="Filtr a řazení: ${esc(c.label)}">${sorts}${body}</div>`;
@@ -1172,6 +1181,13 @@ function placeColMenu(){
   const r=b.getBoundingClientRect(), w=m.offsetWidth||252;
   m.style.left=Math.min(Math.max(8,r.left),window.innerWidth-w-8)+'px';
   m.style.top=(r.bottom+6)+'px';
+  // seznam se zkrátí podle výšky okna, ať patička („Hotovo") nikdy nevyjede pod okraj; delší seznam se posouvá
+  const list=m.querySelector('.cm-list');
+  if(list){
+    const others=m.offsetHeight-list.offsetHeight;
+    const room=window.innerHeight-(r.bottom+6)-others-14;
+    list.style.maxHeight=Math.max(110,Math.min(420,Math.floor(room)))+'px';
+  }
 }
 
 function listView(){
@@ -1464,14 +1480,15 @@ async function changeStatus(o,newStatus){
 /* ===== akce ===== */
 async function act(a,v,el,ev){
   // jakákoli jiná akce než práce s menu sloupce menu zavře (klik na dlaždici, kartu, štítek…)
-  if(colOpen && !['col-open','col-sort','col-clear','col-close','col-tab'].includes(a)) colOpen=null;
+  if(colOpen && !['col-open','col-sort','col-clear','col-close','col-tab','col-only'].includes(a)) colOpen=null;
   switch(a){
-    case 'col-open':{ colOpen=(colOpen===v?null:v); colQuery='';
+    case 'col-open':{ colOpen=(colOpen===v?null:v); colQuery=''; colOnly=false;
       const cc=COLS.find(x=>x.k===colOpen);
       // výchozí záložka: první; když je zapnutý jen filtr té druhé, otevři ji
       if(cc&&cc.tabs) colTab=(filters[cc.tabs[0].dim].length||!filters[cc.tabs[1].dim].length)?cc.tabs[0].dim:cc.tabs[1].dim;
       break; }
-    case 'col-tab': colTab=v; colQuery=''; break;
+    case 'col-tab': colTab=v; colQuery=''; colOnly=false; break;
+    case 'col-only': colOnly=!colOnly; break;
     case 'col-close': colOpen=null; break;
     case 'col-sort':{ const i=v.indexOf('|'); sortKey=v.slice(0,i); sortDir=v.slice(i+1); break; }
     case 'col-clear': if(TEXT_FILTERS[v]) filters[v]=''; else if(Array.isArray(filters[v])) filters[v]=[]; break;

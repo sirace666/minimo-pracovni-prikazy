@@ -805,7 +805,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.7`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.8`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -832,7 +832,16 @@ protože:
     kombinují se (AND) a číslo na záložce ukazuje, kolik je v ní vybráno.
     Výchozí záložka je Stroj, kromě případu, kdy je zapnutý jen filtr linky.
     Možnosti strojů (`strojOptions()`) = stroje z `cfg.sections` + stroje, co
-    jsou na příkazech. Řazení je podle stroje (pak linky). Sloupec **Vytvořeno** ukazuje datum a pod ním
+    jsou na příkazech. Řazení je podle stroje (pak linky). **Dlouhé seznamy
+    v menu:** posouvá se jen `.cm-list`, řazení/záložky/hledání/patička
+    zůstávají vidět. Výšku seznamu nastavuje `placeColMenu()` (inline
+    `max-height` = místo do spodku okna minus ostatní části menu, min 110 px,
+    max 420 px), takže „Hotovo" nikdy nevyjede pod okraj ani na nízkém okně;
+    CSS `max-height:240px` je jen výchozí hodnota před prvním výpočtem.
+    U seznamů delších než 7 položek je pod hledáním přepínač **Jen vybrané · N**
+    (`colOnly`, akce `col-only`; vypnutý, dokud nic není vybráno; resetuje se
+    při otevření menu i přepnutí záložky; kombinuje se s hledáním; odškrtnutá
+    položka při zapnutém přepínači hned zmizí). Sloupec **Vytvořeno** ukazuje datum a pod ním
     drobně jméno autora (`authorName` přes `pn()`). Řádek je `button.trow` s `data-a="open"` (klik
     otevře okno příkazu jako dřív). Pozor: třída `.row` v appce je flex
     pomocník, proto tabulka používá `.trow`/`.thd`/`.tc`.
