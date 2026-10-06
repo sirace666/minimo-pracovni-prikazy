@@ -185,6 +185,28 @@ uvedeného seznamu „nesmí se rozbít“.
 > nové věci pro Davida. Kdykoliv sem přijde jiná/nová Claude Code session,
 > ať čte i tohle, ne jen tu Davidovu část nahoře.
 
+## ⚠️ POVINNÝ POSTUP PO KAŽDÉ ZMĚNĚ — VŽDY, BEZ VÝJIMKY ⚠️
+
+Martin to výslovně řekl a už mě za to dvakrát napomenul: **tohle se dělá
+VŽDY, po KAŽDÉ změně, kterou mu ukážeš (i drobnost, i oprava jednoho
+řádku), i na zkušební/testovací větvi, i když o to znovu neřekne.** Nečekej,
+až se zeptá. Zkušební větev NENÍ důvod nic z toho vynechat.
+
+1. **`VERSION` +1** (PATCH oprava/doladění, MINOR nová věc). Nikdy
+   přípona `-test`, `-wip` apod. — verze musí být čisté číslo.
+2. **Commit** (a push větve: `git push origin <větev>`).
+3. **`git tag -a vX.Y.Z`** a `git push origin --tags`.
+4. **GitHub Release** `gh release create vX.Y.Z --title … --notes-file …`
+   (české poznámky, co se změnilo). Mimo `main` přidej `--latest=false`,
+   ať „Latest" zůstane na verzi z `main`. `gh` viz sekce Verzování níž.
+5. **`docs/pro-davida.md` doplnit** (lidsky, bez techniky, krátce) a po
+   zápisu si ho znovu přečíst — viz sekce „Dokumentace pro Davida" níž.
+6. **Tenhle `CLAUDE.md` aktualizovat** — nejen přidat, ale OPRAVIT
+   zastaralé body, které se změnou přestaly platit.
+7. **Napsat Martinovi nové číslo verze** a že je vydaná (Ctrl+F5).
+
+Než napíšeš „hotovo", projdi tyhle body. Když chybí byť jeden, hotovo není.
+
 ## Co je tohle za repo a proč existuje
 
 Martin má editora do Davidova Firebase (`nakupni-pozadavky`) a přístup na
@@ -1169,10 +1191,13 @@ tady). Před otevřením PR:
 I když je tohle „jen" pracovní fork, **po KAŽDÉ změně nebo opravě, kterou
 Martin potvrdí jako v pořádku** (ne jen po velkých dávkách — upřesněno
 2026-09-28, protože verze v0.10.1–v0.10.4 dřív dostaly tag, ale ne
-Release, a Martin si toho všiml), udělej tag + GitHub Release:
+Release, a Martin si toho všiml; **znovu připomenuto 2026-10-06, protože
+jsem to na zkušební větvi `test-tabulka-filtry` vynechal** — platí to i na
+větvích, viz povinný postup na začátku dodatku), udělej tag + GitHub Release:
 1. Zvyš `VERSION` (semver — PATCH oprava, MINOR nová věc, MAJOR zásadní
-   změna; zatím 0.x).
-2. `git tag -a vX.Y.Z -m "…"` a `git push origin main --tags`.
+   změna; zatím 0.x). Bez přípony `-test`.
+2. `git tag -a vX.Y.Z -m "…"` a `git push origin <větev> --tags` (na `main`
+   `git push origin main --tags`). Mimo `main` při releasu `--latest=false`.
 3. `gh release create vX.Y.Z --title "…" --notes "…"` (repo
    `sirace666/minimo-pracovni-prikazy`) — **`gh` bývá nainstalovaný, ale
    ne na PATH**, co vidí Bash/PowerShell nástroje; pokud `gh` samo o
