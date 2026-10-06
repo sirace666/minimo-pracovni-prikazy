@@ -805,7 +805,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.6`)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.7`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -826,8 +826,13 @@ protože:
     příkazu PP-…), Porucha, **Stroj / linka**, Obor, Přiřazeno, Prostoj od,
     Vytvořeno. Ve sloupci Stroj / linka je nahoře STROJ tučně a pod ním linka
     netučně drobně (Martin to chtěl obráceně než na kartách); bez stroje je
-    jen linka tučně. Filtr v tom sloupci pořád filtruje podle LINKY, řazení
-    podle stroje (pak linky). Sloupec **Vytvořeno** ukazuje datum a pod ním
+    jen linka tučně. Menu toho sloupce má DVĚ ZÁLOŽKY **Stroj | Linka**
+    (`COLS[].tabs`, stav `colTab`, akce `col-tab`): každá filtruje svou
+    dimenzi (`filters.stroj` / `filters.linka`), mají vlastní hledání a počty,
+    kombinují se (AND) a číslo na záložce ukazuje, kolik je v ní vybráno.
+    Výchozí záložka je Stroj, kromě případu, kdy je zapnutý jen filtr linky.
+    Možnosti strojů (`strojOptions()`) = stroje z `cfg.sections` + stroje, co
+    jsou na příkazech. Řazení je podle stroje (pak linky). Sloupec **Vytvořeno** ukazuje datum a pod ním
     drobně jméno autora (`authorName` přes `pn()`). Řádek je `button.trow` s `data-a="open"` (klik
     otevře okno příkazu jako dřív). Pozor: třída `.row` v appce je flex
     pomocník, proto tabulka používá `.trow`/`.thd`/`.tc`.
@@ -886,8 +891,9 @@ protože:
     dokumentové listenery dole.
   - **Nové filtrovací dimenze** `filters.who` (uid, `_none` = nepřiřazeno),
     `filters.prostoj` (`ano`/`ne`), `filters.autor` (uid autora),
-    `filters.wo` a `filters.nazev` (řetězce). Jsou v `passes()`
-    s `skip`, mají `countWho`/`countProstoj`/`countAutor` a počítají se do
+    `filters.stroj` (názvy strojů), `filters.wo` a `filters.nazev` (řetězce).
+    Jsou v `passes()` s `skip`, mají `countWho`/`countProstoj`/`countAutor`/
+    `countStroj` a počítají se do
     `activeFilterCount()` (štítek u „FILTRY", tlačítko Zrušit). **Do uložené
     oblíbené sady NEPATŘÍ** (schéma `udrzbaFilters` se nezměnilo, žádná změna
     pravidel): `favApply()` je při použití sady vynuluje a „Uložit aktuální

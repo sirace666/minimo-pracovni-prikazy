@@ -478,6 +478,13 @@
   .cm-sort:hover{background:#f3f4fa}
   .cm-sort.on{background:#eceefb;color:var(--accent)}
   .cm-sep{height:1px;background:var(--border);margin:6px 4px}
+  .cm-tabs{display:flex;gap:4px;padding:2px 2px 8px}
+  .cm-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 8px;border:1px solid var(--border);
+    border-radius:8px;background:#fff;font-weight:800;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+  .cm-tab:hover{background:#f3f4fa}
+  .cm-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .cm-tabn{min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:rgba(255,255,255,.25);font-size:11px;line-height:17px;letter-spacing:0}
+  .cm-tab:not(.on) .cm-tabn{background:var(--accent);color:#fff}
   .cm-search{padding:0 2px 6px}
   .cm-search input{height:34px;padding:0 10px;font-weight:600;font-size:13px}
   .cm-list{max-height:240px;overflow-y:auto}
@@ -582,11 +589,11 @@ let modalTab='info';
 // zobrazí se sama, jak jde bump verze při releasu, bez ručního psaní do kódu.
 let appVersion='';
 fetch('VERSION').then(r=>r.text()).then(t=>{ appVersion=t.trim(); render(); }).catch(()=>{});
-let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],nd:[],who:[],prostoj:[],autor:[],wo:'',nazev:''}, toastMsg=null, toastKind='';
+let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],stroj:[],nd:[],who:[],prostoj:[],autor:[],wo:'',nazev:''}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
 // Tabulka na počítači: otevřené menu sloupce (+ hledání v něm) a "oko" levého panelu
 // oblíbených (zapnuté = panel po najetí myší vyjede přes tabulku, vypnuté = zůstává úzký pruh).
-let colOpen=null, colQuery='';
+let colOpen=null, colQuery='', colTab=null;
 const PANEL_KEY='udrzbaPanelEye';
 let panelEye=(()=>{ try{ return localStorage.getItem(PANEL_KEY)!=='0'; }catch(e){ return true; } })();
 let linkaOpen=false, linkaQuery='';
@@ -735,6 +742,7 @@ function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(
 function matchesPriorita(o){ return !filters.priorita.length || filters.priorita.includes(o.priorita); }
 function matchesObor(o){ return !filters.obor.length || oborOf(o).some(x=>filters.obor.includes(x)); }
 function matchesLinka(o){ return !filters.linka.length || filters.linka.includes(o.linka); }
+function matchesStroj(o){ return !filters.stroj.length || filters.stroj.includes(o.stroj); }
 function matchesNd(o){ return !filters.nd.length || filters.nd.includes(o.nd); }
 function matchesWho(o){ if(!filters.who.length) return true; const u=assignedUids(o); return u.length ? u.some(x=>filters.who.includes(x)) : filters.who.includes('_none'); }
 function matchesProstoj(o){ return !filters.prostoj.length || filters.prostoj.includes(o.prostojOd?'ano':'ne'); }
@@ -745,6 +753,7 @@ function passes(o,skip,skip2){
   if(skip!=='who'&&skip2!=='who' && !matchesWho(o)) return false;
   if(skip!=='prostoj'&&skip2!=='prostoj' && !matchesProstoj(o)) return false;
   if(skip!=='wo'&&skip2!=='wo' && !matchesWo(o)) return false;
+  if(skip!=='stroj'&&skip2!=='stroj' && !matchesStroj(o)) return false;
   if(skip!=='nazev'&&skip2!=='nazev' && !matchesNazev(o)) return false;
   if(skip!=='autor'&&skip2!=='autor' && !matchesAutor(o)) return false;
   if(skip!=='q'&&skip2!=='q' && !matchesSearch(o)) return false;
@@ -771,9 +780,10 @@ const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).len
 const countNd=k=>rows.filter(o=>passes(o,'nd','view') && o.nd===k).length;
 const countWho=k=>rows.filter(o=>passes(o,'who') && (k==='_none'?assignedUids(o).length===0:assignedUids(o).includes(k))).length;
 const countProstoj=k=>rows.filter(o=>passes(o,'prostoj') && (o.prostojOd?'ano':'ne')===k).length;
+const countStroj=k=>rows.filter(o=>passes(o,'stroj') && o.stroj===k).length;
 const countAutor=k=>rows.filter(o=>passes(o,'autor') && o.author===k).length;
 // počet aktivních filtrů (bez dlaždic nahoře a hledání) — pro štítek u "FILTRY" a tlačítko Zrušit
-const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.nd.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
+const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.stroj.length+filters.nd.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
 const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
 const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM' && o.priorita==='kritická');
 
@@ -908,7 +918,7 @@ function favApply(f){
   filters.typ=[...(f.typ||[])]; filters.stav=[...(f.stav||[])]; filters.priorita=[...(f.priorita||[])];
   filters.obor=[...(f.obor||[])]; filters.linka=[...(f.linka||[])];
   // Přiřazeno/Prostoj/Vytvořil/WO/Porucha nejsou součástí uložené sady — při použití sady se vynulují
-  filters.who=[]; filters.prostoj=[]; filters.autor=[]; filters.wo=''; filters.nazev='';
+  filters.who=[]; filters.prostoj=[]; filters.autor=[]; filters.stroj=[]; filters.wo=''; filters.nazev='';
 }
 function favCheckGroup(dim,title,opts){
   const sel=filterModal[dim]||[];
@@ -1005,15 +1015,16 @@ const COLS=[
   {k:'priorita',label:'Priorita',      dim:'priorita', sort:'priorita', s:['Nízká → Kritická','Kritická → Nízká']},
   {k:'wo',      label:'WO',            dim:'wo',       sort:'wo',       s:['Nejnižší číslo první','Nejvyšší číslo první']},
   {k:'nazev',   label:'Porucha',       dim:'nazev',    sort:'nazev',    s:['A → Z','Z → A']},
-  {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'], search:true},
+  {k:'linka',   label:'Stroj / linka', dim:'linka',    sort:'linka',    s:['A → Z','Z → A'], search:true,
+   tabs:[{dim:'stroj',label:'Stroj'},{dim:'linka',label:'Linka'}]},
   {k:'obor',    label:'Obor',          dim:'obor',     sort:'obor',     s:['Mechanika první','Nástrojárna první']},
   {k:'who',     label:'Přiřazeno',     dim:'who',      sort:'who',      s:['A → Z','Z → A'], search:true},
   {k:'prostoj', label:'Prostoj od',    dim:'prostoj',  sort:'prostoj',  s:['Nejstarší první','Nejnovější první']},
   {k:'created', label:'Vytvořeno',     dim:'autor',    sort:'created',  s:['Nejstarší první','Nejnovější první'], search:true}
 ];
 const PROSTOJ_OPTS=[{k:'ano',label:'S prostojem'},{k:'ne',label:'Bez prostoje'}];
-const DIM_LABEL={typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
-const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,who:countWho,prostoj:countProstoj,autor:countAutor};
+const DIM_LABEL={typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
+const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,who:countWho,prostoj:countProstoj,autor:countAutor};
 // textové filtry sloupců (hledání místo zaškrtávátek): wo = jen číslice, nazev = volný text
 const TEXT_FILTERS={wo:{ph:'Hledat číslo WO',digits:true},nazev:{ph:'Hledat v poruchách',digits:false}};
 // "2026-10-01T17:32" → "1. 10. 17:32" (do tabulky) / "1. 10. 2026 17:32" (do popisku)
@@ -1033,6 +1044,12 @@ function autorOptions(){
   rows.forEach(o=>{ if(!o.author||m.has(o.author)) return; const x=users.find(y=>y._id===o.author); m.set(o.author, x?pn(x.name||x.email):pn(o.authorName||o.author)); });
   return [...m].map(([k,label])=>({k,label})).sort((a,b)=>a.label.localeCompare(b.label,'cs'));
 }
+function strojOptions(){
+  const set=new Set();
+  (cfg.sections||[]).forEach(s=>(s.machines||[]).forEach(m=>{ if(m) set.add(m); }));
+  rows.forEach(o=>{ if(o.stroj) set.add(o.stroj); });
+  return [...set].sort((a,b)=>a.localeCompare(b,'cs',{numeric:true})).map(k=>({k,label:k}));
+}
 function colOptions(dim){
   switch(dim){
     case 'typ': return [{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}];
@@ -1040,6 +1057,7 @@ function colOptions(dim){
     case 'priorita': return PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]}));
     case 'obor': return OBOR;
     case 'linka': return linkaOptions().map(n=>({k:n,label:n}));
+    case 'stroj': return strojOptions();
     case 'who': return whoOptions();
     case 'prostoj': return PROSTOJ_OPTS;
     case 'autor': return autorOptions();
@@ -1059,7 +1077,7 @@ function chipLabel(dim,k){
 }
 function sbarHTML(n){
   const chips=[];
-  ['typ','stav','priorita','obor','linka','who','prostoj','autor','nd'].forEach(d=>filters[d].forEach(k=>
+  ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd'].forEach(d=>filters[d].forEach(k=>
     chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: <b>${esc(chipLabel(d,k))}</b><span aria-hidden="true">✕</span></button>`)));
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
   return `<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
@@ -1068,7 +1086,7 @@ function sbarHTML(n){
 }
 function theadHTML(){
   return COLS.map(c=>{
-    const on=c.dim?(TEXT_FILTERS[c.dim]?!!filters[c.dim]:filters[c.dim].length>0):false, isS=sortKey===c.sort;
+    const on=c.tabs?c.tabs.some(t=>filters[t.dim].length>0):(c.dim?(TEXT_FILTERS[c.dim]?!!filters[c.dim]:filters[c.dim].length>0):false), isS=sortKey===c.sort;
     return `<div role="columnheader"><button type="button" class="hc${on?' on':''}${isS?' sorted':''}${colOpen===c.k?' open':''}" data-a="col-open" data-v="${c.k}" aria-haspopup="true" aria-expanded="${colOpen===c.k}" title="${on?'Filtr je zapnutý':'Filtr a řazení'}"><span class="hc-l">${esc(c.label)}</span><span class="hc-i" aria-hidden="true">${isS?(sortDir==='asc'?'↑':'↓'):'▾'}</span></button></div>`;
   }).join('');
 }
@@ -1091,18 +1109,20 @@ function trHTML(o){
 function colMenuHTML(){
   const c=COLS.find(x=>x.k===colOpen); if(!c) return '';
   const sorts=['asc','desc'].map((d,i)=>`<button type="button" class="cm-sort${sortKey===c.sort&&sortDir===d?' on':''}" data-a="col-sort" data-v="${c.sort}|${d}"><span aria-hidden="true">${d==='asc'?'↑':'↓'}</span>${esc(c.s[i])}</button>`).join('');
+  const dim=c.tabs?colTab:c.dim;   // u sloupce se záložkami (Stroj | Linka) se filtruje podle zvolené záložky
+  const tabs=c.tabs?`<div class="cm-tabs" role="tablist">${c.tabs.map(t=>`<button type="button" role="tab" aria-selected="${dim===t.dim}" class="cm-tab${dim===t.dim?' on':''}" data-a="col-tab" data-v="${t.dim}">${esc(t.label)}${filters[t.dim].length?`<span class="cm-tabn">${filters[t.dim].length}</span>`:''}</button>`).join('')}</div>`:'';
   let body='';
   if(TEXT_FILTERS[c.dim]){
     const tf=TEXT_FILTERS[c.dim];
     body=`<div class="cm-sep"></div>
       <div class="cm-search"><input type="text" ${tf.digits?'inputmode="numeric" ':''}id="cm-text" data-d="${c.dim}" placeholder="${esc(tf.ph)}" autocomplete="off" value="${esc(filters[c.dim])}"></div>
       <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${c.dim}">Vymazat</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
-  }else if(c.dim){
-    const all=colOptions(c.dim), q=colQuery.trim().toLowerCase(), shown=q?all.filter(o=>o.label.toLowerCase().includes(q)):all;
-    body=`<div class="cm-sep"></div>
+  }else if(dim){
+    const all=colOptions(dim), q=colQuery.trim().toLowerCase(), shown=q?all.filter(o=>o.label.toLowerCase().includes(q)):all;
+    body=`<div class="cm-sep"></div>${tabs}
       ${c.search?`<div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>`:''}
-      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${c.dim}" value="${esc(o.k)}" ${filters[c.dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[c.dim](o.k)}</span></label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}</div>
-      <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${c.dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
+      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}</div>
+      <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
   }
   return `<div class="colmenu" id="colmenu" tabindex="-1" role="dialog" aria-label="Filtr a řazení: ${esc(c.label)}">${sorts}${body}</div>`;
 }
@@ -1116,7 +1136,7 @@ const eyeTitle=on=>on?'Panel se vysouvá po najetí myší (klikni pro vypnutí)
 function favIsOn(f){
   return activeFilterCount()>0
     && ['typ','stav','priorita','obor','linka'].every(d=>{ const a=filters[d], b=f[d]||[]; return a.length===b.length&&a.every(x=>b.includes(x)); })
-    && !filters.nd.length && !filters.who.length && !filters.prostoj.length && !filters.autor.length && !filters.wo && !filters.nazev;
+    && !filters.nd.length && !filters.stroj.length && !filters.who.length && !filters.prostoj.length && !filters.autor.length && !filters.wo && !filters.nazev;
 }
 function favPanelHTML(){
   const items=savedFilters.length?savedFilters.map(f=>`<button type="button" class="fp-item${favIsOn(f)?' on':''}" data-a="fav-apply" data-v="${esc(f.id)}"><span class="fav-dot" style="background:${esc(f.color)}"></span><span class="fav-label">${esc(f.name)}</span><span class="fav-edit" data-a="fav-edit" data-v="${esc(f.id)}" title="Upravit">✎</span></button>`).join(''):'<div class="fp-empty">Zatím žádné uložené filtry.</div>';
@@ -1444,9 +1464,14 @@ async function changeStatus(o,newStatus){
 /* ===== akce ===== */
 async function act(a,v,el,ev){
   // jakákoli jiná akce než práce s menu sloupce menu zavře (klik na dlaždici, kartu, štítek…)
-  if(colOpen && !['col-open','col-sort','col-clear','col-close'].includes(a)) colOpen=null;
+  if(colOpen && !['col-open','col-sort','col-clear','col-close','col-tab'].includes(a)) colOpen=null;
   switch(a){
-    case 'col-open': colOpen=(colOpen===v?null:v); colQuery=''; break;
+    case 'col-open':{ colOpen=(colOpen===v?null:v); colQuery='';
+      const cc=COLS.find(x=>x.k===colOpen);
+      // výchozí záložka: první; když je zapnutý jen filtr té druhé, otevři ji
+      if(cc&&cc.tabs) colTab=(filters[cc.tabs[0].dim].length||!filters[cc.tabs[1].dim].length)?cc.tabs[0].dim:cc.tabs[1].dim;
+      break; }
+    case 'col-tab': colTab=v; colQuery=''; break;
     case 'col-close': colOpen=null; break;
     case 'col-sort':{ const i=v.indexOf('|'); sortKey=v.slice(0,i); sortDir=v.slice(i+1); break; }
     case 'col-clear': if(TEXT_FILTERS[v]) filters[v]=''; else if(Array.isArray(filters[v])) filters[v]=[]; break;
@@ -1456,7 +1481,7 @@ async function act(a,v,el,ev){
     case 'fav-save-current':{
       filterModal={...newFilterDraft(),typ:[...filters.typ],stav:[...filters.stav],priorita:[...filters.priorita],obor:[...filters.obor],linka:[...filters.linka]};
       favOpen=false; favLinkaOpen=false; favLinkaQuery='';
-      if(filters.who.length||filters.prostoj.length||filters.autor.length||filters.wo||filters.nazev) toast('Do oblíbených se ukládá Typ, Stav, Priorita, Obor a Linka. Přiřazeno, Prostoj, Vytvořil, WO a Porucha ne.');
+      if(filters.stroj.length||filters.who.length||filters.prostoj.length||filters.autor.length||filters.wo||filters.nazev) toast('Do oblíbených se ukládá Typ, Stav, Priorita, Obor a Linka. Stroj, Přiřazeno, Prostoj, Vytvořil, WO a Porucha ne.');
       break; }
     case 'login':{ const email=(g('li-email')||'').trim(), pass=g('li-pass')||'';
       if(!email||!pass){loginErr='Vyplň e-mail i heslo.';render();return;}
@@ -1468,7 +1493,7 @@ async function act(a,v,el,ev){
       // a zruší rozepsaný užší výběr (potřeba/čeká/přišel) — čistý přechod.
       if(filters.view==='nd'){ ndOpen=false; filters.nd=[]; }
       filters.view=(filters.view===v?'':v); break;
-    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[];filters.who=[];filters.prostoj=[];filters.autor=[];filters.wo='';filters.nazev=''; break;
+    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[];filters.who=[];filters.prostoj=[];filters.autor=[];filters.stroj=[];filters.wo='';filters.nazev=''; break;
     case 'search-open': searchOpen=true; break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
