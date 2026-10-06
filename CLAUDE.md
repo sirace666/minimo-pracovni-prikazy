@@ -844,7 +844,12 @@ protože:
   - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
     s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže
     to samé `filters` a `passes()`); Linka a Přiřazeno mají hledání (`cm-q`),
-    WO textové pole jen s číslicemi (`cm-wo`, `filters.wo`). Menu je
+    sloupce WO a Porucha mají místo zaškrtávátek TEXTOVÉ hledání
+    (`TEXT_FILTERS`, jedno pole `#cm-text` s `data-d`; WO jen číslice,
+    Porucha volný text, hledá se v názvu poruchy bez ohledu na velikost
+    písmen); sloupec Vytvořeno má hledání a zaškrtávátka autorů
+    (`autorOptions()`, hodnota = `o.author`, jméno z `users`, jinak z
+    `authorName`). Menu je
     `position:fixed`, polohu mu dává `placeColMenu()` na konci `bind()`
     (a při scrollu/resize), ne CSS — kdyby bylo `absolute`, ořízl by ho
     `.tscroller{overflow-x:auto}`. **Zavírání:** `[data-a]` tlačítka mají
@@ -853,12 +858,18 @@ protože:
     `col-open/col-sort/col-clear/col-close`. Klik do prázdna a Esc řeší
     dokumentové listenery dole.
   - **Nové filtrovací dimenze** `filters.who` (uid, `_none` = nepřiřazeno),
-    `filters.prostoj` (`ano`/`ne`), `filters.wo` (řetězec). Jsou v `passes()`
-    s `skip`, mají `countWho`/`countProstoj` a počítají se do
+    `filters.prostoj` (`ano`/`ne`), `filters.autor` (uid autora),
+    `filters.wo` a `filters.nazev` (řetězce). Jsou v `passes()`
+    s `skip`, mají `countWho`/`countProstoj`/`countAutor` a počítají se do
     `activeFilterCount()` (štítek u „FILTRY", tlačítko Zrušit). **Do uložené
     oblíbené sady NEPATŘÍ** (schéma `udrzbaFilters` se nezměnilo, žádná změna
     pravidel): `favApply()` je při použití sady vynuluje a „Uložit aktuální
-    výběr" při jejich zapnutí upozorní toastem.
+    výběr" při jejich zapnutí upozorní toastem. Při přidání další dimenze ji
+    dej i do `clear-filters`, `favApply`, `favIsOn`, `activeFilterCount` a
+    toastu u `fav-save-current`.
+  - **Z-index:** `.favpanel` má `z-index:40` (nad `.thd` = 5), jinak by
+    záhlaví sloupců překrývalo vysunutý panel oblíbených; pod menu sloupce
+    (55), hlavičkou portálu (60) a okny (70).
   - **Řazení:** `SORT_VAL` + `sortRows()` — prázdná hodnota (bez WO/prostoje/
     přiřazení) jde vždy na konec, ať je směr jakýkoli; při shodě se řadí podle
     data vytvoření. Stejné `sortKey`/`sortDir` používá výběr „Řadit" na mobilu,
