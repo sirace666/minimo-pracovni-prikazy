@@ -16,7 +16,8 @@
   :root{--navy-1:#0f2f5f;--navy-2:#1b4b8f;--bg:#f3f4f8;--surface:#fff;--border:#e3e6ef;--text:#1d2340;--muted:#4a5170;
     --ok:#15803d;--warn:#b45309;--danger:#c0392b;--radius:10px;
     --shadow:0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06);
-    --accent:#2b3a86;--accent-dark:#1f2d6e}
+    --accent:#2b3a86;--accent-dark:#1f2d6e;
+    --pj:#a21caf}   /* prostoj: vlastní barva (švestková), oranžová je už u rozpracováno, vysoké priority a objednaného dílu */
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito','Segoe UI',sans-serif;font-size:14px}
   main{padding:12px 16px 16px}
@@ -429,7 +430,7 @@
   /* Sloupce bez mezer: odsazení textu dělá padding-left 8px na každé buňce (.tc) i na tlačítku záhlaví (.hc),
      takže text záhlaví i řádků začíná na stejné svislici a tlačítka záhlaví se nikdy nepřekrývají
      (mezi nimi zůstává 2px díky padding 0 1px na obalu). Šířky sloupců počítají s tím odsazením. */
-  .tbl{min-width:1100px;--cols:124px 60px 92px 92px minmax(170px,1.8fr) minmax(128px,1fr) 88px minmax(110px,1fr) 114px 108px}
+  .tbl{min-width:1130px;--cols:112px 56px 96px 92px minmax(190px,2fr) minmax(128px,1fr) 88px minmax(130px,1fr) 110px 108px}
   .thd,.trow{display:grid;grid-template-columns:var(--cols);column-gap:0;align-items:start;padding:0 12px}
   .thd{background:#f7f8fc;border-bottom:1px solid var(--border);height:44px;align-items:center}
   .thd>div{min-width:0;padding:0 1px}
@@ -452,23 +453,46 @@
   .trow.st-hotovo{--st:var(--ok)}
   /* v tabulce nemá havarijka (EM) červený obrys — jen EM + kritická má lehce červenou výplň */
   .trow.em.crit{background:#fdecea}
-  /* Buňky jsou zarovnané SHORA a první řádek každé buňky má stejnou výšku 20px (text i odznaky),
-     takže první řádky ve všech sloupcích leží na jedné čáře; druhý řádek je drobný (16px). */
-  .tc{min-width:0;padding-left:8px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;
+  /* Buňky jsou zarovnané SHORA a první řádek každé buňky má stejnou výšku 20px, takže první řádky ve všech
+     sloupcích leží na jedné čáře; druhý řádek je drobný (16px). Stav, typ, priorita, stav dílu a prostoj
+     jsou TEXT A BARVA, ne tabletky — štítku (tabletku) má jen havarijka EM. Stejné prvky (.sd .emtag .cmtx
+     .pr .dli .pj) se používají i v menu filtrů, ať je tam všechno vidět stejně jako v řádku. */
+  .tc{min-width:0;padding-left:8px;display:flex;flex-direction:column;gap:0;align-items:flex-start;
     font-size:13px;line-height:20px}
-  .tc b{font-weight:800;font-size:13px;line-height:20px}
-  .tc small{display:block;font-size:11.5px;line-height:16px;color:#6b7290;font-weight:400}
-  /* Název poruchy je odsazený o stejných 9px jako text uvnitř odznaku (.trow .badge níž), takže jeho levý
-     okraj sedí přesně nad textem „Potřeba objednat díl" / „Čeká na díl" — a to u VŠECH řádků, i tam, kde
-     odznak pod názvem není. Záhlaví sloupce Porucha je odsazené stejně. */
-  .tc .tt{font-weight:800;font-size:13.5px;line-height:20px;max-width:100%;padding-left:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hc[data-v="nazev"]{padding-left:16px}
-  .tc.tx{font-size:12.5px;color:var(--muted);font-weight:600}
+  .tc b{font-weight:600;font-size:13px;line-height:20px;color:var(--text)}
+  .tc small{display:block;font-size:11.5px;line-height:16px;color:#6b7290;font-weight:400;margin-top:2px}
+  /* Hierarchie písma: tučný je jen název poruchy; WO a stroj mají střední váhu; zbytek je běžné písmo. */
+  .tc .tt{font-weight:800;font-size:14px;line-height:20px;max-width:100%;padding-left:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Název poruchy a stav dílu pod ním začínají o 16 px dál (ikona dílu visí vlevo v tomhle odsazení);
+     záhlaví Porucha / díl je odsazené stejně (7 + 16). */
+  .hc[data-v="nazev"]{padding-left:23px}
+  .tc.tx{font-size:12.5px;color:var(--muted);font-weight:400}
   .tc .dash{color:#9aa0b8}
-  .tc .none{font-style:italic;color:#6b7290;font-weight:400}
-  .trow .badge{padding:0 9px;line-height:20px}
-  /* světle červené odznaky by na růžovém řádku (EM + kritická) zmizely a text by vypadal posunutý */
-  .trow .badge.p-kritická,.trow .badge.nd-potreba{background:#f8d2cd}
+  .none{font-style:italic;color:#6b7290;font-weight:400}
+  .who{color:var(--accent);font-weight:600}
+  .tc .who{font-size:12.5px;line-height:20px}
+  .tc .who .more{margin-left:5px;font-size:11.5px;font-weight:600;color:#6b7290}
+  .sd{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:400;color:var(--muted);line-height:20px;white-space:nowrap}
+  .sd i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c)}
+  .emtag{display:inline-flex;align-items:center;height:18px;margin-block:1px;padding:0 6px;border-radius:4px;background:var(--danger);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em}
+  .cmtx{font-size:12.5px;font-weight:400;color:#6b7290;line-height:20px}
+  .dec{display:inline-flex;align-items:center;gap:8px;min-width:0}
+  .pr{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;line-height:20px;color:var(--c);font-weight:400;white-space:nowrap}
+  .pr svg{width:14px;height:14px;flex:none}
+  .pr svg rect{fill:#d5d9e6}
+  .pr svg rect.on{fill:var(--c)}
+  .pr.k-vysoká{font-weight:700}
+  .pr.k-kritická{font-weight:800}
+  .dl{position:relative;display:block;font-size:11.5px;line-height:16px;font-weight:600;color:var(--c);margin:2px 0 0 16px}
+  .dl svg{position:absolute;left:-16px;top:2px;width:12px;height:12px}
+  .dli{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;line-height:20px;font-weight:600;color:var(--c);white-space:nowrap}
+  .dli svg{width:12px;height:12px;flex:none}
+  .dl svg *,.dli svg *{fill:none;stroke:var(--c);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+  .pj{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;line-height:20px;white-space:nowrap;color:var(--pj)}
+  .pj svg{width:13px;height:13px;flex:none}
+  .pj svg *{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .pj.on{font-weight:700}
+  .pj.off{color:#6b7290;font-weight:400}   /* u hotového příkazu je prostoj už nejspíš za námi — ztlumeně */
 
   /* --- rozbalovací menu sloupce (filtr + řazení) --- */
   .colmenu{position:fixed;z-index:55;width:252px;background:#fff;border:1px solid var(--border);border-radius:12px;
@@ -489,6 +513,11 @@
   .cm-search{padding:0 2px 6px}
   .cm-search input{height:34px;padding:0 10px;font-weight:600;font-size:13px}
   .cm-list{max-height:240px;overflow-y:auto}   /* výchozí; placeColMenu() ji upraví podle výšky okna */
+  /* Vybraná položka v menu sloupce: světlé podbarvení a vyplněné políčko místo celé tmavě modré, ať zůstane
+     vidět barva a ikona položky (tečka stavu, proužky priority, krabice dílu, hodiny prostoje). */
+  .cm-list .filter-check:has(input:checked){background:#eceefb;color:var(--accent-dark)}
+  .cm-list .filter-check:has(input:checked) .fc-box{background:var(--accent);border-color:var(--accent);color:#fff}
+  .cm-list .filter-check:has(input:checked) .count{background:#dfe3f7;color:var(--accent-dark)}
   .cm-only{padding:0 2px 6px}
   .cm-onlybtn{height:26px;padding:0 11px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;font-weight:800;color:var(--muted)}
   .cm-onlybtn:not(:disabled):not(.on):hover{background:#f3f4fa}
@@ -1111,7 +1140,7 @@ function whoOptions(){
     const x=users.find(y=>y._id===u);
     m.set(u, x?pn(x.name||x.email):(names[i]?pn(names[i]):u));
   }); });
-  return [{k:'_none',label:'Nepřiřazeno'}, ...[...m].map(([k,label])=>({k,label})).sort((a,b)=>a.label.localeCompare(b.label,'cs'))];
+  return [{k:'_none',label:'Nepřiřazeno',html:'<span class="none">Nepřiřazeno</span>'}, ...[...m].map(([k,label])=>({k,label,html:`<span class="who">${esc(label)}</span>`})).sort((a,b)=>a.label.localeCompare(b.label,'cs'))];
 }
 function autorOptions(){
   const m=new Map();
@@ -1126,16 +1155,18 @@ function strojOptions(){
 }
 function colOptions(dim){
   switch(dim){
-    case 'typ': return [{k:'CM',label:'Standardní (CM)'},{k:'EM',label:'Havarijní (EM)'}];
+    // `html` = vzhled položky ve filtru (stejný jako v řádku tabulky); `label` se používá pro hledání a štítky
+    case 'typ': return [{k:'CM',label:'Standardní (CM)',html:`<span class="dec">${typHtml('CM')}<span>Standardní</span></span>`},
+                        {k:'EM',label:'Havarijní (EM)',html:`<span class="dec">${typHtml('EM')}<span>Havarijní</span></span>`}];
     // „Čeká na díl" tu schválně není — stav dílu se filtruje v záložce Díl u sloupce Porucha / díl
-    case 'stav': return STAV_FILTER_OPTS.filter(s=>s.k!=='ceka-dil').map(s=>({k:s.k,label:s.label}));
-    case 'nd': return [{k:'potreba',label:NDLABEL.potreba,color:'#c0392b'},{k:'objednano',label:NDLABEL.objednano,color:'#b45309'},{k:'prisel',label:NDLABEL.prisel,color:'#1e7d4b'}];
-    case 'priorita': return PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]}));
+    case 'stav': return STAV_FILTER_OPTS.filter(s=>s.k!=='ceka-dil').map(s=>({k:s.k,label:s.label,html:stavHtml(s.k,s.label)}));
+    case 'nd': return ['potreba','objednano','prisel'].map(k=>({k,label:NDLABEL[k],html:ndInlineHtml(k)}));
+    case 'priorita': return PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,html:prioHtml(p)}));
     case 'obor': return OBOR;
     case 'linka': return linkaOptions().map(n=>({k:n,label:n}));
     case 'stroj': return strojOptions();
     case 'who': return whoOptions();
-    case 'prostoj': return PROSTOJ_OPTS;
+    case 'prostoj': return PROSTOJ_OPTS.map(o=>({...o,html:o.k==='ano'?`<span class="pj on">${SVG_CLOCK}${esc(o.label)}</span>`:`<span class="cmtx">${esc(o.label)}</span>`}));
     case 'autor': return autorOptions();
   }
   return [];
@@ -1151,10 +1182,12 @@ function chipLabel(dim,k){
   if(dim==='nd') return NDLABEL[k]||k;
   return k;
 }
+// štítek zapnutého filtru nad tabulkou: stejný vzhled jako položka ve filtru (barva, ikona), jinak tučný text
+function chipHtml(dim,k){ const op=colOptions(dim).find(x=>x.k===k); return (op&&op.html)||`<b>${esc(chipLabel(dim,k))}</b>`; }
 function sbarHTML(n){
   const chips=[];
   ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd'].forEach(d=>filters[d].forEach(k=>
-    chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: <b>${esc(chipLabel(d,k))}</b><span aria-hidden="true">✕</span></button>`)));
+    chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: ${chipHtml(d,k)}<span aria-hidden="true">✕</span></button>`)));
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
   return `<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
     +(chips.length?chips.join('')+`<button type="button" class="clear-filters" style="margin-left:4px" data-a="clear-filters">Zrušit filtry</button>`
@@ -1166,19 +1199,36 @@ function theadHTML(){
     return `<div role="columnheader"><button type="button" class="hc${on?' on':''}${isS?' sorted':''}${colOpen===c.k?' open':''}" data-a="col-open" data-v="${c.k}" aria-haspopup="true" aria-expanded="${colOpen===c.k}" title="${on?'Filtr je zapnutý':'Filtr a řazení'}"><span class="hc-l">${esc(c.label)}</span><span class="hc-i" aria-hidden="true">${isS?(sortDir==='asc'?'↑':'↓'):'▾'}</span></button></div>`;
   }).join('');
 }
+/* ===== stav / typ / priorita / stav dílu / prostoj: text a barva — v tabulce i v menu filtrů =====
+   Ikony a barvy se berou z jednoho místa, takže filtr ukazuje položky přesně tak jako řádek tabulky.
+   (PRIORITA_TEXT je tmavší než PRIORITA_COLOR — ta je sytá pro posuvník a tečky, na text je moc světlá.) */
+const STAV_BARVA={'nový':'#6366f1','rozpracováno':'#ea7317','hotovo':'#15803d',novy:'#6366f1',rozpracovano:'#ea7317'};
+const PRIORITA_TEXT={'nízká':'#1e7d4b','běžná':'#2563a8','vysoká':'#b45309','kritická':'#c0392b'};
+const ND_BARVA={potreba:'#c0392b',objednano:'#b45309',prisel:'#1e7d4b'};
+const svgBars=n=>`<svg viewBox="0 0 14 14" aria-hidden="true">${[0,1,2,3].map(i=>`<rect class="${i<n?'on':''}" x="${i*3.6}" y="${13-(4+i*3)}" width="2.6" height="${4+i*3}" rx="1"/>`).join('')}</svg>`;
+const SVG_BOX='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 3.5 6 1.5l4.5 2v5L6 10.5l-4.5-2z"/><path d="M1.5 3.5 6 5.5l4.5-2M6 5.5v5"/></svg>';
+const SVG_CLOCK='<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.2l2 1.3"/></svg>';
+const stavHtml=(key,label)=>`<span class="sd" style="--c:${STAV_BARVA[key]||'#94a3b8'}"><i></i>${esc(label)}</span>`;
+const typHtml=t=>t==='EM'?'<span class="emtag">EM</span>':'<span class="cmtx">CM</span>';
+const prioHtml=p=>`<span class="pr k-${esc(p||'')}" style="--c:${PRIORITA_TEXT[p]||'#4a5170'}">${svgBars((PRIORITA_RANK[p]??1)+1)}${esc(PRIORITA_LABEL[p]||p||'')}</span>`;
+const ndLineHtml=k=>`<span class="dl" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;     // v řádku pod názvem poruchy (ikona visí vlevo)
+const ndInlineHtml=k=>`<span class="dli" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;   // v menu filtru
+const prostojHtml=(o,text)=>`<span class="pj ${o&&o.status==='hotovo'?'off':'on'}">${SVG_CLOCK}${esc(text)}</span>`;
 function trHTML(o){
   const em=typOf(o)==='EM', crit=o.priorita==='kritická', names=assignedNames(o).map(pn);
   const obory=oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label).filter(Boolean).join(', ');
+  // jména za sebou s čárkami; vidět jsou tři, teprve potom „+N"
+  const whoHtml=names.length?`<span class="who">${esc(names.slice(0,3).join(', '))}${names.length>3?`<span class="more">+${names.length-3}</span>`:''}</span>`:'<span class="none">nepřiřazeno</span>';
   return `<button type="button" class="trow st-${o.status}${em?' em':''}${em&&crit?' crit':''}" role="row" data-a="open" data-v="${o._id}">
-    <span class="tc"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span></span>
-    <span class="tc"><span class="badge typ-${em?'havarijní':'standardní'}">${typOf(o)}</span></span>
-    <span class="tc"><span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span></span>
+    <span class="tc">${stavHtml(o.status,statusLabel(o.status))}</span>
+    <span class="tc">${typHtml(typOf(o))}</span>
+    <span class="tc">${prioHtml(o.priorita)}</span>
     <span class="tc">${o.wo?`<b>${esc(o.wo)}</b>`:'<span class="dash">–</span>'}<small>${esc(o.cislo||'')}</small></span>
-    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}</span>
+    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?ndLineHtml(o.nd):''}</span>
     <span class="tc">${o.stroj?`<b>${esc(o.stroj)}</b><small>${esc(o.linka||'')}</small>`:(o.linka?`<b>${esc(o.linka)}</b>`:'<span class="dash">bez linky</span>')}</span>
     <span class="tc tx">${obory?esc(obory):'<span class="dash">–</span>'}</span>
-    <span class="tc tx">${names.length?esc(names.join(', ')):'<span class="none">nepřiřazeno</span>'}</span>
-    <span class="tc tx" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?esc(prostojCz(o.prostojOd)):'<span class="dash">–</span>'}</span>
+    <span class="tc tx" title="${esc(names.join(', '))}">${whoHtml}</span>
+    <span class="tc tx" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?prostojHtml(o,prostojCz(o.prostojOd)):'<span class="dash">–</span>'}</span>
     <span class="tc tx">${esc(dateCz(o.created))}${o.authorName?`<small title="Vytvořil">${esc(pn(o.authorName))}</small>`:''}</span>
   </button>`;
 }
@@ -1203,7 +1253,7 @@ function colMenuHTML(){
     body=`<div class="cm-sep"></div>${tabs}
       <div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>
       ${onlyBtn}
-      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${o.color?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):`<div class="muted" style="padding:6px 8px;font-size:12px">${colOnly&&!sel.length?'Nic není vybráno.':'Nic nenalezeno.'}</div>`}</div>
+      <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${(o.color&&!o.html)?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${o.html||esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):`<div class="muted" style="padding:6px 8px;font-size:12px">${colOnly&&!sel.length?'Nic není vybráno.':'Nic nenalezeno.'}</div>`}</div>
       <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
   }
   return `<div class="colmenu" id="colmenu" tabindex="-1" role="dialog" aria-label="Filtr a řazení: ${esc(c.label)}">${sorts}${body}</div>`;

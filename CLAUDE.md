@@ -808,7 +808,7 @@ protože:
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
 - **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
-  `test-tabulka-filtry`, verze `v0.15.0`–`v0.16.0`, další přibývají)** — Martin to chtěl
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.17.0`, další přibývají)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
   **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
@@ -829,7 +829,7 @@ protože:
     příkazu PP-…), Porucha, **Stroj / linka**, Obor, Přiřazeno, Prostoj od,
     Vytvořeno. Ve sloupci Stroj / linka je nahoře STROJ tučně a pod ním linka
     netučně drobně (Martin to chtěl obráceně než na kartách); bez stroje je
-    jen linka tučně. Menu toho sloupce má DVĚ ZÁLOŽKY **Stroj | Linka**
+    jen linka tučně. (Šířky sloupců viz „Vzhled buněk" níž.) Menu toho sloupce má DVĚ ZÁLOŽKY **Stroj | Linka**
     (`COLS[].tabs`, stav `colTab`, akce `col-tab`): každá filtruje svou
     dimenzi (`filters.stroj` / `filters.linka`), mají vlastní hledání a počty,
     kombinují se (AND) a číslo na záložce ukazuje, kolik je v ní vybráno.
@@ -872,15 +872,44 @@ protože:
     Šířky v `--cols` počítají s tím odsazením — když přidáš sloupec nebo
     změníš text záhlaví, zkontroluj, že se `.hc-l` nezkracuje (`scrollWidth >
     clientWidth`). Buňky jsou zarovnané SHORA (`align-items:start`) a první
-    řádek každé buňky má 20 px (`line-height`, i odznaky), druhý drobný 16 px,
+    řádek každé buňky má 20 px (`line-height`), druhý drobný 16 px,
     takže první řádky všech sloupců leží na jedné čáře; vertikální centrování
-    buněk s různým počtem řádků tohle rozhazovalo. Odznaky `p-kritická`
-    a `nd-potreba` mají v tabulce tmavší růžové pozadí, jinak by na růžovém řádku
-    (EM + kritická) zmizely a jejich text by vypadal posunutý. Název poruchy
-    (`.tt`) je odsazený o 9 px (stejně jako padding odznaku), takže jeho text
-    sedí přesně nad textem „Potřeba objednat díl"/„Čeká na díl" u VŠECH řádků,
-    i když odznak chybí; záhlaví Porucha má stejné odsazení (`.hc[data-v="nazev"]`).
-    Změníš-li padding `.trow .badge`, změň i tohle.
+    buněk s různým počtem řádků tohle rozhazovalo. (Dřívější tmavší růžové
+    odznaky `p-kritická`/`nd-potreba` a odsazení názvu o 9 px kvůli paddingu
+    odznaku jsou od v0.17.0 pryč — v tabulce už žádné odznaky nejsou, viz
+    „Vzhled buněk" níž; `.trow .badge` pravidla neexistují.)
+  - **Vzhled buněk: text a barva, ne tabletky (v0.17.0, Martin: „dnes všechno
+    jsou tabletky = odstraň, splývá to")**. Jediná „tabletka" v tabulce je
+    štítek **EM** (`.emtag`, červený). Zbytek řeší barva a typografie:
+    `Stav` = barevná tečka + text (`stavHtml`, `STAV_BARVA`), `Typ` = CM šedý
+    obyčejný text / EM červený štítek (`typHtml`), `Priorita` = ikona 1–4
+    sloupečků + text barvy podle závažnosti, kritická tučně (`prioHtml`,
+    `PRIORITA_TEXT`, třídy `.k-vysoká`/`.k-kritická`), stav dílu = barevný
+    text s ikonou krabice pod názvem poruchy (`ndLineHtml`, `ND_BARVA`;
+    `ndInlineHtml` je stejné pro menu a štítky), `Přiřazeno` = jména v modré
+    `--accent` oddělená čárkou, **první TŘI jména, teprve pak „+N"**
+    (`trHTML`), nepřiřazeno = šedá kurzíva `.none`, `Prostoj od` = ikona
+    hodin + datum a čas (`prostojHtml`).
+    **Prostoj NENÍ oranžový** (Martin: „oranžové už tam je dost, ztrácí to
+    důležitost") — má vlastní barvu `--pj` (švestková `#a21caf`) a u hotového
+    příkazu je ztlumený do šedé (`.pj.off`). Oranžová zůstala jen pro stav
+    Rozpracováno. Prostoj se barví, dokud příkaz není hotový (ukládá se jen
+    začátek, žádný konec). Typografie: tučný je jen název poruchy
+    (`.tt`, 800), ostatní text 600/400, takže se řádek nemíchá do jedné
+    tučné hmoty. Název je odsazený o 16 px (`padding-left`) a záhlaví Porucha
+    o 23 px (`.hc[data-v="nazev"]`), aby text seděl pod nadpisem; změníš-li
+    jedno, změň i druhé. Šířky v `--cols`: Stav 112, Typ 56, Priorita 96,
+    WO 92, Porucha `minmax(190px,2fr)`, Stroj/linka `minmax(128px,1fr)`,
+    Obor 88, Přiřazeno `minmax(130px,1fr)`, Prostoj 110, Vytvořeno 108;
+    `.tbl{min-width:1130px}`.
+    **Stejné barvy a ikony jsou i ve filtrech**: `colOptions(dim)` vrací pro
+    typ/stav/nd/priorita/prostoj a `whoOptions()` pro Přiřazeno hotové `html`
+    (stejné pomocníky jako řádek), `colMenuHTML` ho vykreslí v `.fc-label` a
+    `chipHtml(dim,k)` totéž ve štítcích nad tabulkou (`sbarHTML`). Vybraná
+    položka v menu má JEMNÉ podbarvení (`#eceefb`, tmavě modrý text), ne plnou
+    navy jako dřív — na tmavém pozadí by barevné ikony a písmo zmizely.
+    Kdykoli přidáš nový sloupec s barevnou hodnotou, přidej pomocníka a použij
+    ho na obou místech (řádek + menu), ať se barvy nerozejdou.
   - **Pevný horní blok, rolují jen řádky (Martin):** od 861 px šířky a 560 px
     výšky se stránka sama nescrolluje. `#app` je flex sloupec o výšce okna
     (`100dvh`, `overflow:hidden`), `#main-host` → `main` → `.board2` → `.listcard2`
@@ -898,8 +927,8 @@ protože:
     seznam zkrátí, posun se logicky zkrátí taky. Menu sloupce je `fixed` a
     drží se u záhlaví, které se při svislém posunu nehýbe.
   - **Havarijka (EM) v tabulce NEMÁ červený obrys** (Martin: žádné EM nebude
-    mít obrys) — zůstává jen lehce červené pozadí u EM + kritická
-    (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
+    mít obrys) — zůstává červený štítek EM ve sloupci Typ, lehce červené
+    pozadí u EM + kritická (`.trow.em.crit`) a barevný pruh vlevo podle stavu. Karty na mobilu
     (`.order-item.em`) obrys mají dál, beze změny.
   - **Menu sloupce** (`colOpen`, `colMenuHTML()`): řazení + zaškrtávátka
     s počty (stejné `.filter-check` a `data-flt` jako starý levý panel, takže
