@@ -782,13 +782,18 @@ protože:
     až po neúspěšném „Založit"/„Uložit změny" (`errs.klíč`), teď jen
     dělají jinou věc než hvězdička: hvězdička = „tohle je povinné",
     červená = „tohle konkrétně teď chybí".
-- **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05, větev
-  `test-tabulka-filtry`, `VERSION` = `0.15.0-test`)** — Martin to chtěl
+- **ZKUŠEBNÍ rozložení: tabulka s filtry ve sloupcích (2026-10-05/06, větev
+  `test-tabulka-filtry`, verze `v0.15.0`–`v0.15.6`)** — Martin to chtěl
   „vzít jako test, možná se budeme vracet k dnešnímu rozložení". **Není
   v `main`**: návrat = `git checkout main` (stav v0.14.1, tag `v0.14.1`).
-  Až to Martin potvrdí: sloučit do `main`, `VERSION` na `0.15.0`, release,
-  doplnit `docs/pro-davida.md`. Náhled, který se schvaloval, byl artefakt
-  „Filtry ve sloupcích".
+  **Verzování i tady platí jako všude** (Martin mě za vynechání napomenul):
+  každá potvrzená změna = nový `VERSION` BEZ přípony „-test", tag a GitHub
+  Release. Releasy z větve se dělají s `--latest=false`, ať „Latest" zůstane
+  na `v0.14.1` z `main`. Verze `v0.15.0`–`v0.15.5` jsou doplněné zpětně na
+  původní commity (soubor `VERSION` v nich ještě ukazuje `0.15.0-test`),
+  `v0.15.6` je první s opraveným `VERSION`. Až to Martin potvrdí: sloučit do
+  `main`, doplnit `docs/pro-davida.md`. Náhled, který se schvaloval, byl
+  artefakt „Filtry ve sloupcích".
   - **Platí od 861 px šířky.** Pod tím je dnešní rozložení beze změny
     (karty + levý panel filtrů). `listView()` vykresluje OBĚ větve naráz:
     `.board2` (nová, na mobilu `display:none`) a `.board.old-only`
