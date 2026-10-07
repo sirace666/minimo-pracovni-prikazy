@@ -1060,6 +1060,31 @@ protože:
     zastavuje CSS animace, takže případné šířky měř s `transition:none`.
   - Vodorovný posun tabulky (`.tscroller`) se při překreslení zachovává
     v `renderShell()`, stejně jako scroll okna příkazu.
+- **VZHLED 1d „Karty · kompaktní" (2026-10-07, v0.18.0, větev `vzhled-zkouska-1`)** — Martin dodal
+  zip z Claude Design (`Udrzba Redesign.dc.html` + `support.js`, tři varianty 1a/1b/1d) a vybral **1d**, jen vzhled
+  stránky Údržba na počítači (od 861 px); portál/hlavička, okna příkazu, filtry i data BEZE ZMĚNY. Základ
+  (v0.17.6) je záloha ve větvi `zakladni-vzhled` a tagu `zakladni-vzhled-v0.17.6`. **Tento bod NAHRAZUJE vzhledové popisy
+  v bodě „ZKUŠEBNÍ rozložení: tabulka…" výš** („Vzhled buněk: text a barva, ne tabletky", „Hotové příkazy, záhlaví
+  a pruh nad ním", barvy záhlaví a pruhu `.sbar`, krémová, navy barvy) — tamní *funkce* (filtry, řazení, menu sloupců,
+  Skrýt hotové, oblíbené, pevný horní blok) platí dál. Co je teď jinak:
+  - **Řádky tabulky** (`trHTML`) používají třídy `r2-*` (`r2Stav/r2Typ/r2Prio/r2Part/r2Who`): stav = kolečko (nový dutý) +
+    tučný text, typ = mono štítek (EM červený), priorita = tónovaný štítek s 4 proužky, WO mono + číslo PP pod ním
+    („bez WO"), stroj mono štítek + „Linka X" pod ním, obor jako obrysové štítky, přiřazení = avatary s iniciálami
+    (max 3, barva podle `hueOf(jméno)`) + jména / „+ Přiřadit", prostoj fialový štítek s hodinami (`--pj`; u hotového šedý),
+    vytvořeno „dnes/včera/před N dny" (`relDays`) + autor. **Menu filtrů a štítky dál používají staré pomocníky**
+    (`stavHtml/typHtml/prioHtml/ndInlineHtml/prostojHtml`) — nemíchat. Řádek je samostatná karta (border, radius 10,
+    mezera 5 px); hotové `opacity:.6`; EM má růžové pozadí a červený okraj VŽDY (ne jen s kritickou).
+  - **Záhlaví** `.thd` = šedý `#e9e7e1` pruh radius 9 (sticky; `box-shadow` v barvě pozadí zakrývá mezeru, ať v ní řádky při
+    posunu neprosvítají), zapnutý filtr = text `#b8480f`. Akcentová barva v `.board2` a `.colmenu` je přepsaná na
+    `#b8480f` (oranžovohnědá z návrhu); pozadí stránky `#f3f2ee`; písmo Figtree + JetBrains Mono (Google Fonts) jen v
+    `.pagehead/.board2/.colmenu/.favpanel`, okna příkazu zůstala Nunito. Karta `.listcard2` je průhledná.
+  - **Dlaždice nahoře** mají markup `.vt-icon` (SVG) + `.vt-body`; Náhradní díl ukazuje „N požadováno / N objednáno / N přišlo"
+    (`.vt-nds`, popisky `.vt-sub` jen na počítači). Logika pohledů, `filters.view` i rozbalovací panel beze změny.
+  - **Hledání je na počítači vždy vidět** (`.search-wrap.d-only`, lupa `.m-only` na mobilu); klik mimo ho na počítači
+    NEzavírá ani nemaže (listener kontroluje `matchMedia('(min-width:861px)')`).
+  - **Zkoušení bez přihlášení:** kopie stránky s falešným `stub.js` místo Firebase leží v `%TEMP%\minimo-test2` (server na
+    8092, skript Playwright přes Chrome). Pole přiřazených jmen se jmenuje `assignedToNames` (množné číslo!).
+  - Návrh obsahuje i stav „Pozastaveno" a typ PM — v datech Údržby NEJSOU, nepřidáno.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

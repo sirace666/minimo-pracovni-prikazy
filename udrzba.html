@@ -7,7 +7,7 @@
 <title>Údržba — YFAI minimo</title>
 <link rel="stylesheet" href="header.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* Barvy hlavičky/tlačítek = Davidovy (navy minimo). Karty, okno příkazu
      a barvy stavů = styl appky Pracovní příkazy. Rozvržení stránky Údržby
@@ -569,6 +569,142 @@
   .cm-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 6px 2px;border-top:1px solid var(--border);margin-top:6px}
   .cm-link{border:0;background:none;padding:4px 6px;color:var(--accent);font-weight:800;font-size:12.5px;text-decoration:underline}
   .cm-done{border:0;background:var(--accent);color:#fff;font-weight:800;font-size:12.5px;padding:6px 14px;border-radius:8px}
+
+  /* ===== VZHLED 1d „Karty · kompaktní" (Claude Design, 2026-10) — jen stránka Údržba na počítači =====
+     Funkce, filtry a data beze změny. Pod 861 px zůstává dnešní mobilní vzhled. Hodnoty (barvy, rozměry, písmo)
+     jsou převzaté z návrhu `Udrzba Redesign.dc.html`, varianta 1d (paleta „b": teplá béžová, akcent #b8480f). */
+  .vt-icon svg{width:13px;height:13px}
+  .vt-body{display:flex;align-items:center;gap:6px}
+  .vt-nds{display:flex;align-items:center;gap:6px}
+  .vt-nd{display:flex;align-items:center}
+  .vt-sub{display:none}
+  .d-only{display:none}
+  @media(min-width:861px){
+    .m-only{display:none!important}
+    .d-only{display:flex}
+    body{background:#f3f2ee}
+    .pagehead,.board2,.colmenu,.favpanel{font-family:'Figtree','Segoe UI',sans-serif}
+    .board2,.colmenu{--accent:#b8480f;--accent-dark:#8f3a0c;--text:#1c1b17}
+    /* hlavička stránky */
+    .pagehead{align-items:center;gap:16px;margin-bottom:12px;color:#1c1b17}
+    .pagehead h1{height:auto;font-size:26px;font-weight:800;letter-spacing:-.025em;gap:16px}
+    .page-version{font:500 12px 'JetBrains Mono',monospace;color:#6f6b60;border:1px solid #dcd8ce;padding:3px 8px;border-radius:999px;letter-spacing:0}
+    .pagehead-row2{align-items:center;gap:16px;margin-left:12px}
+    .viewtiles{gap:10px;flex-wrap:nowrap;background:transparent;border:0;box-shadow:none;padding:0;border-radius:0}
+    .viewtiles .vt-sep{display:none}
+    .viewtile{height:auto;min-width:128px;padding:5px 12px 5px 5px;gap:10px;border-radius:16px;border:1px solid #e8e5de;
+      background:#fff;color:#1c1b17;font-weight:600;text-align:left}
+    .viewtile:hover:not(.on){background:#faf9f6}
+    .viewtile.on{background:#fbf3ec;border-color:#e9c9ae;color:#1c1b17}
+    .viewtile .vt-icon{width:32px;height:32px;border-radius:9px;background:#f1efe9;display:flex;align-items:center;justify-content:center;flex:none;font-size:0}
+    .viewtile.on .vt-icon{background:#f6e3d3}
+    .viewtile .vt-icon svg{width:16px;height:16px}
+    .vt-body{flex-direction:column;align-items:flex-start;gap:0}
+    .viewtile .vt-label{font-size:12px;font-weight:600}
+    .viewtile .vt-count,.viewtile.on .vt-count{min-width:0;height:auto;padding:0;border-radius:0;background:none;color:inherit;
+      font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.1;display:inline-block}
+    .viewtile .vt-count.count-danger{background:none;color:#c0311f}
+    .viewtile .vt-count.count-ok{background:none;color:#1d7a44}
+    .vt-nd:nth-child(2) .vt-count:not(.count-danger):not(.count-ok){color:#9a5808}
+    .vt-nds{gap:16px;align-items:baseline}
+    .vt-nd{align-items:baseline;gap:5px}
+    .vt-sub{display:inline;font-size:12.5px;font-weight:500}
+    .nd-tile-wrap .viewtile{min-width:240px;padding-right:14px}
+    /* hledání (pořád vidět), nový příkaz */
+    .head-actions{gap:12px}
+    .search-wrap{height:38px;width:270px;background:#fff;border:1px solid #e3e0d8;border-radius:999px;padding:0 16px;box-shadow:none;color:#6f6b60;gap:8px}
+    .search-wrap .search{font:500 14.5px 'Figtree',sans-serif;color:#1c1b17}
+    .search-wrap .search-close{display:none}
+    .head-actions .btn-newprikaz{background:#e8590c;border-radius:999px;height:38px;padding:0 18px 0 14px;font:700 15px 'Figtree',sans-serif;gap:8px}
+    .head-actions .btn-newprikaz:hover{background:#d04c05}
+    /* panel oblíbených */
+    .fp-strip,.fp-full{border:1px solid #e8e5de;border-radius:14px}
+    .board2.fp-eye .fp-eyebtn{background:#f4f1ea;color:#1c1b17}
+    .fp-item.on{background:#f4f1ea;border-color:#e8e5de;color:#1c1b17}
+    .fp-dotbtn.on i{box-shadow:0 0 0 2px #fff,0 0 0 4px #1c1b17}
+    /* seznam: bez bílé karty, řádky jsou samostatné karty */
+    .listcard2{background:transparent;border:0;box-shadow:none;border-radius:0;overflow:visible}
+    .tscroller{padding-bottom:6px}
+    .sbar,.sbar.filtered{background:transparent;border:0;padding:0 4px;min-height:28px;margin-bottom:5px;font-size:15px;font-weight:400;color:#58554b}
+    .sbar .sb-ico{display:none}
+    .sbar .sb-count b{color:#1c1b17;font-weight:700}
+    .sbar .sb-nof{color:#8b8778;font-weight:400}
+    .fchip,.sbar.filtered .fchip{background:#fff;border:1px solid #e3e0d8;color:#1c1b17;font-size:13px;font-weight:600;padding:5px 5px 5px 12px}
+    .fchip:hover,.sbar.filtered .fchip:hover{background:#faf9f6}
+    .fchip>span[aria-hidden="true"]{width:20px;height:20px;background:#f1efe9;color:#58554b}
+    .sb-clear{border:0;background:transparent;color:#6f6b60;font-size:13px;font-weight:600;text-decoration:underline;padding:0}
+    .sb-clear:hover{background:transparent}
+    .sb-switch{font-size:14.5px;font-weight:600;color:#1c1b17;gap:10px;padding:0}
+    .sb-switch .tr{width:40px;height:24px;background:#d4d0c6}
+    .sb-switch .tr::after{top:3px;left:3px;width:18px;height:18px}
+    .sb-switch[aria-checked="true"] .tr{background:#e8590c}
+    .sb-switch[aria-checked="true"] .tr::after{left:19px}
+    .tbl{min-width:1300px;--cols:148px 50px 118px 112px minmax(0,2.4fr) 130px 150px minmax(0,1.5fr) 112px 120px}
+    .thd,.trow{column-gap:14px;padding:0 17px}
+    .thd{background:#e9e7e1;border:0;border-radius:9px;height:34px;margin-bottom:5px;color:#6f6b60;box-shadow:0 5px 0 #f3f2ee}
+    .thd>div{padding:0}
+    .hc{width:calc(100% + 8px);margin-left:-8px;height:auto;padding:4px 8px;gap:6px;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.04em;color:#6f6b60}
+    .hc .hc-i{margin-left:0;color:inherit;font-size:11px}
+    .hc:hover,.hc.open{background:#dedbd3;color:#6f6b60}
+    .hc.on,.hc.sorted,.hc.on .hc-i,.hc.sorted .hc-i{background:transparent;color:#b8480f}
+    .hc.on:hover,.hc.on.open{background:#dedbd3}
+    .hc[data-v="nazev"]{padding-left:8px}
+    /* řádky */
+    .trow{align-items:center;padding:8px 16px;min-height:0;margin-bottom:5px;border:1px solid #e8e5de;border-radius:10px;background:#fff;
+      box-shadow:0 1px 2px rgba(30,28,20,.04);font-size:14px;color:#1c1b17;transition:box-shadow .15s}
+    .trow:last-child{border-bottom:1px solid #e8e5de}
+    .trow:hover{background:#fff;box-shadow:0 6px 18px rgba(30,28,20,.10)}
+    .trow.em,.trow.em.crit:not(.st-hotovo){background:oklch(0.975 0.02 25);border-color:oklch(0.82 0.09 25)}
+    .trow.em:hover{background:oklch(0.975 0.02 25)}
+    .trow.st-hotovo{opacity:.6}
+    .trow.st-hotovo:not(:hover){background:#fff;box-shadow:0 1px 2px rgba(30,28,20,.04)}
+    .trow.em.st-hotovo:not(:hover){background:oklch(0.975 0.02 25)}
+    .trow.st-hotovo:not(:hover) .tt{font-weight:700;color:inherit}
+    .tc{padding-left:0;gap:3px;line-height:normal;font-size:13px}
+    .tc .tt{padding-left:0;font-weight:700;font-size:14.5px;line-height:1.3;letter-spacing:-.01em;white-space:normal;overflow:visible;text-overflow:clip}
+    .dash{color:#c9c5ba}
+    .r2-st{display:flex;align-items:center;gap:10px}
+    .r2-st i{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--c);background:var(--c);box-sizing:border-box;flex:none}
+    .r2-st i.hollow{background:transparent}
+    .r2-st b{font-weight:700;font-size:14px}
+    .r2-typ{font:600 11.5px 'JetBrains Mono',monospace;padding:2px 6px;border-radius:5px;background:#f1efe9;color:#6f6b60}
+    .r2-typ.em{background:oklch(0.55 0.2 25);color:#fff}
+    .r2-pri{display:inline-flex;align-items:center;gap:7px;padding:3px 8px;border-radius:7px;font-weight:700;font-size:13px;color:var(--c);
+      background:color-mix(in srgb,var(--c) 11%,transparent)}
+    .r2-pri.low{color:#6f6b60;background:#f1efe9}
+    .r2-bars{display:flex;align-items:flex-end;gap:2px;height:12px}
+    .r2-bars i{width:3px;border-radius:1px;background:#e2dfd7}
+    .r2-bars i.on{background:var(--c)}
+    .r2-pri.low .r2-bars i.on{background:#6f6b60}
+    .r2-wo{font:600 13.5px 'JetBrains Mono',monospace;color:#1c1b17}
+    .r2-wo.none{color:#a29d8f}
+    .r2-pp{font:500 12px 'JetBrains Mono',monospace;color:#7c786b}
+    .r2-part{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--c);
+      background:color-mix(in srgb,var(--c) 11%,transparent);padding:1px 9px 1px 7px;border-radius:999px}
+    .r2-part svg{width:13px;height:13px;flex:none}
+    .r2-part svg *{fill:none;stroke:currentColor;stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
+    .r2-mono{font:600 12.5px 'JetBrains Mono',monospace;background:#f1efe9;padding:2px 7px;border-radius:6px;color:#1c1b17}
+    .r2-sub{font-size:12.5px;color:#6f6b60;padding-left:2px}
+    .r2-obs{display:flex;flex-wrap:wrap;gap:4px}
+    .r2-ob{font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid #e3e0d8;color:#58554b}
+    .r2-who{display:flex;align-items:center;gap:10px}
+    .r2-avs{display:flex;flex:none}
+    .r2-av{width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:oklch(0.9 0.06 var(--h));color:oklch(0.36 0.1 var(--h));
+      font:800 9.5px 'Figtree',sans-serif;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+    .r2-wn{font-size:13.5px;font-weight:600;line-height:1.3}
+    .r2-unas{display:inline-flex;align-items:center;border:1.5px dashed #cfcabd;color:#6f6b60;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:600}
+    .r2-pj{display:inline-flex;align-items:center;gap:5px;color:var(--pj);background:color-mix(in srgb,var(--pj) 11%,transparent);
+      padding:4px 8px;border-radius:8px;font:700 12.5px 'Figtree',sans-serif;white-space:nowrap}
+    .r2-pj.off{color:#6f6b60;background:#f1efe9}
+    .r2-pj svg{width:14px;height:14px;flex:none}
+    .r2-pj svg *{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .r2-rel{font-size:13.5px;font-weight:700;white-space:nowrap}
+    /* menu sloupce */
+    .colmenu{border:1px solid #e3e0d8;border-radius:16px;box-shadow:0 18px 44px rgba(30,28,20,.18)}
+    .cm-sort:hover{background:#f4f3ef}
+    .cm-sort.on,.cm-list .filter-check:has(input:checked){background:#fbf1ea;color:#b8480f}
+    .cm-list .filter-check:has(input:checked) .count{background:#f3e3d6;color:#8f3a0c}
+  }
 </style>
 </head>
 <body>
@@ -954,14 +1090,23 @@ function linkaPickerCore(mode){
    VIEWS dlaždic, co jsou jednovýběrové). Číslo na dlaždici je jen barevné
    (ne celá dlaždice) — červená když je co objednat, jinak zelená když
    něco dorazilo, jinak neutrální. ===== */
+const vtSvg=p=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const VT_IC_ALL=vtSvg('<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>');
+const VT_IC_UN=vtSvg('<circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.5 3-6 7-6s7 2.5 7 6M19 8v6M16 11h6"/>');
+const VT_IC_PART=vtSvg('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>');
+const VT_IC_MINE=vtSvg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>');
 function ndTileWrap(){
   const potreba=countNd('potreba'), objednano=countNd('objednano'), prisel=countNd('prisel');
   return `<div class="nd-tile-wrap">
     <button type="button" class="viewtile ${filters.view==='nd'?'on':''}" data-a="nd-tile-toggle">
-      <span class="vt-icon">📦</span><span class="vt-label">Náhradní díl</span>
-      <span class="vt-count${potreba?' count-danger':''}" title="Potřeba objednat">${potreba}</span>
-      <span class="vt-count" title="Čeká (objednáno)">${objednano}</span>
-      <span class="vt-count${prisel?' count-ok':''}" title="Díl přišel">${prisel}</span>
+      <span class="vt-icon">${VT_IC_PART}</span>
+      <span class="vt-body"><span class="vt-label">Náhradní díl</span>
+        <span class="vt-nds">
+          <span class="vt-nd" title="Potřeba objednat"><span class="vt-count${potreba?' count-danger':''}">${potreba}</span><span class="vt-sub">požadováno</span></span>
+          <span class="vt-nd" title="Čeká (objednáno)"><span class="vt-count">${objednano}</span><span class="vt-sub">objednáno</span></span>
+          <span class="vt-nd" title="Díl přišel"><span class="vt-count${prisel?' count-ok':''}">${prisel}</span><span class="vt-sub">přišlo</span></span>
+        </span>
+      </span>
     </button>
     ${ndOpen?`<div class="linka-panel" style="min-width:210px">
       <div class="checklist">
@@ -1243,7 +1388,7 @@ function sbarHTML(n){
   const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}><span class="tr"></span>Skrýt hotové</button>`;
   const funnel='<svg class="sb-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z"/></svg>';
   return {filtered:chips.length>0, html:`<div class="sb-l">${funnel}<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
-    +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit filtry</button>`:'<span class="sb-nof">· bez filtru</span>')+`</div>${sw}`};
+    +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit vše</button>`:'<span class="sb-nof">· bez filtru</span>')+`</div>${sw}`};
 }
 function theadHTML(){
   return COLS.map(c=>{
@@ -1268,22 +1413,43 @@ const prioHtml=p=>`<span class="pr k-${esc(p||'')}" style="--c:${PRIORITA_TEXT[p
 const ndLineHtml=k=>`<span class="dl" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;     // v řádku pod názvem poruchy (ikona visí vlevo)
 const ndInlineHtml=k=>`<span class="dli" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;   // v menu filtru
 const prostojHtml=(o,text)=>`<span class="pj ${o&&o.status==='hotovo'?'off':'on'}">${SVG_CLOCK}${esc(text)}</span>`;
+/* ===== buňky řádku tabulky ve vzhledu 1d (Claude Design) =====
+   Jen pro řádky tabulky; menu filtrů dál používá stavHtml/typHtml/prioHtml výš, ať se jim nic nemění. */
+const initials=n=>String(n||'').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const hueOf=n=>[...String(n)].reduce((a,c)=>a+c.charCodeAt(0)*7,0)%360;
+// „dnes / včera / před N dny" podle data vytvoření (o.created = RRRR-MM-DD…)
+function relDays(s){
+  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); if(!m) return '';
+  const n=Math.round((Date.UTC(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())-Date.UTC(+m[1],+m[2]-1,+m[3]))/864e5);
+  return n<=0?'dnes':n===1?'včera':`před ${n} dny`;
+}
+const r2Stav=o=>`<span class="r2-st"><i class="${o.status==='nový'?'hollow':''}" style="--c:${STAV_BARVA[o.status]||'#94a3b8'}"></i><b>${esc(statusLabel(o.status))}</b></span>`;
+const r2Typ=t=>`<span class="r2-typ${t==='EM'?' em':''}">${esc(t)}</span>`;
+const r2Prio=p=>{
+  const n=(PRIORITA_RANK[p]??1)+1, low=p==='nízká';
+  return `<span class="r2-pri${low?' low':''}" style="--c:${PRIORITA_TEXT[p]||'#4a5170'}"><span class="r2-bars">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}" style="height:${[4,6,9,12][i-1]}px"></i>`).join('')}</span>${esc(PRIORITA_LABEL[p]||p||'')}</span>`;
+};
+const r2Part=k=>`<span class="r2-part" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;
+function r2Who(names){
+  if(!names.length) return '<span class="r2-unas">+ Přiřadit</span>';
+  const av=names.slice(0,3).map((n,i)=>`<span class="r2-av" title="${esc(n)}" style="${i?'margin-left:-9px;':''}--h:${hueOf(n)}">${esc(initials(n))}</span>`).join('');
+  return `<span class="r2-who"><span class="r2-avs">${av}</span><span class="r2-wn">${esc(names.slice(0,3).join(', '))}${names.length>3?` +${names.length-3}`:''}</span></span>`;
+}
 function trHTML(o){
   const em=typOf(o)==='EM', crit=o.priorita==='kritická', names=assignedNames(o).map(pn);
-  const obory=oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label).filter(Boolean).join(', ');
-  // jména za sebou s čárkami; vidět jsou tři, teprve potom „+N"
-  const whoHtml=names.length?`<span class="who">${esc(names.slice(0,3).join(', '))}${names.length>3?`<span class="more">+${names.length-3}</span>`:''}</span>`:'<span class="none">nepřiřazeno</span>';
+  const obory=oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label).filter(Boolean);
+  const stroj=o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka ${esc(o.linka)}</span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>');
   return `<button type="button" class="trow st-${o.status}${em?' em':''}${em&&crit?' crit':''}" role="row" data-a="open" data-v="${o._id}">
-    <span class="tc">${stavHtml(o.status,statusLabel(o.status))}</span>
-    <span class="tc">${typHtml(typOf(o))}</span>
-    <span class="tc">${prioHtml(o.priorita)}</span>
-    <span class="tc">${o.wo?`<b>${esc(o.wo)}</b>`:'<span class="dash">–</span>'}<small>${esc(o.cislo||'')}</small></span>
-    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?ndLineHtml(o.nd):''}</span>
-    <span class="tc">${o.stroj?`<b>${esc(o.stroj)}</b><small>${esc(o.linka||'')}</small>`:(o.linka?`<b>${esc(o.linka)}</b>`:'<span class="dash">bez linky</span>')}</span>
-    <span class="tc tx">${obory?esc(obory):'<span class="dash">–</span>'}</span>
-    <span class="tc tx" title="${esc(names.join(', '))}">${whoHtml}</span>
-    <span class="tc tx" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?prostojHtml(o,prostojCz(o.prostojOd)):'<span class="dash">–</span>'}</span>
-    <span class="tc tx">${esc(dateCz(o.created))}${o.authorName?`<small title="Vytvořil">${esc(pn(o.authorName))}</small>`:''}</span>
+    <span class="tc">${r2Stav(o)}</span>
+    <span class="tc">${r2Typ(typOf(o))}</span>
+    <span class="tc">${r2Prio(o.priorita)}</span>
+    <span class="tc">${o.wo?`<span class="r2-wo">${esc(o.wo)}</span>`:'<span class="r2-wo none">bez WO</span>'}<span class="r2-pp">${esc(o.cislo||'')}</span></span>
+    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?r2Part(o.nd):''}</span>
+    <span class="tc">${stroj}</span>
+    <span class="tc"><span class="r2-obs">${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
+    <span class="tc" title="${esc(names.join(', '))}">${r2Who(names)}</span>
+    <span class="tc" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${esc(prostojCz(o.prostojOd))}</span>`:'<span class="dash">—</span>'}</span>
+    <span class="tc" title="${esc(dateCz(o.created))}"><span class="r2-rel">${esc(relDays(o.created)||dateCz(o.created))}</span>${o.authorName?`<span class="r2-sub" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
 }
 function colMenuHTML(){
@@ -1380,27 +1546,28 @@ function listView(){
     <div class="pagehead-row2">
       <div class="viewtiles">
         <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
-          <span class="vt-icon">📋</span><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span>
+          <span class="vt-icon">${VT_IC_ALL}</span><span class="vt-body"><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span></span>
         </button>
         <span class="vt-sep"></span>
         <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
-          <span class="vt-icon">📥</span><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span>${unassignedHasEmCrit()?'<span class="vt-warn">!</span>':''}
+          <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}${unassignedHasEmCrit()?'<span class="vt-warn">!</span>':''}</span></span>
         </button>
         <span class="vt-sep"></span>
         ${ndTileWrap()}
         <span class="vt-sep"></span>
         <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
-          <span class="vt-icon">👤</span><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span>
+          <span class="vt-icon">${VT_IC_MINE}</span><span class="vt-body"><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span></span>
         </button>
       </div>
       <div class="head-actions">
         ${searchIsOpen?`
           <div class="search-wrap">
             <span class="search-icon">⌕</span>
-            <input class="search" id="f-q" placeholder="Hledat příkaz, stroj, číslo…" value="${esc(filters.q)}">
+            <input class="search" id="f-q" placeholder="Hledat příkaz, stroj nebo osobu…" value="${esc(filters.q)}">
             <button type="button" class="search-close" data-a="search-close">✕</button>
           </div>
-        `:`<button type="button" class="icon-btn" data-a="search-open" title="Hledat">⌕</button>`}
+        `:`<button type="button" class="icon-btn m-only" data-a="search-open" title="Hledat">⌕</button>
+          <div class="search-wrap d-only"><span class="search-icon">⌕</span><input class="search" id="f-q" placeholder="Hledat příkaz, stroj nebo osobu…" value=""></div>`}
         <div class="sortbox old-only">
           <select id="f-sortkey">${SORT_OPTS.map(s=>`<option value="${s.k}" ${sortKey===s.k?'selected':''}>Řadit: ${esc(s.label)}</option>`).join('')}</select>
           <button type="button" class="sort-dir" id="f-sortdir" title="${sortDir==='asc'?'Vzestupně':'Sestupně'}">${sortDir==='asc'?'↑':'↓'}</button>
@@ -1883,7 +2050,8 @@ document.addEventListener('click', e=>{
   if(favLinkaOpen && !e.target.closest('.fav-linka-wrap')){ favLinkaOpen=false; favLinkaQuery=''; render(); }
   if(ndOpen && !e.target.closest('.nd-tile-wrap')){ ndOpen=false; render(); }
   if(favOpen && !e.target.closest('.fav-wrap')){ favOpen=false; render(); }
-  if((searchOpen||filters.q) && !e.target.closest('.search-wrap')){ searchOpen=false; filters.q=''; render(); }
+  // na počítači je hledání vidět pořád (vzhled 1d), takže ho klik mimo nezavírá ani nemaže
+  if((searchOpen||filters.q) && !e.target.closest('.search-wrap') && !window.matchMedia('(min-width:861px)').matches){ searchOpen=false; filters.q=''; render(); }
   if(colOpen && !e.target.closest('.colmenu') && !e.target.closest('.hc')){ colOpen=null; render(); }
 });
 // menu sloupce: Esc ho zavře (a vrátí fokus na záhlaví), při posunu stránky/změně velikosti se přemístí k záhlaví
