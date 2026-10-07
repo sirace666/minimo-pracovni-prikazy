@@ -1558,7 +1558,9 @@ a objektem `me`: naše `photoURL/firstName/lastName` + Davidovo `positions`
 (jinak by avatary zakázalo). `firestore.rules` = naše `isAdmin()` s `level` + Davidovy
 `myPositions()/isEngineer()/canEng()`. Po sloučení je nutné pravidla nasadit na
 TESTOVACÍ projekt (`firebase deploy --only firestore:rules`, zvlášť `--only storage`) —
-ověřit jde bez nasazení `--dry-run`. Do Davidova ostrého projektu se nesahá.
+ověřit jde bez nasazení `--dry-run`. **Pravidla verze 0.18.1 jsou na testovacím projektu nasazená
+(2026-10-07, firestore i storage zvlášť).** Po každé další změně `firestore.rules`/`storage.rules`
+je nutné je nasadit znovu. Do Davidova ostrého projektu se nesahá.
 Naše stránky `udrzba/profil/instalace` mají omezené menu (`modules:[…]`), takže
 `positions` hlavičce nepředávají a nic se tím nerozbíjí.
 
