@@ -1476,6 +1476,24 @@ protože:
   rozjezd Opravy/Engineering. Až appku schválí, přechod na obecný systém
   `users.modules.udrzba` (read/write/none) je otevřená otázka, ne hotová věc.
 
+## Větve a zálohy vzhledu (stav 2026-10-07) — PŘEČTI, než něco upravíš
+
+Martin chce mít „Základní vzhled" jako zálohu a zkoušet jiné vzhledy. Proto:
+- **`main`** (0.14.1) — stabilní, odtud se vystavuje web (GitHub Pages), je „Latest" release.
+  Davidovy změny z 5. 10. 2026 v ní ZATÍM NEJSOU (Martin nerozhodl, zda je tam dát).
+- **`zakladni-vzhled`** + tag `zakladni-vzhled-v0.17.6` + Release „Základní vzhled" — **ZAMRZLÁ
+  záloha** tabulkového vzhledu v0.17.6. **DO NÍ SE NEZAPISUJE** (ani verze, ani opravy bez
+  výslovné žádosti). Návrat k ní: `git switch zakladni-vzhled` a spustit localhost na 8091.
+- **`test-tabulka-filtry`** — jen historie (v0.15.0–v0.17.6), nepokračovat.
+- **`vzhled-zkouska-1`** (0.18.x) — vzhled „1d Karty · kompaktní" + sloučený David; **tady se teď pracuje**.
+- `claude/eng-akcni-plan`, `claude/engineering-admin-emails` — starší Davidovy větve, které přišly
+  s forkem. Nesahat.
+- **Nová zkouška vzhledu = nová větev ze `zakladni-vzhled`**, ne úprava této. **Tagy jsou globální**,
+  proto má každá zkouška vlastní řadu verzí (zkouška 1 = 0.18.x, zkouška 2 = 0.19.x…), jinak by
+  se tagy srazily. Před každou úpravou ověř `git branch --show-current` (nikdy ne `zakladni-vzhled`).
+- Vysvětlení pro Martina (nevývojáře): **větev se posouvá s každým novým commitem, tag je
+  záložka na jednom commitu a nehýbe se**; release je popisek k tagu.
+
 ## Git remotes — DŮLEŽITÉ než začneš cokoliv upravovat
 
 ```
@@ -1487,6 +1505,14 @@ David appku dál vyvíjí (má i svoje Claude Code sezení napojené přes GitHu
 **Před jakoukoli novou prací nejdřív `git fetch upstream` a srovnej `main`**
 s jeho aktuálním stavem, ať se nepracuje na zastaralém kódu a pozdější PR
 je malý a čistý.
+
+**Kontrola Davida se dělá pravidelně a sama se NEDĚJE (fork se neaktualizuje):**
+při PRVNÍ odpovědi v každém novém chatu a při první zprávě po upozornění, že se změnilo datum
+(i v dlouhém chatu, který Martin vede týdny), spusť `git fetch upstream` a
+`git rev-list --left-right --count upstream/main...<aktuální větev>` (první číslo = kolik
+změn má David navíc) a Martinovi česky jednou větou řekni „David má N nových změn" (a co jsou
+zač) nebo „nic nového". **Nic nesluč bez jeho souhlasu.** Navíc běží týdenní naplánovaná úloha
+`kontrola-davida-tydne` (pondělí ~8:30, jen oznámí; běží, jen když je aplikace Claude otevřená).
 
 **Stav srovnání s Davidem (2026-10-07):** jeho `upstream/main` (26 nových změn:
 Engineering — import prostojů z G463, import akčního plánu, pareto, problem
