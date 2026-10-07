@@ -79,10 +79,15 @@
       if(OPRAVY_OWNERS.indexOf(who)<0) return '';
       return '<a class="'+(o.cur==='opravy'?'cur':'')+'" href="opravy.html">🛠️ Externí opravy</a>';
     }
-    // Engineering zatím také jen pro správce (stejný seznam e-mailů)
+    // Engineering vidí správci (podle e-mailu) a lidé s pozicí PE nebo PE coordinator.
+    // Pozice se předávají v o.positions — stejný seznam je i v pravidlech Firestore.
+    var ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
     function engineeringLink(){
       var who = String(o.email||o.user||'').trim().toLowerCase();
-      if(OPRAVY_OWNERS.indexOf(who)<0) return '';
+      var pos = o.positions || [];
+      var ok = OPRAVY_OWNERS.indexOf(who)>=0;
+      for(var i=0;i<pos.length && !ok;i++) if(ENG_POSITIONS.indexOf(String(pos[i]).trim())>=0) ok=true;
+      if(!ok) return '';
       return '<a class="'+(o.cur==='engineering'?'cur':'')+'" href="engineering.html">🏭 Engineering</a>';
     }
     // Údržba — pilotní modul, zatím jen pro vybrané e-maily (TODO: rozšířit

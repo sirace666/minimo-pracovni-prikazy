@@ -143,13 +143,13 @@ const MODULES = [
   {ico:'🛒', nm:'Nákupní požadavky', ds:'Evidence a schvalování nákupních požadavků ve výrobě.', href:'nakup.html', active:true, key:'nakup'},
   {ico:'🗓️', nm:'Plánování směn a přítomnosti', ds:'Dovolené, nepřítomnosti a plánování směn po sekcích.', href:'dovolenky.html', active:true, key:'plan'},
   {ico:'🛠️', nm:'Externí opravy',    ds:'Požadavky na opravu dílů externí firmou.', href:'opravy.html', active:true, key:'opravy', ownerOnly:true},
-  {ico:'🏭', nm:'Engineering',       ds:'Prostoje na linkách, KPI a import reportu ze Symesticu.', href:'engineering.html', active:true, key:'engineering', ownerOnly:true},
+  {ico:'🏭', nm:'Engineering',       ds:'Prostoje na linkách, KPI a import reportu ze Symesticu.', href:'engineering.html', active:true, key:'engineering', engOnly:true},
   {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů.', href:'udrzba.html', active:true, key:'udrzba', ownerOnly:true},
   {ico:'⚠️', nm:'Reklamace',         ds:'Evidence reklamací a neshod kvality. Připravujeme.', active:false},
   {ico:'⚙️', nm:'Nastavení',         ds:'Správa uživatelů, práv a modulů.', href:'nastaveni.html', active:true, key:'nastaveni'},
 ];
 
-let me=null, myLevel='basic', myModules={}, loginBusy=false, loginErr='';
+let me=null, myLevel='basic', myModules={}, myPositions=[], loginBusy=false, loginErr='';
 const appEl=document.getElementById('app');
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -160,6 +160,7 @@ onAuthStateChanged(auth, async (user)=>{
   me={email:user.email, photoURL:(d&&d.photoURL)||'', firstName:(d&&d.firstName)||'', lastName:(d&&d.lastName)||''};
   myLevel=levelOf(d);
   myModules=(d && d.modules) || {};
+  myPositions=(d && d.positions) || [];
   render();
 });
 
@@ -185,8 +186,15 @@ function loginView(){
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
   'admin.test@minimo.local','technik.test@minimo.local'];
 const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
+/* Engineering vidí správci a lidé s pozicí PE nebo PE coordinator.
+   Stejný seznam je v header.js, engineering.html i v pravidlech Firestore. */
+const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
+const isEngPerson = () => isOpravyOwner()
+  || (myPositions||[]).some(p=>ENG_POSITIONS.includes(String(p).trim()));
 function appView(){
-  const tiles = MODULES.filter(m=> m.ownerOnly ? isOpravyOwner() : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active
+  const tiles = MODULES.filter(m=> m.engOnly ? isEngPerson()
+    : m.ownerOnly ? isOpravyOwner()
+    : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active
     ? `<a class="tile active" href="${m.href}">
          <span class="ico">${m.ico}</span>
          <span class="nm">${esc(m.nm)}</span>
@@ -200,7 +208,7 @@ function appView(){
          <span class="badge">Připravujeme</span>
        </div>`).join('');
   const LEVEL_LABEL={basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel)}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel),positions:myPositions}) : '';
   return `${uh}
   <main>
     <div class="intro"><h2>Vyberte aplikaci</h2><p>Přihlášení platí pro všechny moduly současně.</p></div>

@@ -21,6 +21,8 @@
   .btn-ghost{background:#fff;border:1px solid var(--line);color:#41506b}
   .btn-ok{background:var(--green);color:#fff}
   .btn-teal{background:var(--teal);color:#fff;font-weight:700}
+  .btn-del{background:#fff;border:1px solid #e3b7b1;color:var(--red);font-weight:600}
+  .btn-del:hover{background:var(--red);border-color:var(--red);color:#fff}
   .muted{color:var(--muted)}
   .num{text-align:right;font-variant-numeric:tabular-nums}
 
@@ -32,16 +34,85 @@
   .panel .body{padding:13px}
   .empty{padding:26px;text-align:center;color:var(--muted)}
 
-  .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-  .tab{background:#eef1f5;color:#41506b;border:1px solid var(--line);font-weight:600;padding:8px 14px}
-  .tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
-  a.tab{display:inline-block;font-size:12px;line-height:normal;border-radius:var(--radius);text-decoration:none}
-  a.tab:hover{background:#e2e8f0}
+  .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  /* Hlavní menu modulu — velká, zřetelná tlačítka, ať je vidět, kam se kliká. */
+  .tab{background:#fff;color:var(--navy-1);border:1.5px solid #c8d6e8;border-radius:9px;
+    font-size:14px;font-weight:700;padding:11px 20px;letter-spacing:.1px;
+    box-shadow:0 1px 2px rgba(15,47,95,.06);transition:background .12s,border-color .12s,color .12s,transform .12s}
+  .tab:hover{background:var(--teal-bg);border-color:var(--teal);color:var(--teal-dark);transform:translateY(-1px)}
+  .tab.on{background:var(--teal);color:#fff;border-color:var(--teal-dark);
+    box-shadow:0 2px 6px rgba(13,115,119,.35);transform:none}
+  a.tab{display:inline-block;line-height:normal;text-decoration:none}
+  /* Import stojí stranou vpravo — není to součást menu, je to nástroj. */
+  .tab-imp{background:var(--navy-2);color:#fff;border-color:var(--navy-1)}
+  .tab-imp:hover{background:var(--navy-1);border-color:var(--navy-1);color:#fff}
+  .tab-imp.on{background:var(--navy-1);border-color:var(--navy-1);box-shadow:0 2px 6px rgba(15,47,95,.35)}
   .tabs .sp{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .rangebtn{background:#fff;border:1px solid var(--line);color:#41506b;font-size:11.5px;padding:6px 11px}
   .rangebtn.on{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
 
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-bottom:14px}
+
+  /* ===== velké dlaždice procesů na hlavní stránce ===== */
+  .ptilebar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .ptiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+  @media(max-width:1180px){.ptiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:760px){.ptiles{grid-template-columns:1fr}}
+  .ptile{font-family:Arial,"Helvetica Neue",Helvetica,"Segoe UI",sans-serif;
+    display:flex;flex-direction:column;text-align:left;padding:0;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;font:inherit;color:var(--text);
+    box-shadow:0 1px 3px rgba(15,47,95,.07);transition:box-shadow .14s,transform .14s,border-color .14s}
+  .ptile:hover{box-shadow:0 8px 22px rgba(15,47,95,.16);transform:translateY(-2px);border-color:#b9cbe6}
+  .ptile.alarm{border-color:#e3b7b1}
+  .ptile .ph{display:flex;align-items:center;gap:11px;padding:14px 17px;
+    background:var(--pc);color:#fff}
+  .ptile .ph .ic{font-size:22px;line-height:1}
+  .ptile .ph .nm{font-size:18px;font-weight:700;letter-spacing:.2px}
+  .ptile .ph .perf{margin-left:auto;font-size:14px;font-weight:700;background:rgba(255,255,255,.22);
+    border-radius:20px;padding:4px 12px}
+  .ptile .ph .perf.bad{background:#fff;color:var(--red)}
+  .pbody{padding:15px 17px;display:flex;flex-direction:column;gap:13px;flex:1}
+  .pmain .big{font-size:38px;font-weight:700;line-height:1;color:var(--navy-1)}
+  .pmain .big small{font-size:16px;font-weight:700;color:#5a6b80;margin-left:4px}
+  .pmain .cap{font-size:12.5px;font-weight:700;letter-spacing:.2px;color:#41506b;margin-top:6px}
+  .pmain .sub{font-size:13px;color:#41506b;margin-top:5px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .prow{border-top:1px dotted var(--line);border-bottom:1px dotted var(--line);padding:8px 0;
+    display:flex;flex-direction:column;gap:5px}
+  .prow>div{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .prow .v{flex:none;min-width:62px}
+  .prow .v{font-size:20px;font-weight:700}
+  .prow .l{font-size:13.5px;color:#41506b}
+  .spark{margin:2px 0}
+  .spark svg{width:100%;height:60px;display:block}
+  .sparkx{display:grid;margin-top:5px;border-top:1px solid var(--line);padding-top:5px}
+  .sparkx span{text-align:center;font-size:12px;color:#5a6b80;white-space:nowrap;overflow:hidden}
+  .sparkx span.now{color:#16233a;font-weight:700}
+  .spark.empty{font-size:13px;color:#41506b;padding:18px 0;text-align:center;
+    border:1px dashed var(--line);border-radius:8px}
+  .sparkcap{font-size:12px;color:#41506b;margin-top:4px}
+  .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pgrid>div{background:#f6f8fa;border:1px solid var(--line);border-radius:8px;padding:8px 9px;min-width:0}
+  .pgrid>div.bad{background:#fdecea;border-color:#f0c8c2}
+  .pgrid .v{display:block;font-size:26px;font-weight:700;line-height:1.1}
+  .pgrid>div.bad .v{color:var(--red)}
+  .pgrid .l{display:block;font-size:12.5px;color:#41506b;margin-top:4px;line-height:1.4}
+  .pfoot{display:flex;flex-direction:column;gap:5px;font-size:13px;color:#2b3a52;line-height:1.45}
+  .pgo{background:#f2f6fb;border-top:1px solid var(--line);padding:11px 17px;font-size:13.5px;
+    font-weight:700;color:var(--teal-dark);text-align:right}
+  .ptile:hover .pgo{background:var(--teal-bg)}
+  .tarrow{font-size:12px;font-weight:700;border-radius:20px;padding:3px 9px;white-space:nowrap}
+  .tarrow.up{background:#fdecea;color:var(--red)}
+  .tarrow.down{background:#e8f6ee;color:var(--green)}
+  .tarrow.flat{background:#eef1f5;color:var(--muted)}
+  /* podzáložky procesů v KPI */
+  .subtabs{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+  .stab{background:#fff;border:1px solid var(--line);color:#41506b;font-weight:700;font-size:12.5px;
+    padding:8px 14px;border-radius:20px}
+  .stab:hover{border-color:var(--teal);color:var(--teal-dark)}
+  .stab.on{background:var(--navy-2);border-color:var(--navy-1);color:#fff}
+  @media(max-width:680px){
+    .pmain .big{font-size:30px}
+  }
   .kcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--muted);border-radius:var(--radius);padding:11px 13px}
   .kcard .lbl{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);font-weight:700}
   .kcard .val{font-size:27px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
@@ -60,6 +131,47 @@
   .bar .tr{flex:1.5;height:14px;background:#eef1f5;border:1px solid var(--line);border-radius:4px;overflow:hidden}
   .bar .tr i{display:block;height:100%;border-radius:3px}
   .bar .vl{flex:none;width:120px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+  button.bar{width:100%;background:none;border:0;border-bottom:1px dotted var(--line);border-radius:0;
+    text-align:left;cursor:pointer;font:inherit;color:inherit;padding:6px 4px}
+  button.bar:hover{background:var(--teal-bg)}
+  button.bar .ar{flex:none;color:var(--teal-dark);font-weight:800;font-size:15px;width:12px;text-align:center;opacity:.35}
+  button.bar:hover .ar{opacity:1}
+  .drillhint{margin-top:9px;font-size:11.5px;color:var(--muted)}
+  /* ===== generovat pareto ===== */
+  .pargrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:14px}
+  .pickbtn{display:flex;align-items:center;gap:8px;justify-content:flex-start;width:100%;
+    padding:9px 11px;font-size:13px;font-weight:600;min-height:37px;text-align:left}
+  .pickbtn .ar{margin-left:auto;color:var(--muted)}
+  .pickbtn:hover{border-color:var(--teal);color:var(--teal-dark)}
+  .parper{display:flex;gap:6px;flex-wrap:wrap}
+  .parcustom{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px}
+  .parcustom label{display:flex;align-items:center;gap:6px;font-size:12px;color:#41506b}
+  .parcustom input{width:auto}
+  .parrun{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px dotted var(--line);padding-top:13px}
+  .parrun .btn-teal{font-size:14px;padding:11px 20px;border-radius:8px}
+  .parchart{overflow-x:auto}
+  .parchart svg{width:100%;min-width:640px;height:auto;display:block}
+  .pbar{cursor:pointer}
+  .pbar:hover rect{opacity:.78}
+  .pbar.on rect{stroke:#16233a;stroke-width:2}
+  .pickwrap{padding:14px 18px;max-height:56vh;overflow-y:auto}
+  .pickgrp{margin-bottom:14px}
+  .pickgrp .h{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);
+    border-bottom:2px solid var(--teal-bg);padding-bottom:5px;margin-bottom:8px}
+  .pickgrp .h button{margin-left:auto;padding:3px 9px;font-size:11px}
+  .chk{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:7px}
+  .chk label.check{background:#f6f8fa;border:1px solid var(--line);border-radius:7px;padding:8px 10px;white-space:normal}
+  .chk label.check:hover{border-color:var(--teal);background:var(--teal-bg)}
+  .gdot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+  @media(max-width:680px){ .pargrid{grid-template-columns:1fr} .chk{grid-template-columns:1fr} }
+  th.sortth{cursor:pointer;user-select:none;white-space:nowrap}
+  th.sortth:hover{background:#22497e}
+  th.sortth .sar{margin-left:5px;font-size:10px;opacity:.45}
+  th.sortth.on{background:#2a5793}
+  th.sortth.on .sar{opacity:1}
+  .drillbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#eef4fc;border:1px solid #cfe0f5;
+    border-radius:var(--radius);padding:9px 11px;margin-bottom:12px}
+  .dchip{background:#fff;border:1px solid #cfe0f5;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;color:#274a74}
   .chart{width:100%;height:auto;display:block}
 
   .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:11px 13px;border-bottom:1px solid var(--line);background:#fafbfd}
@@ -99,7 +211,9 @@
   .tasktbl td.gcol{background:#f4f6f9}
   .tasktbl tr.late td{background:#fdecea}
   .tasktbl tr.late td.gcol{background:#f9dcd8}
-  .tasktbl tr.closed td{opacity:.62}
+  .tasktbl tr.closed td{background:#e8f6ee;color:#1b5e3a}
+  .tasktbl tr.closed td b{color:#1b5e3a}
+  .tasktbl tr.wait td{background:#fdf6e6}
   .tasktbl tr.clickable{cursor:pointer}
   .tasktbl{font-size:12px}
   .tasktbl th,.tasktbl td{padding:7px 8px}
@@ -137,6 +251,10 @@
     .tasktbl td.ycol,.tasktbl td.gcol{background:none}
     .tasktbl tr.late td{background:none}
     .tasktbl tr.late{border-left:4px solid var(--red)}
+    .tasktbl tr.closed td{background:none}
+    .tasktbl tr.closed{border-left:4px solid var(--green)}
+    .tasktbl tr.wait td{background:none}
+    .tasktbl tr.wait{border-left:4px solid var(--amber)}
     .filters .btn-new{width:100%}
   }
 
@@ -176,7 +294,7 @@
   .a3head .c:last-child{border-right:0}
   .a3head .lb{font-size:10px;font-weight:800;letter-spacing:.5px;color:#7c8aa0;text-transform:uppercase}
   .a3head input{border:0;background:transparent;padding:2px 0;font-size:13px;font-weight:600;color:var(--text);width:100%}
-  .a3grid{display:flex;gap:12px;align-items:stretch}
+  .a3grid{display:flex;gap:12px;align-items:flex-start}
   .a3col{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
   .a3box{border:1px solid var(--teal);border-radius:8px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
   .a3box.grow{flex:1}
@@ -186,14 +304,64 @@
   .a3box textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:8px 9px;font:inherit;font-size:12.5px;line-height:1.45;resize:vertical;background:#f6f8fa;color:var(--text)}
   .a3box textarea:focus{background:#fff;border-color:var(--teal);outline:none}
   .a3lbl{font-size:11px;font-weight:700;color:#41506b;margin-bottom:-3px}
+  .a3top{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+  .a3box input[type=number],.a3box input[type=date],.a3box input[type=text],.a3box input:not([type]){width:100%}
+  /* navázané úkoly akčního plánu */
+  .pstasks{display:flex;flex-direction:column;gap:5px}
+  .pstask{display:flex;gap:8px;align-items:center;padding:6px 9px;border:1px solid var(--line);border-radius:6px;
+    background:#f6f8fa;cursor:pointer;font-size:12px}
+  .pstask:hover{background:var(--teal-bg);border-color:var(--teal)}
+  .pstask.late{border-left:3px solid var(--red)}
+  .pstask .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pstask .who{color:var(--muted);white-space:nowrap}
+  .pstask .dd{white-space:nowrap;font-variant-numeric:tabular-nums}
+  /* zaškrtávátka upravených dokumentů */
+  .psdocs{display:flex;flex-wrap:wrap;gap:7px}
+  .psdoc{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--line);
+    border-radius:20px;background:#f6f8fa;font-size:12.5px;font-weight:600;color:#41506b;cursor:pointer}
+  .psdoc:hover{border-color:var(--teal)}
+  .psdoc:has(input:checked){background:var(--teal-bg);border-color:var(--teal);color:var(--teal-dark)}
+  .psdoc input{width:auto;margin:0;accent-color:var(--teal)}
+  .psverify{display:grid;grid-template-columns:150px 1fr;gap:10px;padding-top:3px}
+  .psverify .a3lbl{margin-bottom:4px}
+  .pslastact{font-size:11.5px;color:var(--muted);border-top:1px dotted var(--line);padding-top:7px}
+  .pslastact b{color:var(--text)}
+  /* přílohy — vyfotit / vybrat */
+  .psfilebtns{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-cam{display:inline-flex;align-items:center;gap:7px;background:var(--teal);color:#fff;font-weight:700;
+    font-size:13px;padding:11px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--teal-dark)}
+  .btn-cam:hover{background:var(--teal-dark)}
+  .btn-cam input{display:none}
+  .psfilebtns .filebtn{padding:11px 16px;font-size:13px;font-weight:600}
+  input.late,select.late{border-color:var(--red);background:#fdecea}
+  @media(max-width:680px){.psverify{grid-template-columns:1fr}}
 
   @media(max-width:960px){.a3top{grid-template-columns:1fr 1fr}.a3head{grid-template-columns:1fr 1fr}}
   @media(max-width:680px){.a3wrap{padding:12px}.a3grid{flex-direction:column}.a3top{grid-template-columns:1fr}.a3head{grid-template-columns:1fr}}
+  /* Na telefonu je okno přes celou obrazovku: nadpis nahoře, tlačítka dole vždy po ruce. */
+  @media(max-width:680px){
+    .overlay{padding:0}
+    .modal{border-radius:0;max-width:none;margin:0;min-height:100%}
+    .modal h3{border-radius:0;position:sticky;top:0;z-index:3;padding:13px 14px;font-size:15px}
+    .modal h3 .x{font-size:26px;padding:0 6px}
+    .foot{position:sticky;bottom:0;z-index:3;box-shadow:0 -3px 10px rgba(16,35,58,.12);padding:9px 10px;gap:6px}
+    .foot>span:first-child{width:100%}
+    .foot>span:last-child{width:100%;display:flex;gap:6px;margin-left:0!important}
+    .foot button{flex:1 1 0;min-width:0;padding:12px 6px;font-size:12.5px;white-space:nowrap}
+    /* iOS nesmí při psaní zoomovat — proto nejmíň 16 px */
+    input,select,textarea,.a3box textarea{font-size:16px}
+    .a3box>.bh{font-size:14px;padding:10px 11px}
+    .psdoc{padding:11px 13px;font-size:13.5px}
+    .psdoc input{width:19px;height:19px}
+    .btn-cam,.psfilebtns .filebtn{flex:1 1 100%;justify-content:center;text-align:center}
+    .wide{display:none}
+    .pstask{flex-wrap:wrap;padding:9px 10px}
+    .pstask .tx{flex:1 1 100%;white-space:normal}
+  }
   @media(max-width:900px){.form{grid-template-columns:repeat(2,1fr)}.f.span3,.f.span4,.sect,.why{grid-column:span 2}}
   @media(max-width:680px){
     .form{grid-template-columns:1fr;padding:14px}
     .f.span2,.f.span3,.f.span4,.sect,.why{grid-column:span 1}
-    .overlay{padding:8px}
     .why .row{flex-wrap:wrap}.why .n{width:100%}
     .addrow input,.addrow select,.addrow button{width:100%}
   }
@@ -256,7 +424,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
   query, where, orderBy, limit, writeBatch, runTransaction }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 import { getStorage, ref as sref, uploadBytes, getDownloadURL, deleteObject }
@@ -283,11 +451,17 @@ const storage = getStorage(fbApp);   // úložiště na přílohy tasků (stejn�
    Záložka Scrap na ni jen odkazuje — data se tady nepočítají. */
 const SCRAP_URL = 'https://uhanm056.github.io/Quality-loss-report-Scrap/';
 
-/* ===== Kdo modul zatím vidí (jen David) — stejně jako u Externích oprav =====
+/* ===== Kdo do modulu smí =====
+   Správci podle e-mailu a lidé, kterým David v Nastavení dal pozici procesního
+   inženýra nebo PE koordinátora. Úplně stejný seznam pozic je v header.js,
+   index.html a v pravidlech Firestore — když ho měníš, uprav ho všude.
    TODO před PR Davidovi: odebrat testovací e-mail admin.test. */
 const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
   'admin.test@minimo.local'];
+const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
 const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
+const hasEngPosition = pos => (pos||[]).some(p=>ENG_POSITIONS.includes(String(p).trim()));
+const canEnter = u => !!u && (isOwner(u.email) || hasEngPosition(u.positions));
 /* Stejný seznam jako isEmailAdmin v firestore.rules — kdyby se lišily, správci by
    se v aplikaci nabídl import, který by mu server zamítl (nebo naopak). */
 const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com','varhandavid19@gmail.com'];
@@ -296,6 +470,9 @@ const ROLE2LEVEL = {zadavatel:'basic',skladnik:'warehouse',schvalovatel:'approve
 const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
 /* Importovat smí jen ten, koho pustí i pravidla Firestore (role admin). */
 const canImport = () => !!me && me.role==='admin';
+/* Report prostojů ze Symesticu nahraje kdokoli, kdo do modulu vůbec smí —
+   tedy procesní inženýr, koordinátor i správce. Import scrapu zůstal správci. */
+const canImportDt = () => canEnter(me);
 
 /* ==========================================================
    Čtení reportu prostojů ze Symesticu
@@ -416,22 +593,224 @@ function engParse(aoa){
   }
   return {ok:true, rows:out, bad};
 }
+
+/* ==========================================================
+   Čtení akčního plánu z Excelu (ME TASK TRACKER)
+   Záložka „Task Tracker", hlavička s POPIS PROBLÉMU a ZODPOVĚDNÁ OSOBA.
+   Sloupce se hledají podle názvu, na pořadí nezáleží.
+   ========================================================== */
+const MT_HEAD = {
+  no:      ['číslo úkolu','cislo ukolu'],
+  created: ['datum vzniku'],
+  type:    ['typ úkolu','typ ukolu'],
+  task:    ['popis problému','popis problemu'],
+  project: ['projekt'],
+  prio:    ['priorita'],
+  due:     ['plán splnění','plan splneni'],
+  status:  ['status','stav'],
+  owner:   ['zodpovědná osoba','zodpovedna osoba'],
+  now:     ['okamžitá opatření','okamzita opatreni'],
+  longs:   ['dlouhodobé úkoly','dlouhodobe ukoly'],
+  fix:     ['nápravná opatření','napravna opatreni'],
+  note:    ['poznámky','poznamky']
+};
+const MT_STATUS = {'complete':'DONE','completed':'DONE','hotovo':'DONE','splněno':'DONE',
+  'in progress':'IN PROGRESS','probíhá':'IN PROGRESS','on hold':'OPEN','pozastaveno':'OPEN',
+  'cancelled':'CANCELLED','canceled':'CANCELLED','zrušeno':'CANCELLED'};
+/* Oblast se hádá hlavně z popisu — ten o lince říká víc než sloupec Projekt. */
+const MT_AREA_TEXT = [
+  [/\bimm\s*0*\d{1,2}\b/i,                      'IMM'],
+  [/slush/i,                                    'Slush'],
+  [/scoring|foam|pěn|pen(a|y|ov)/i,             'Foaming'],
+  [/prefix|g\s*-?\s*463|gclass/i,               'Gclass'],
+  [/m\s*-?beam|mbeam/i,                         'Assembly MBEAM'],
+  [/ov\s*-?\s*51|ov\s*-?\s*64/i,                'Assembly OV51/64'],
+  [/sk\s*-?336|po\s*-?45\d|w\s*-?206/i,         'Assembly SK336/PO455/W206'],
+  [/mfa|w\s*-?177|w\s*-?247/i,                  'Assembly MFA2'],
+  [/glove\s*box|glovebox|decopart|\bgb\b|\bdp\b/i,'GB/DP']
+];
+const MT_AREA_PROJECT = {
+  'g463':'Gclass', 'sk336':'Assembly SK336/PO455/W206', 'po455':'Assembly SK336/PO455/W206',
+  'w206':'Assembly SK336/PO455/W206', 'ov51/64':'Assembly OV51/64',
+  'w177':'Assembly MFA2', 'w247':'Assembly MFA2'
+};
+function mtArea(popis, projekt){
+  for(const [re,a] of MT_AREA_TEXT) if(re.test(popis||'')) return a;
+  const p=String(projekt||'').trim().toLowerCase();
+  if(MT_AREA_PROJECT[p]) return MT_AREA_PROJECT[p];
+  return '';
+}
+/* Stroj z popisu: IMM07 i IMM7 je IMM-007, Slush 2, Scoring 3. */
+function mtMachine(popis){
+  const t=String(popis||'');
+  let m=t.match(/\bimm\s*0*(\d{1,2})\b/i);
+  if(m) return 'IMM-'+String(m[1]).padStart(3,'0');
+  m=t.match(/\bslush\s*(\d)\b/i);    if(m) return 'Slush '+m[1];
+  m=t.match(/\bscoring\s*(\d)\b/i);  if(m) return 'Scoring '+m[1];
+  return '';
+}
+/* „Tadeáš Rešl" → „tadeas.resl"; když takový člověk v minimu je, použije se
+   přesně jeho jméno ze seznamu uživatelů. */
+function mtOwner(cell){
+  const raw=String(cell||'').trim();
+  if(!raw) return [];
+  return raw.split(/[,;/]|\ba\b/i).map(x=>x.trim()).filter(Boolean).map(one=>{
+    const key=one.normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean).join('.');
+    const hit=(people||[]).find(u=>String(u.name||'').toLowerCase()===key);
+    return hit ? hit.name : key;
+  }).filter(Boolean);
+}
+function mtParse(wb, XLSX){
+  const name=(wb.SheetNames||[]).find(n=>/task\s*tracker/i.test(n)) || wb.SheetNames[0];
+  const a=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null,blankrows:true});
+  const norm=x=>String(x??'').replace(/\s+/g,' ').trim().toLowerCase();
+  let hi=-1, map=null;
+  for(let i=0;i<Math.min(a.length,40);i++){
+    const cells=(a[i]||[]).map(norm), m={};
+    for(const key of Object.keys(MT_HEAD)){
+      const idx=cells.findIndex(c=>c && MT_HEAD[key].some(h=>c.startsWith(h)));
+      if(idx>=0) m[key]=idx;
+    }
+    if(m.task!=null && m.owner!=null && m.due!=null){ hi=i; map=m; break; }
+  }
+  if(hi<0) return {ok:false, err:'V sešitu nejsou sloupce POPIS PROBLÉMU, ZODPOVĚDNÁ OSOBA a PLÁN SPLNĚNÍ. Je to opravdu ME TASK TRACKER?'};
+  const txt=(r,k)=>map[k]==null?'':String(r[map[k]]??'').replace(/\r/g,'').trim();
+  const dte=(r,k)=>{ if(map[k]==null) return '';
+    const v=r[map[k]];
+    if(typeof v==='number'){ const d=fromSerial(v); return d?d.date:''; }
+    const t=engTime(v); return t?t.date:''; };
+  const out=[], bad=[];
+  for(let i=hi+1;i<a.length;i++){
+    const r=a[i]||[];
+    const task=txt(r,'task');
+    if(!task) continue;
+    const owners=mtOwner(txt(r,'owner'));
+    const due=dte(r,'due'), created=dte(r,'created')||today();
+    const st=MT_STATUS[txt(r,'status').toLowerCase()] || 'OPEN';
+    const area=mtArea(task, txt(r,'project'));
+    /* co se nevejde do našich sloupců, ať se neztratí — jde to do poznámky */
+    const parts=[];
+    const add=(lbl,val)=>{ if(val) parts.push(lbl+': '+val); };
+    add('Původní číslo', txt(r,'no'));
+    add('Projekt', txt(r,'project'));
+    add('Priorita', txt(r,'prio'));
+    add('Typ úkolu', txt(r,'type'));
+    add('Okamžitá opatření', txt(r,'now'));
+    add('Dlouhodobé úkoly', txt(r,'longs'));
+    add('Poznámky', txt(r,'note'));
+    out.push({
+      area: area || TASK_AREAS[0].k, areaGuessed: !area,
+      machine: mtMachine(task), type: /management/i.test(txt(r,'type'))?'System':'Operation',
+      createdOn: created, createdBy: 'ME TASK TRACKER',
+      task, output: txt(r,'fix'), owners,
+      dueOrig: due, moves: [], status: st, closedOn: '',
+      note: parts.join('\n'), files: [], psId:'', psNo:'',
+      _src:'metracker', _row:i+1,
+      _id:'mt_'+slug(txt(r,'no')||String(i))+'_'+slug(task).slice(0,40)
+    });
+    if(!due || !owners.length) bad.push(i+1);
+  }
+  if(!out.length) return {ok:false, err:'V záložce nejsou žádné úkoly s vyplněným popisem.'};
+  return {ok:true, rows:out, bad, sheet:name};
+}
+
+/* ==========================================================
+   Čtení reportu z G463 (soubor yftool)
+   Jiný formát než Symestic: jeden sešit, v něm záložky „Line - <linka>".
+   Report nedává jednotlivé prostoje s časem od–do, ale součet minut
+   za den a důvod. Z každé buňky proto uděláme jeden záznam na den,
+   linku a důvod — id je pevné, takže opakovaný import nic nezdvojí.
+   ========================================================== */
+const G463_CATS = {
+  'změna verze':        'Přestavba a seřízení',
+  'plánované prostoje': 'Lidé a přestávky',
+  'porucha / seřízení': 'Porucha stroje',
+  'logistika':          'Materiál a logistika',
+  'lidé':               'Lidé a přestávky',
+  'energie':            'Technický prostoj',
+  'kvalita':            'Kvalita',
+  'zmetky':             'Kvalita'
+};
+const g463Group = kat => G463_CATS[String(kat||'').trim().toLowerCase()] || UNKNOWN;
+/* Poznáme soubor podle toho, že má záložky „Line - …". */
+const g463Sheets = wb => (wb.SheetNames||[]).filter(n=>/^\s*line\b/i.test(String(n)));
+function g463Parse(wb, XLSX){
+  const sheets=g463Sheets(wb);
+  if(!sheets.length) return {ok:false, err:'V sešitu nejsou žádné záložky „Line - …". Je to opravdu report z G463?'};
+  const out=[], bad=[], lines=new Set();
+  for(const name of sheets){
+    const a=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null,blankrows:true});
+    /* název linky je v hlavičce; kdyby chyběl, vezmeme ho z názvu záložky */
+    const seg=String((a[1]&&a[1][7])||String(name).replace(/^\s*line\s*-\s*/i,'')).trim();
+    if(!seg) continue;
+    /* sloupce dnů — řádek, kde je v jedenáctém sloupci „MTD", za ním data dnů */
+    const hi=a.findIndex(r=>r && String(r[10]||'').trim().toUpperCase()==='MTD');
+    if(hi<0) continue;
+    const days=(a[hi]||[]).map((c,i)=>({i,c}))
+      .filter(x=>x.i>10 && typeof x.c==='number' && x.c>40000)
+      .map(x=>({col:x.i, d:fromSerial(x.c)})).filter(x=>x.d);
+    if(!days.length) continue;
+    /* tabulka prostojů začíná řádkem s „Kód" */
+    const hd=a.findIndex(r=>r && String(r[1]||'').trim()==='Kód');
+    if(hd<0) continue;
+    /* počty přestaveb na den, ať changeover KPI nepočítá jednu za den */
+    const coRow=a.find(r=>r && /co\s*-\s*total number|co\s*-\s*po[čc]et zm[ěe]n/i.test(String(r[8]||'')));
+    let blanks=0;
+    for(let i=hd+1;i<a.length;i++){
+      const r=a[i]||[];
+      const kod2=String(r[2]??'').trim(), popis=String(r[3]??'').trim();
+      if(!kod2 && !popis){ if(++blanks>4) break; continue; }
+      blanks=0;
+      const unit=String(r[6]??'').trim().toLowerCase();
+      if(unit && unit!=='[min]') continue;             // [Ks] je rework, ne prostoj
+      if(!unit) continue;
+      const kat=String(r[7]??'').trim();
+      const grp=g463Group(kat);
+      const reason=(kod2?kod2+' ':'')+popis;
+      const isCo=/změna verze|changeover/i.test(kat+' '+popis);
+      for(const day of days){
+        const min=Number(r[day.col]);
+        if(!isFinite(min) || min<=0) continue;
+        const sec=Math.round(min*60);
+        const coN = isCo && coRow ? (Number(coRow[day.col])||0) : 0;
+        out.push({seg, reason, group:grp, co:isCo, coN:coN||undefined,
+          start:day.d.date+'T00:00:00', end:'', date:day.d.date, shift:'',
+          sec, net:sec, comment:'', daily:true, src:'g463',
+          _id:`${day.d.date}_${slug(seg)}_${slug(kod2||popis)}`});
+      }
+      lines.add(seg);
+    }
+  }
+  if(!out.length) return {ok:false, err:'V záložkách „Line - …" nejsou žádné prostoje v minutách.'};
+  return {ok:true, rows:out, bad, lines:[...lines]};
+}
+
 /* Denní souhrn — počítá se vždy z toho, co je v databázi */
 function aggregate(list){
   const d={sec:0,net:0,cnt:0,segs:{},groups:{},reasons:{},shifts:{},co:{sec:0,cnt:0}};
+  const bump=(o,k,label,sec)=>{ const x=o[k]||(o[k]={label,sec:0,cnt:0}); x.sec+=sec; x.cnt++; };
   for(const e of list){
     const sec=Number(e.sec)||0, net=Number(e.net)||sec;
     d.sec+=sec; d.net+=net; d.cnt++;
-    const sk=slug(e.seg), gk=slug(e.group||engGroup(e.reason)), rk=slug(e.reason);
-    d.segs[sk]    = d.segs[sk]    || {label:e.seg,sec:0,net:0,cnt:0};
-    d.groups[gk]  = d.groups[gk]  || {label:e.group||engGroup(e.reason),sec:0,cnt:0};
+    const grp=e.group||engGroup(e.reason);
+    const sk=slug(e.seg), gk=slug(grp), rk=slug(e.reason);
+    d.segs[sk]    = d.segs[sk]    || {label:e.seg,sec:0,net:0,cnt:0,co:{sec:0,cnt:0},g:{},r:{},sh:{}};
+    d.groups[gk]  = d.groups[gk]  || {label:grp,sec:0,cnt:0};
     d.reasons[rk] = d.reasons[rk] || {label:e.reason,sec:0,cnt:0};
     d.shifts[e.shift] = d.shifts[e.shift] || {sec:0,cnt:0};
-    d.segs[sk].sec+=sec; d.segs[sk].net+=net; d.segs[sk].cnt++;
+    const sg=d.segs[sk];
+    sg.sec+=sec; sg.net+=net; sg.cnt++;
+    /* Rozpad i po lince — jinak by se KPI nedalo filtrovat po procesech. */
+    bump(sg.g, gk, grp, sec);
+    bump(sg.r, rk, e.reason, sec);
+    bump(sg.sh, e.shift||'?', e.shift||'?', sec);
+    /* G463 report nese skutečný počet přestaveb za den v poli coN */
+    if(e.co){ const cn=Number(e.coN)>0?Number(e.coN):1;
+      sg.co.sec+=sec; sg.co.cnt+=cn; d.co.sec+=sec; d.co.cnt+=cn; }
     d.groups[gk].sec+=sec; d.groups[gk].cnt++;
     d.reasons[rk].sec+=sec; d.reasons[rk].cnt++;
     d.shifts[e.shift].sec+=sec; d.shifts[e.shift].cnt++;
-    if(e.co){ d.co.sec+=sec; d.co.cnt++; }
   }
   return d;
 }
@@ -577,13 +956,49 @@ const ENGCFG_DEF = {
   manager: ''                 // Engineering Manager (eskalace)
 };
 
+/* ==========================================================
+   PROCESY — jak David dělí závod. Hlavní stránka i KPI jsou podle nich.
+   Linka ze Symesticu se k procesu přiřadí podle názvu; kdo se netrefí,
+   spadne do „Ostatní" a je vidět na hlavní stránce, ať se to dá doladit.
+   Ruční přiřazení jde uložit do meta/engcfg.procLines = {IMM:['IMM-007',…]}.
+   ========================================================== */
+const PROCESSES = [
+  {k:'IMM',   label:'IMM',                 icon:'🏭', color:'#1b4b8f'},
+  {k:'SLUSH', label:'Slush',               icon:'🧴', color:'#0d7377'},
+  {k:'FOAM',  label:'Foaming / Scoring',   icon:'🧽', color:'#6b46c1'},
+  {k:'ASSY',  label:'Assembly IP',         icon:'🔧', color:'#b7791f'},
+  {k:'GBDP',  label:'Glovebox / Decopart', icon:'🧰', color:'#475569'},
+  {k:'G463',  label:'G463',                icon:'🚙', color:'#c0392b'}
+];
+/* Pořadí, ve kterém se hledá — od nejkonkrétnějšího, ať Assembly nepohltí ostatní. */
+const PROC_MATCH = [
+  ['IMM',   /(^|[^a-z])imm([^a-z]|$)|vstřik|vstrik/i],
+  ['SLUSH', /slush/i],
+  ['FOAM',  /foam|pěn|pen(a|y|ov)|scoring|skór|skor(ing)?/i],
+  ['G463',  /g\s*-?\s*463|gclass|g\s*class|prefix|tpo\s*prepro/i],
+  ['GBDP',  /glove\s*box|glovebox|(^|[^a-z])gb([^a-z]|$)|decopart|deco\s*part|(^|[^a-z])dp([^a-z]|$)/i],
+  ['ASSY',  /assembly|montáž|montaz|final|inspection|mfa|sk\s*-?336|po\s*-?45|ov\s*-?5\d|ov\s*-?6\d|w\s*-?206|m\s*-?beam|mbeam|eol/i]
+];
+const procDef = k => PROCESSES.find(p=>p.k===k) || {k:'OTHER', label:'Ostatní', icon:'❔', color:'#6b7a90'};
+/* Do jakého procesu linka patří. Ruční přiřazení z nastavení má přednost. */
+function procOfLine(label){
+  const L=String(label||'').trim(); if(!L) return 'OTHER';
+  const man=engcfg.procLines||{};
+  for(const p of PROCESSES) if((man[p.k]||[]).some(x=>String(x).trim().toLowerCase()===L.toLowerCase())) return p.k;
+  for(const [k,re] of PROC_MATCH) if(re.test(L)) return k;
+  return 'OTHER';
+}
+
 const PS_STATUS = [
   {k:'nový',       cls:'b-red',   d:'čeká na Process Engineera'},
   {k:'analýza',    cls:'b-amber', d:'běží A3 analýza'},
   {k:'opatření',   cls:'b-blue',  d:'opatření se plní'},
   {k:'ověřování',  cls:'b-teal',  d:'čeká na ověření účinnosti'},
-  {k:'uzavřeno',   cls:'b-green', d:'ověřeno a uzavřeno'}
+  {k:'ke schválení', cls:'b-amber', d:'koordinátor uzavřel, čeká na manažera'},
+  {k:'uzavřeno',   cls:'b-green', d:'schváleno manažerem a uzavřeno'}
 ];
+/* Tyhle dva stavy se nedají nastavit ručně — jen tlačítky uzavřít / schválit. */
+const PS_LOCKED = ['ke schválení','uzavřeno'];
 const AC_STATUS = [{k:'nová',cls:'b-blue'},{k:'v řešení',cls:'b-amber'},{k:'hotová',cls:'b-green'},{k:'zrušená',cls:'b-grey'}];
 const AC_TYPE = [{k:'corrective',label:'Corrective — odstraní následek'},{k:'preventive',label:'Preventive — zabrání opakování'}];
 const psDef = k => PS_STATUS.find(s=>s.k===k) || PS_STATUS[0];
@@ -702,6 +1117,15 @@ const TASK_STATUS = [
 const MAX_TASK_FILE = 5*1024*1024;   // 5 MB na soubor, stejně jako u nákupu
 
 const areaPrefix = a => (TASK_AREAS.find(x=>x.k===a)||{p:'GEN'}).p;
+/* Z názvu linky odhadneme oblast, ať se úkol z problem solvingu předvyplní sám. */
+function areaForLine(line){
+  const L=String(line||'');
+  const m=[[/^IMM|vstřik|lis/i,'IMM'],[/MFA/i,'Assembly MFA2'],[/SK ?336|PO ?455|W ?206/i,'Assembly SK336/PO455/W206'],
+    [/OV ?51|OV ?64/i,'Assembly OV51/64'],[/M ?BEAM/i,'Assembly MBEAM'],[/slush/i,'Slush'],
+    [/foam|pěn/i,'Foaming'],[/gclass|g ?class/i,'Gclass'],[/GB|DP|GB\/DP/i,'GB/DP']];
+  for(const [re,k] of m) if(re.test(L)) return k;
+  return TASK_AREAS[0].k;
+}
 /* Lidi bereme z uživatelů celého minima (kolekce users) i s jejich pozicemi.
    Process Engineers a Coordinatory z nich poznáme podle pozice, nic se nepřepisuje ručně. */
 async function loadPeople(force){
@@ -788,7 +1212,8 @@ async function loadTasks(force){
 function emptyTask(){
   return {_id:null, no:'', area:TASK_AREAS[0].k, machine:'', type:'Operation',
     createdOn:today(), createdBy:me.name, task:'', output:'', owners:[],
-    dueOrig:'', moves:[], status:'OPEN', closedOn:'', note:'', files:[], hist:[]};
+    dueOrig:'', moves:[], status:'OPEN', closedOn:'', note:'', files:[], hist:[],
+    psId:'', psNo:''};
 }
 /* Přečte hodnoty z okna do paměti, ať se při překreslení nic neztratí. */
 function collectTask(){
@@ -818,7 +1243,8 @@ async function saveTask(){
       const rec={no, area:t.area, machine:t.machine||'', type:t.type, createdOn:t.createdOn, createdBy:t.createdBy,
         task:t.task, output:t.output, owners:t.owners, dueOrig:t.dueOrig, moves:[],
         status:t.status, closedOn:t.closedOn, note:t.note, files:[],
-        hist:[`${today()} · ${me.name} · task založen`]};
+        psId:t.psId||'', psNo:t.psNo||'',
+        hist:[`${today()} · ${me.name} · task založen${t.psNo?' k problem solvingu '+t.psNo:''}`]};
       const ref=await addDoc(collection(db,'tasks'), rec);
       /* přílohy vybrané ještě před založením nahrajeme až teď, když máme id */
       if(pendingTaskFiles.length){
@@ -840,7 +1266,7 @@ async function saveTask(){
       toast('Uloženo.','ok');
     }
     openTask=null; tMsg='';
-  }catch(e){ tMsg='Uložení selhalo: '+((e&&e.message)||e); }
+  }catch(e){ tMsg='Uložení selhalo. '+writeHint(e); }
   render();
 }
 /* Posun termínu — do žlutých sloupců, s důvodem a stopou v historii */
@@ -885,7 +1311,7 @@ async function handleTaskFiles(list){
   if(n){
     try{ await updateDoc(doc(db,'tasks',openTask._id), {files:arr, hist}); openTask.files=arr; openTask.hist=hist; syncTask(openTask);
          toast(n===1?'Příloha nahrána.':n+' přílohy nahrány.','ok'); }
-    catch(e){ toast('Uložení příloh selhalo: '+((e&&e.message)||e),'err'); }
+    catch(e){ toast('Uložení příloh selhalo. '+writeHint(e),'err'); }
   }
   tMsg=''; render();
 }
@@ -899,14 +1325,17 @@ async function removeTaskFile(i){
   files.splice(i,1);
   const hist=(openTask.hist||[]).concat(`${today()} · ${me.name} · smazal přílohu ${f.name}`);
   try{ await updateDoc(doc(db,'tasks',openTask._id), {files, hist}); openTask.files=files; openTask.hist=hist; syncTask(openTask); }
-  catch(e){ toast('Smazání selhalo: '+((e&&e.message)||e),'err'); }
+  catch(e){ toast('Smazání selhalo. '+writeHint(e),'err'); }
   render();
 }
 const fileSize = b => b>=1048576 ? (b/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(b/1024))+' kB';
 
 /* ===== stav stránky ===== */
 let me=null, loginBusy=false, loginErr='';
-let engTab='dash';
+let engTab='mgmt';                // modul se otevírá na hlavní stránce
+let dashProc='';                 // '' = celý závod, jinak klíč procesu (KPI podzáložky)
+let drillFrom='';                // proces, ze kterého jsem se proklikl do Prostojů
+let tileWk='';                   // '' = celý měsíc, jinak vybraný týden v dlaždicích procesů
 let days=[], events=[], history=[];
 let scMonths=[], scLoaded=false;
 let mgDays=[], problems=[], actions=[], engcfg=Object.assign({},ENGCFG_DEF);
@@ -916,11 +1345,24 @@ let tF={area:'',owner:'',status:'',type:'',q:''};
 let ownQ='';
 let psF={status:'',line:'',owner:'',q:''}, psHideClosed=true;
 let moveDraft={date:'',why:''};
-let range=7, loaded=false, busy='', errMsg='';
+let range='7', loaded=false, busy='', errMsg='';   // '7' | '14' | '30' | 'm0' (tento měsíc) | 'm1' (minulý měsíc)
 let evLoaded='', evMore=false;
-let f={seg:'',group:'',shift:'',q:''};
+let f={seg:'',group:'',shift:'',reason:'',proc:'',q:''};
+/* Řazení tabulky prostojů. `num:true` = při prvním kliknutí od největšího. */
+const EV_COLS = [
+  {k:'date',    t:'Datum',         num:true,  get:e=>String(e.start||e.date||'')},
+  {k:'shift',   t:'Sm.',           num:false, get:e=>String(e.shift||'')},
+  {k:'seg',     t:'Linka / stroj', num:false, get:e=>String(e.seg||'')},
+  {k:'start',   t:'Od',            num:false, get:e=>String(e.start||'').slice(11,19)},
+  {k:'end',     t:'Do',            num:false, get:e=>String(e.end||'').slice(11,19)},
+  {k:'sec',     t:'Trvání',        num:true,  get:e=>Number(e.sec)||0},
+  {k:'group',   t:'Skupina',       num:false, get:e=>String(e.group||'')},
+  {k:'reason',  t:'Důvod',         num:false, get:e=>String(e.reason||'')},
+  {k:'comment', t:'Poznámka',      num:false, get:e=>String(e.comment||'')}
+];
+let evSort={k:'date', dir:'desc'};
 const newImp = kind => ({kind:kind||'dt', step:1, name:'', rows:null, bad:[], err:'', prog:'', done:null,
-                         aoa:null, headers:[], headRow:0, map:{}, month:''});
+                         aoa:null, headers:[], headRow:0, map:{}, month:'', src:'', lines:[]});
 let imp=newImp('dt');
 let toastMsg=null, toastKind='';
 
@@ -928,6 +1370,24 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const num = (v,d=1)=>(isFinite(v)?Number(v):0).toLocaleString('cs-CZ',{minimumFractionDigits:d,maximumFractionDigits:d});
 const today = () => new Date().toISOString().slice(0,10);
 const dateFrom = n => { const d=new Date(); d.setDate(d.getDate()-(n-1)); return d.toISOString().slice(0,10); };
+/* Volby období nad KPI a Prostoji. Měsíce mají i horní mez, dny jen dolní. */
+const RANGES = [{k:'7',t:'7 dní'},{k:'14',t:'14 dní'},{k:'30',t:'30 dní'},
+                {k:'m0',t:'Tento měsíc'},{k:'m1',t:'Minulý měsíc'}];
+function monthBounds(back){
+  const now=new Date(), d=new Date(now.getFullYear(), now.getMonth()-(back||0), 1);
+  const y=d.getFullYear(), m=d.getMonth(), last=new Date(y, m+1, 0);
+  const iso=x=>`${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}`;
+  return {from:iso(d), to:iso(last), month:`${y}-${pad2(m+1)}`};
+}
+/* Od kdy do kdy se čtou denní souhrny. `to` prázdné = bez horní meze. */
+function rangeBounds(){
+  if(range==='m0' || range==='m1'){
+    const b=monthBounds(range==='m1'?1:0);
+    return {from:b.from, to:b.to, label:monthCz(b.month)};
+  }
+  const n=Number(range)||7;
+  return {from:dateFrom(n), to:'', label:n+' dní'};
+}
 const dayCz = d => String(d).slice(8,10).replace(/^0/,'')+'. '+String(d).slice(5,7).replace(/^0/,'')+'.';
 /* celé datum i s rokem: 2026-08-24 → 24. 8. 2026 */
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3 ? `${+p[2]}. ${+p[1]}. ${p[0]}` : String(s); };
@@ -944,7 +1404,7 @@ onAuthStateChanged(auth, async user=>{
   if(!user){ me=null; days=[]; events=[]; history=[]; loaded=false; evLoaded=''; render(); return; }
   me = await loadProfile(user);
   render();
-  if(isOwner(user.email)) loadDays();
+  if(canEnter(me)) loadMgmt();
 });
 async function loadProfile(user){
   const ref=doc(db,'users',user.uid);
@@ -955,10 +1415,25 @@ async function loadProfile(user){
   const firstName=d.firstName||'', lastName=d.lastName||'';
   const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
   return {uid:user.uid, email:user.email, name, role,
+          positions: d.positions||[],
           level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||'', firstName, lastName};
 }
 
 /* ===== načítání dat ===== */
+/* Server zamítl zápis. Nemá smysl ukazovat anglické „Missing or insufficient
+   permissions" — napíšeme, co se s tím dá dělat, a rovnou i pozice, které
+   aplikace u přihlášeného vidí. Z toho je hned poznat, kde je problém. */
+function writeHint(e){
+  const m=String((e&&e.message)||e);
+  if(!/permission|insufficient|PERMISSION_DENIED/i.test(m)) return m;
+  const pos=(me&&me.positions||[]).filter(Boolean);
+  const mine=pos.length ? 'Tvoje pozice: '+pos.join(', ')+'.' : 'V Nastavení nemáš vyplněnou žádnou pozici.';
+  const ok=hasEngPosition(pos) || isOwner(me&&me.email);
+  return 'Server zápis zamítl. '+mine+' '
+    + (ok
+      ? 'Pozici na to máš, takže ve Firebase konzoli nejspíš nejsou publikovaná aktuální pravidla Firestore (Firestore → Rules → Publish). Řekni to správci aplikace.'
+      : 'Zakládat problem solving a úkoly smí jen procesní inženýr nebo PE koordinátor — ať ti v Nastavení přidají pozici (např. IMM PE nebo PE coordinator).');
+}
 function ruleHint(e){
   const m=String((e&&e.message)||e);
   if(/permission|insufficient/i.test(m))
@@ -969,7 +1444,10 @@ async function loadDays(force){
   if(loaded && !force) return;
   busy='Načítám souhrny…'; errMsg=''; render();
   try{
-    const qs = await getDocs(query(collection(db,'dt_days'), where('date','>=',dateFrom(range)), orderBy('date','desc')));
+    const b=rangeBounds();
+    const qs = await getDocs(b.to
+      ? query(collection(db,'dt_days'), where('date','>=',b.from), where('date','<=',b.to), orderBy('date','desc'))
+      : query(collection(db,'dt_days'), where('date','>=',b.from), orderBy('date','desc')));
     days = qs.docs.map(d=>Object.assign({date:d.id}, d.data()));
     const hs = await getDocs(query(collection(db,'dt_imports'), orderBy('at','desc'), limit(10)));
     history = hs.docs.map(d=>Object.assign({_id:d.id}, d.data()));
@@ -979,14 +1457,16 @@ async function loadDays(force){
   busy=''; render();
 }
 async function loadEvents(){
-  const from=dateFrom(range);
-  if(evLoaded===from) return;
+  const b=rangeBounds(), key=b.from+'…'+b.to;
+  if(evLoaded===key) return;
   busy='Načítám prostoje…'; errMsg=''; render();
   try{
-    const qs = await getDocs(query(collection(db,'downtimes'), where('date','>=',from), orderBy('date','desc'), limit(1200)));
-    events = qs.docs.map(d=>Object.assign({_id:d.id}, d.data())).sort((a,b)=>String(b.start).localeCompare(String(a.start)));
+    const qs = await getDocs(b.to
+      ? query(collection(db,'downtimes'), where('date','>=',b.from), where('date','<=',b.to), orderBy('date','desc'), limit(1200))
+      : query(collection(db,'downtimes'), where('date','>=',b.from), orderBy('date','desc'), limit(1200)));
+    events = qs.docs.map(d=>Object.assign({_id:d.id}, d.data())).sort((a,b2)=>String(b2.start).localeCompare(String(a.start)));
     evMore = qs.docs.length>=1200;
-    evLoaded = from;
+    evLoaded = key;
   }catch(e){ errMsg=ruleHint(e); }
   busy=''; render();
 }
@@ -1021,26 +1501,37 @@ function csvToAoa(text){
 }
 async function readFile(file){
   const name=(file.name||'').toLowerCase();
-  if(name.endsWith('.csv')||name.endsWith('.txt')) return csvToAoa(await file.text());
+  if(name.endsWith('.csv')||name.endsWith('.txt')) return {aoa:csvToAoa(await file.text())};
   const XLSX = await loadXlsx();
   const wb = XLSX.read(await file.arrayBuffer(), {cellDates:false});
-  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:null, blankrows:false});
+  return {wb, XLSX, aoa: XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:null, blankrows:false})};
 }
 async function takeFile(file){
-  if(!canImport()) return;
+  if(!canImportDt()) return;
   imp.err=''; imp.name=file.name; imp.prog='Čtu soubor…'; render();
   try{
-    const aoa = await readFile(file);
-    if(imp.kind==='scrap'){
+    const {aoa, wb, XLSX} = await readFile(file);
+    if(imp.kind==='tasks'){
+      if(!wb){ imp.prog=''; imp.err='Akční plán se načítá jen z Excelu (.xlsx), ne z CSV.'; render(); return; }
+      await loadPeople();                       // ať se jména sesouhlasí s uživateli minima
+      const res = mtParse(wb, XLSX);
+      if(!res.ok){ imp.prog=''; imp.err=res.err; render(); return; }
+      imp.rows=res.rows; imp.bad=res.bad; imp.sheet=res.sheet; imp.step=2; imp.prog='';
+    }else if(imp.kind==='scrap'){
       const det = scrapDetect(aoa);
       if(!det.ok){ imp.prog=''; imp.err=det.err; render(); return; }
       imp.aoa=aoa; imp.headRow=det.headRow; imp.map=det.map; imp.headers=det.headers;
       imp.month=''; imp.step=2; imp.prog='';
       reparseScrap();
     }else{
-      const res = engParse(aoa);
+      /* Formát se pozná sám: sešit se záložkami „Line - …" je report z G463,
+         všechno ostatní se čte jako report Downtimes ze Symesticu. */
+      const isG463 = wb && g463Sheets(wb).length>0;
+      const res = isG463 ? g463Parse(wb, XLSX) : engParse(aoa);
       if(!res.ok){ imp.prog=''; imp.err=res.err; render(); return; }
       if(!res.rows.length){ imp.prog=''; imp.err='V souboru nejsou žádné prostoje ke zpracování.'; render(); return; }
+      imp.src = isG463 ? 'g463' : 'symestic';
+      imp.lines = res.lines || [];
       imp.rows=res.rows; imp.bad=res.bad; imp.step=2; imp.prog='';
     }
   }catch(e){ imp.prog=''; imp.err=String((e&&e.message)||e); }
@@ -1057,6 +1548,7 @@ function reparseScrap(){
 /* ===== zápis importu ===== */
 async function runImport(){
   if(imp.kind==='scrap') return runImportScrap();
+  if(imp.kind==='tasks') return runImportTasks();
   return runImportDt();
 }
 async function runImportScrap(){
@@ -1087,6 +1579,53 @@ async function runImportScrap(){
     scLoaded=false; await loadScrap(true);
     toast('Import scrapu hotový — '+list.length.toLocaleString('cs-CZ')+' řádků.','ok');
   }catch(e){ imp.prog=''; imp.err=ruleHint(e); render(); }
+}
+/* Zápis akčního plánu z Excelu. Čísla se přidělí jedním zabráním bloku
+   z čítače, ne 115 transakcemi. Co už v plánu je (stejné id), se přeskočí,
+   aby přeimportování nepřepsalo, co se mezitím v aplikaci upravilo. */
+async function runImportTasks(){
+  const list=imp.rows||[];
+  if(!list.length) return;
+  try{
+    imp.prog='Načítám, co už v akčním plánu je…'; render();
+    await loadTasks(true);
+    const have=new Set(tasks.map(t=>t._id));
+    const nove=list.filter(r=>!have.has(r._id));
+    if(!nove.length){
+      imp.done={rows:0, skip:list.length}; imp.step=3; imp.prog='';
+      toast('Všechny úkoly z toho souboru už v akčním plánu jsou.','ok'); render(); return;
+    }
+    /* jedním vrzem si zaberu blok pořadových čísel */
+    imp.prog='Přiděluji čísla úkolů…'; render();
+    const ref=doc(db,'meta','engcfg');
+    const start=await runTransaction(db, async tx=>{
+      const snap=await tx.get(ref);
+      const cur=(((snap.data()||{}).seqTask)||0);
+      const next=cur+nove.length;
+      if(snap.exists()) tx.update(ref,{seqTask:next});
+      else tx.set(ref, Object.assign({}, ENGCFG_DEF, {seqTask:next}));
+      return cur;
+    });
+    const stamp=today();
+    for(let i=0;i<nove.length;i+=400){
+      const b=writeBatch(db);
+      nove.slice(i,i+400).forEach((r,j)=>{
+        const {_id,_src,_row,areaGuessed,...data}=r;
+        data.no=String(start+i+j+1);
+        data.hist=[`${stamp} · ${me.name} · převzato z Excelu ME TASK TRACKER (řádek ${_row})`];
+        b.set(doc(db,'tasks',_id), data);
+      });
+      await b.commit();
+      imp.prog=`Zapisuji úkoly… ${Math.min(i+400,nove.length)} z ${nove.length}`; render();
+    }
+    await addDoc(collection(db,'dt_imports'), {kind:'akční plán', file:imp.name,
+      rows:nove.length, bad:imp.bad.length, skip:list.length-nove.length,
+      at:new Date().toISOString(), by:me.uid, byName:me.name});
+    imp.done={rows:nove.length, skip:list.length-nove.length, from:start+1, to:start+nove.length};
+    imp.step=3; imp.prog='';
+    tLoaded=false; await loadTasks(true);
+    toast('Převzato '+nove.length+' úkolů do akčního plánu.','ok');
+  }catch(e){ imp.prog=''; imp.err=writeHint(e); render(); }
 }
 async function runImportDt(){
   const list=imp.rows||[];
@@ -1120,37 +1659,64 @@ async function runImportDt(){
 }
 
 /* ===== souhrny pro přehled ===== */
-function totals(){
-  const t={sec:0,net:0,cnt:0,segs:{},groups:{},reasons:{},shifts:{},co:{sec:0,cnt:0}};
+/* Souhrn za vybrané období. Když je vybraný proces, sečte se jen z jeho linek —
+   proto import ukládá rozpad důvodů i po lince (pole `g`, `r`, `sh` u každé linky). */
+function totals(proc){
+  const t={sec:0,net:0,cnt:0,segs:{},groups:{},reasons:{},shifts:{},co:{sec:0,cnt:0},noSplit:0};
+  const add=(o,k,label,sec,cnt)=>{ const x=o[k]||(o[k]={label,sec:0,net:0,cnt:0}); x.sec+=sec||0; x.cnt+=cnt||0; };
   for(const d of days){
-    t.sec+=d.sec||0; t.net+=d.net||0; t.cnt+=d.cnt||0;
-    t.co.sec+=(d.co&&d.co.sec)||0; t.co.cnt+=(d.co&&d.co.cnt)||0;
-    for(const key of ['segs','groups','reasons']){
-      for(const [k,v] of Object.entries(d[key]||{})){
-        const o=t[key][k]||(t[key][k]={label:v.label||k,sec:0,net:0,cnt:0});
-        o.sec+=v.sec||0; o.net+=v.net||0; o.cnt+=v.cnt||0;
+    if(!proc){
+      t.sec+=d.sec||0; t.net+=d.net||0; t.cnt+=d.cnt||0;
+      t.co.sec+=(d.co&&d.co.sec)||0; t.co.cnt+=(d.co&&d.co.cnt)||0;
+      for(const key of ['segs','groups','reasons']){
+        for(const [k,v] of Object.entries(d[key]||{})){
+          const o=t[key][k]||(t[key][k]={label:v.label||k,sec:0,net:0,cnt:0});
+          o.sec+=v.sec||0; o.net+=v.net||0; o.cnt+=v.cnt||0;
+        }
       }
+      for(const [k,v] of Object.entries(d.shifts||{})){
+        const o=t.shifts[k]||(t.shifts[k]={sec:0,cnt:0}); o.sec+=v.sec||0; o.cnt+=v.cnt||0;
+      }
+      continue;
     }
-    for(const [k,v] of Object.entries(d.shifts||{})){
-      const o=t.shifts[k]||(t.shifts[k]={sec:0,cnt:0}); o.sec+=v.sec||0; o.cnt+=v.cnt||0;
+    for(const [sk,v] of Object.entries(d.segs||{})){
+      if(procOfLine(v.label)!==proc) continue;
+      t.sec+=v.sec||0; t.net+=v.net||0; t.cnt+=v.cnt||0;
+      const o=t.segs[sk]||(t.segs[sk]={label:v.label||sk,sec:0,net:0,cnt:0});
+      o.sec+=v.sec||0; o.net+=v.net||0; o.cnt+=v.cnt||0;
+      t.co.sec+=(v.co&&v.co.sec)||0; t.co.cnt+=(v.co&&v.co.cnt)||0;
+      if(!v.g && !v.r){ t.noSplit+=v.sec||0; continue; }   // starší import bez rozpadu
+      for(const [k,g] of Object.entries(v.g||{})) add(t.groups,k,g.label,g.sec,g.cnt);
+      for(const [k,r] of Object.entries(v.r||{})) add(t.reasons,k,r.label,r.sec,r.cnt);
+      for(const [k,sh] of Object.entries(v.sh||{})){
+        const o2=t.shifts[k]||(t.shifts[k]={sec:0,cnt:0}); o2.sec+=sh.sec||0; o2.cnt+=sh.cnt||0;
+      }
     }
   }
   return t;
 }
 const top = (obj,n) => Object.values(obj||{}).sort((a,b)=>b.sec-a.sec).slice(0,n||99);
 
+/* Když má položka `drill`, je celý řádek tlačítko — kliknutím se otevřou
+   Prostoje vyfiltrované na tuhle linku / důvod / směnu za stejné období. */
 function bars(items,color){
   if(!items.length) return `<div class="empty">Zatím žádná data.</div>`;
   const max=Math.max(...items.map(i=>i.sec))||1;
-  return `<div class="bars">`+items.map(i=>`
-    <div class="bar">
+  return `<div class="bars">`+items.map(i=>{
+    const inner=`
       <div class="nm" title="${esc(i.label)}">${esc(i.label)}</div>
       <div class="tr"><i style="width:${Math.max(1,i.sec/max*100).toFixed(1)}%;background:${i.color||color||'#1b4b8f'}"></i></div>
-      <div class="vl">${fmtDur(i.sec)}<span class="muted" style="font-weight:400"> · ${i.cnt}×</span></div>
-    </div>`).join('')+`</div>`;
+      <div class="vl">${fmtDur(i.sec)}<span class="muted" style="font-weight:400"> · ${i.cnt}×</span></div>`;
+    return i.drill
+      ? `<button class="bar go" data-a="kpi-drill" data-v="${esc(i.drill)}" title="Ukázat jednotlivé prostoje">${inner}<span class="ar">›</span></button>`
+      : `<div class="bar">${inner}</div>`;
+  }).join('')+`</div>`;
 }
-function trend(){
-  const dd=days.slice().sort((a,b)=>a.date.localeCompare(b.date));
+function trend(proc){
+  const secOf = d => proc
+    ? Object.values(d.segs||{}).filter(v=>procOfLine(v.label)===proc).reduce((a,v)=>a+(v.sec||0),0)
+    : (d.sec||0);
+  const dd=days.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(d=>Object.assign({},d,{sec:secOf(d)}));
   if(!dd.length) return '';
   const W=720,H=175,ml=46,mr=10,mt=12,mb=32,iw=W-ml-mr,ih=H-mt-mb;
   const peak=Math.max(...dd.map(d=>d.sec))||1;
@@ -1189,7 +1755,7 @@ function scrapView(){
       <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Zatím tu nejsou žádná data o scrapu</div>
       <p class="muted" style="max-width:540px;margin:0 auto 14px">Nahraj Excel se scrapem v záložce <b>Import</b> — stačí, když
         v něm bude projekt, linka, hodnota scrapu v eurech a tržby. Procenta se dopočítají sama.</p>
-      ${canImport()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
+      ${canImportDt()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
     </div></div>`;
   }
   const last=scLatest();
@@ -1340,7 +1906,30 @@ async function nextNo(field, prefix){
   return `${prefix}-${year}-${String(n).padStart(3,'0')}`;
 }
 
+/* Dokumenty, které se kvůli problému musely upravit — zaškrtávátka v A3. */
+const PS_DOCS = ['Karta parametrů','ODS','TPM','Work instruction','JobSetup'];
+
 /* ---------- pomocné nad problémy a akcemi ---------- */
+/* Nápravná opatření k problému jsou obyčejné tasky akčního plánu s vazbou psId. */
+const tasksOfPs = pid => tasks.filter(t=>t.psId===pid);
+/* Uzavření je na dva kroky: koordinátor pošle ke schválení, manažer to schválí.
+   Koordinátor = supervizor daného problému, kdokoli s pozicí „PE coordinator",
+   nebo správce. Manažer = ten, kdo je v nastavení uvedený jako Engineering Manager. */
+const nameKey = x => String(x||'').trim().toLowerCase();
+const isPsCoordinator = p => !!me && (
+  (p.coordinator && nameKey(me.name)===nameKey(p.coordinator)) ||
+  (me.positions||[]).some(IS_COORD) || canImport());
+const isEngManager = () => !!me && (
+  (engcfg.manager && nameKey(me.name)===nameKey(engcfg.manager)) || canImport());
+
+/* Prošvihnutý termín uzavření problem solvingu — kvůli tomu svítí všude červeně. */
+const psLate = p => p.status!=='uzavřeno' && !!p.dueDate && p.dueDate < today();
+const psLateDays = p => psLate(p) ? Math.floor((Date.parse(today())-Date.parse(p.dueDate))/86400000) : 0;
+/* Kdy byl uzavřen poslední hotový úkol k problému — datum poslední akce. */
+function lastActionClosed(pid){
+  const d=tasksOfPs(pid).filter(taskDone).map(t=>t.closedOn).filter(Boolean).sort();
+  return d.length ? d[d.length-1] : '';
+}
 const actsOf = pid => actions.filter(a=>a.problemId===pid);
 const openActs = list => list.filter(a=>a.status!=='hotová' && a.status!=='zrušená');
 const isOverdue = a => a.status!=='hotová' && a.status!=='zrušená' && a.due && a.due < today();
@@ -1348,91 +1937,195 @@ const overdueDays = a => isOverdue(a) ? Math.floor((Date.parse(today())-Date.par
 const problemFor = (wk,slug) => problems.find(p=>p.week===wk && p.lineSlug===slug);
 function needsEscalation(p){
   if(p.status==='uzavřeno') return false;
-  const worst=Math.max(0,...actsOf(p._id).map(overdueDays));
+  const worst=Math.max(0, ...tasksOfPs(p._id).map(lateDays), ...actsOf(p._id).map(overdueDays));
   return worst > (engcfg.escalationDays||7);
 }
 function canClose(p){
-  const acts=actsOf(p._id);
   if(!p.rootCause) return 'Nejdřív doplň kořenovou příčinu.';
-  if(!acts.length) return 'Problém nejde uzavřít bez jediného opatření.';
-  if(!acts.some(a=>a.type==='preventive')) return 'Chybí preventivní opatření — bez něj se problém vrátí.';
-  if(openActs(acts).length) return 'Nejdřív dokonči nebo zruš všechna opatření.';
   if(!p.effResult) return 'Před uzavřením musíš vyplnit ověření účinnosti.';
   return '';
 }
 
+/* ---------- ruční založení A3 ze záložky Problem solving ----------
+   Dřív se problém dal založit jen u linky pod prahem na hlavní stránce.
+   Tohle okno dovolí komukoli otevřít A3 na jakýkoli problém. */
+const PS_TRIGGERS = ['výkon pod prahem','opakovaný problém','porucha stroje','kvalita / zmetky',
+  'bezpečnost','přestavba / seřízení','podnět z auditu','jiný důvod'];
+let psNew=null;        // rozepsané založení: {line, week, trigger, title, err}
+
+/* Linky a stroje na výběr: co přišlo z importu prostojů + stroje z nastavení
+   + linky už založených problémů. Slug držíme stejný jako v importu, aby se
+   problém spároval se svým procesem v KPI. */
+function psLineOpts(){
+  const m=new Map();
+  const put=(label,sl)=>{ const l=String(label||'').trim(); if(l && !m.has(l)) m.set(l, sl||slug(l)); };
+  mgDays.forEach(d=>Object.entries(d.segs||{}).forEach(([k,v])=>put(v.label||k,k)));
+  Object.values(engcfg.machines||{}).forEach(arr=>(arr||[]).forEach(x=>put(x)));
+  problems.forEach(p=>put(p.line,p.lineSlug));
+  return [...m].map(([label,sl])=>({label,slug:sl})).sort((a,b)=>a.label.localeCompare(b.label,'cs'));
+}
+/* Týdny na výběr: co je v datech, doplněné o posledních osm týdnů do dneška. */
+function psWeekOpts(){
+  const set=new Set(mgDays.map(d=>isoWeekOf(d.date)));
+  let wk=isoWeekOf(today());
+  for(let i=0;i<8;i++){ set.add(wk); wk=weekPrev(wk); }
+  return [...set].sort().reverse();
+}
+/* Rozepsané hodnoty do paměti, ať se neztratí při překreslení (toast, chyba…). */
+function collectPsNew(){
+  if(!psNew) return;
+  const g=id=>{const e=document.getElementById(id); return e?e.value.trim():undefined;};
+  for(const [k,id] of [['line','psn-line'],['week','psn-week'],['trigger','psn-trigger'],['title','psn-title']]){
+    const v=g(id); if(v!==undefined) psNew[k]=v;
+  }
+}
+function psNewModal(){
+  if(!psNew) return '';
+  const lines=psLineOpts(), weeks=psWeekOpts();
+  return `<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true"
+      aria-label="Nový problem solving" style="max-width:620px">
+    <h3>Nový A3 problem solving<button class="x" data-a="ps-newclose" aria-label="Zavřít">✕</button></h3>
+    ${psNew.err?`<div class="robar" style="color:var(--red);font-weight:700">${esc(psNew.err)}</div>`:''}
+    <div class="form">
+      <div class="f span2"><label>Linka nebo stroj <span style="color:var(--red)">*</span></label>
+        <input id="psn-line" list="psn-lines" value="${esc(psNew.line||'')}" autocomplete="off"
+          placeholder="Začni psát nebo vyber">
+        <datalist id="psn-lines">${lines.map(l=>`<option>${esc(l.label)}</option>`).join('')}</datalist>
+        <div class="muted" style="font-size:11px">můžeš napsat i linku, která v datech ještě není</div></div>
+      <div class="f span2"><label>Týden, ke kterému problém patří</label>
+        <select id="psn-week">${weeks.map(w=>`<option value="${w}" ${psNew.week===w?'selected':''}>${esc(weekLabel(w))}</option>`).join('')}</select></div>
+      <div class="f span2"><label>Spouštěč</label>
+        <select id="psn-trigger">${PS_TRIGGERS.map(t=>`<option ${psNew.trigger===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="f span4"><label>Krátký popis problému <span style="color:var(--red)">*</span></label>
+        <input id="psn-title" value="${esc(psNew.title||'')}" placeholder="např. IMM07 — opakovaná porucha manipulátoru">
+        <div class="muted" style="font-size:11px">jedna věta, uvidíš ji v seznamu</div></div>
+    </div>
+    <div class="foot">
+      <span class="muted" style="font-size:11.5px">Zbytek — okamžité opatření, kořenovou příčinu,
+        nápravná opatření i fotky — vyplníš hned po založení.</span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-ok" data-a="ps-newgo">Založit a otevřít</button>
+        <button class="btn-ghost" data-a="ps-newclose">Zrušit</button></span>
+    </div>
+  </div></div>`;
+}
+
 /* ---------- zakládání a ukládání ---------- */
-async function createProblem(wk, line, trigger){
+async function createProblem(wk, line, trigger, opts){
   try{
     const no=await nextNo('seqPs','PS');
     const eff=new Date(); eff.setDate(eff.getDate()+(engcfg.effectivenessDays||28));
     const rec={no, week:wk, line:line.label, lineSlug:line.slug,
-      title:`${line.label} — výkon ${num(line.perf,1)} % v ${weekShort(wk)}`,
+      title:(opts&&opts.title) ? opts.title
+        : (line.perf!=null ? `${line.label} — výkon ${num(line.perf,1)} % v ${weekShort(wk)}`
+                           : `${line.label} — ${trigger||'problém'} (${weekShort(wk)})`),
       trigger: trigger||'výkon pod prahem', status:'nový',
       owner:engEngineers()[0]||'', coordinator:engCoordinators()[0]||'',
       opened:today(), downtimeSec:Math.round(line.sec||0), perf:line.perf==null?null:+line.perf.toFixed(1),
-      immediate:'', analysis:'', rootCause:'',
-      a3Title:`${line.label} — výkon ${num(line.perf,1)} % v ${weekShort(wk)}`,
-      a3Loc:line.label, a3Author:me.name||'', a3Date:today(),
-      problemDesc:'',
-      currentState:`Výkon ${num(line.perf,1)} %, prostoje ${fmtDur(line.sec||0)} (${weekLabel(wk)}).`,
-      goal:`Výkon linky zpět nad ${engcfg.threshold||90} %.`,
-      implPlan:'', stdWork:'',
+      problemDesc:'', immediate:'', rootCause:'', corrective:'', docs:[], files:[],
+      dueDate:eff.toISOString().slice(0,10),
       effCheckDue:eff.toISOString().slice(0,10), effResult:'', escalated:false,
       hist:[`${today()} · ${me.name} · problém založen (${trigger||'výkon pod prahem'})`]};
     const ref=await addDoc(collection(db,'problems'), rec);
     problems.unshift(Object.assign({_id:ref.id}, rec));
     openPs=ref.id; render();
     toast('Založeno '+no+'.','ok');
-  }catch(e){ toast('Nepovedlo se založit: '+((e&&e.message)||e),'err'); }
+  }catch(e){ toast('Nepovedlo se založit. '+writeHint(e),'err'); }
 }
 /* Přenese rozepsané hodnoty z okna do paměti, aby se při překreslení neztratily. */
 function collectPs(){
   const p=problems.find(x=>x._id===openPs); if(!p) return null;
   const el=document.getElementById('ps-root'); if(!el) return p;   // okno není vykreslené
   const g=id=>{const e=document.getElementById(id); return e?e.value.trim():'';};
+  const min=Number(g('ps-min'));
   Object.assign(p,{
     owner:g('ps-owner'), coordinator:g('ps-coord'),
-    immediate:g('ps-immediate'), rootCause:g('ps-root'),
-    analysis:g('a3-analysis'),
-    effCheckDue:g('ps-effdue'), effResult:g('ps-effres'),
-    a3Title:g('a3-title'), a3Loc:g('a3-loc'), a3Author:g('a3-author'), a3Date:g('a3-date'),
-    problemDesc:g('a3-desc'), currentState:g('a3-cur'), goal:g('a3-goal'),
-    implPlan:g('a3-impl'), stdWork:g('a3-std'),
+    problemDesc:g('ps-desc'), immediate:g('ps-immediate'),
+    rootCause:g('ps-root'), corrective:g('ps-corrective'),
+    docs:[...document.querySelectorAll('[data-psdoc]')].filter(c=>c.checked).map(c=>c.dataset.psdoc),
+    dueDate:g('ps-due'), effCheckDue:g('ps-effdue'), effResult:g('ps-effres'),
     status:g('ps-status')||p.status
   });
+  if(isFinite(min) && min>=0) p.downtimeSec=Math.round(min*60);
   return p;
+}
+/* Vyplněná pole problému — společné pro Uložit i pro uzavření. */
+function psPatch(p){
+  return {
+    owner:p.owner, coordinator:p.coordinator,
+    problemDesc:p.problemDesc, immediate:p.immediate,
+    rootCause:p.rootCause, corrective:p.corrective, docs:p.docs||[],
+    downtimeSec:p.downtimeSec||0, dueDate:p.dueDate||'',
+    effCheckDue:p.effCheckDue, effResult:p.effResult
+  };
 }
 async function saveProblem(){
   const p=collectPs(); if(!p) return;
-  const next={
-    owner:p.owner, coordinator:p.coordinator,
-    immediate:p.immediate, rootCause:p.rootCause, analysis:p.analysis,
-    a3Title:p.a3Title, a3Loc:p.a3Loc, a3Author:p.a3Author, a3Date:p.a3Date,
-    problemDesc:p.problemDesc, currentState:p.currentState, goal:p.goal,
-    implPlan:p.implPlan, stdWork:p.stdWork,
-    effCheckDue:p.effCheckDue, effResult:p.effResult, status:p.status
-  };
-  if(next.status==='uzavřeno'){
-    const why=canCloseWith(p);
-    if(why){ psMsg=why; render(); return; }
-    next.closedAt=today();
-  }
-  const hist=(p.hist||[]).slice();
-  hist.push(`${today()} · ${me.name} · ${next.status==='uzavřeno'?'problém uzavřen':'upraveno'}`);
-  next.hist=hist;
+  const next=psPatch(p);
+  /* Uzavřený stav ani „ke schválení" se ručně nastavit nedá — jen tlačítky. */
+  next.status = PS_LOCKED.includes(p.status) ? p.status : (p.status||'nový');
+  next.hist=(p.hist||[]).concat(`${today()} · ${me.name} · upraveno`);
   try{
     await updateDoc(doc(db,'problems',p._id), next);
     Object.assign(p,next); psMsg=''; openPs=null;
     toast('Uloženo.','ok');
-  }catch(e){ psMsg='Uložení selhalo: '+((e&&e.message)||e); render(); }
+  }catch(e){ psMsg='Uložení selhalo. '+writeHint(e); render(); }
+}
+/* Koordinátor uzavře svou část — problém jde ke schválení manažerovi. */
+async function submitPsForApproval(){
+  const p=collectPs(); if(!p) return;
+  if(!isPsCoordinator(p)){ psMsg='Uzavřít problem solving může jen koordinátor.'; render(); return; }
+  const why=canCloseWith(p);
+  if(why){ psMsg=why; render(); return; }
+  const mgr=engcfg.manager ? ' ('+engcfg.manager+')' : '';
+  if(!confirm(`Uzavřít ${p.no} a poslat ke schválení manažerovi${mgr}?\n\nDokud to manažer neschválí, problem solving zůstane otevřený.`)) return;
+  const next=psPatch(p);
+  next.status='ke schválení';
+  next.closeRequestedBy=me.name; next.closeRequestedAt=today();
+  next.approvedBy=''; next.approvedAt='';
+  next.hist=(p.hist||[]).concat(`${today()} · ${me.name} · uzavřeno koordinátorem, čeká na schválení manažera`);
+  try{
+    await updateDoc(doc(db,'problems',p._id), next);
+    Object.assign(p,next); psMsg=''; openPs=null;
+    toast(p.no+' čeká na schválení manažera.','ok');
+  }catch(e){ psMsg='Nepovedlo se. '+writeHint(e); }
+  render();
+}
+/* Manažer schválí — teprve teď je problem solving opravdu uzavřený. */
+async function approvePs(){
+  const p=collectPs(); if(!p) return;
+  if(!isEngManager()){ psMsg='Schválit uzavření může jen Engineering Manager.'; render(); return; }
+  if(p.status!=='ke schválení'){ psMsg='Ke schválení to nejdřív musí poslat koordinátor.'; render(); return; }
+  const why=canCloseWith(p);
+  if(why){ psMsg=why; render(); return; }
+  if(!confirm(`Schválit a definitivně uzavřít ${p.no}?`)) return;
+  const next={status:'uzavřeno', approvedBy:me.name, approvedAt:today(), closedAt:today(),
+    hist:(p.hist||[]).concat(`${today()} · ${me.name} · schváleno manažerem, problem solving uzavřen`)};
+  try{
+    await updateDoc(doc(db,'problems',p._id), next);
+    Object.assign(p,next); psMsg=''; openPs=null;
+    toast(p.no+' uzavřen.','ok');
+  }catch(e){ psMsg='Nepovedlo se. '+writeHint(e); }
+  render();
+}
+/* Manažer vrátí zpátky k dopracování. */
+async function rejectPs(){
+  const p=collectPs(); if(!p) return;
+  if(!isEngManager()){ psMsg='Vrátit k dopracování může jen Engineering Manager.'; render(); return; }
+  const why=prompt('Proč se problem solving vrací k dopracování?');
+  if(why===null) return;
+  if(!String(why).trim()){ psMsg='K vrácení napiš důvod.'; render(); return; }
+  const next={status:'opatření', closeRequestedBy:'', closeRequestedAt:'',
+    hist:(p.hist||[]).concat(`${today()} · ${me.name} · vráceno k dopracování — ${String(why).trim()}`)};
+  try{
+    await updateDoc(doc(db,'problems',p._id), next);
+    Object.assign(p,next); psMsg='';
+    toast(p.no+' vrácen k dopracování.','ok');
+  }catch(e){ psMsg='Nepovedlo se. '+writeHint(e); }
+  render();
 }
 function canCloseWith(p){
-  const acts=actsOf(p._id);
   if(!p.rootCause) return 'Bez kořenové příčiny problém uzavřít nejde.';
-  if(!acts.length) return 'Problém nejde uzavřít bez jediného opatření.';
-  if(!acts.some(a=>a.type==='preventive')) return 'Chybí preventivní opatření (preventive) — bez něj se problém vrátí.';
-  if(openActs(acts).length) return 'Nejdřív dokonči nebo zruš všechna opatření.';
   if(!p.effResult) return 'Před uzavřením vyplň ověření účinnosti.';
   return '';
 }
@@ -1455,7 +2148,7 @@ async function addAction(){
       await updateDoc(doc(db,'problems',p._id),{status:'opatření'}); p.status='opatření';
     }
     render();
-  }catch(e){ psMsg='Opatření se neuložilo: '+((e&&e.message)||e); render(); }
+  }catch(e){ psMsg='Opatření se neuložilo. '+writeHint(e); render(); }
 }
 async function setActionStatus(id, st){
   const a=actions.find(x=>x._id===id); if(!a) return;
@@ -1480,6 +2173,315 @@ async function toggleEscalation(id){
   catch(e){ toast(((e&&e.message)||e),'err'); }
 }
 
+/* Smazat celý problem solving i s jeho opatřeními. Smí jen správce — na serveru
+   to stejně hlídá pravidlo `allow write: if isAdmin()` u kolekcí problems a actions. */
+/* ---------- přílohy u problem solvingu ---------- */
+const MAX_PS_FILE = 5*1024*1024;      // 5 MB na soubor, stejně jako u nákupu
+const PHOTO_EDGE = 1600, PHOTO_Q = 0.72;
+/* Fotku z telefonu zmenšíme rovnou v prohlížeči, ať v úložišti nezabírá megabajty.
+   Když se to z jakéhokoli důvodu nepovede, nahraje se originál. */
+async function shrinkImage(f){
+  if(!/^image\//i.test(f.type||'') || /svg/i.test(f.type||'')) return f;
+  try{
+    const bmp = await createImageBitmap(f, {imageOrientation:'from-image'});
+    const sc = Math.min(1, PHOTO_EDGE/Math.max(bmp.width, bmp.height));
+    if(sc>=1 && f.size<=900*1024){ bmp.close && bmp.close(); return f; }
+    const w=Math.max(1,Math.round(bmp.width*sc)), h=Math.max(1,Math.round(bmp.height*sc));
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    const cx=cv.getContext('2d'); cx.drawImage(bmp,0,0,w,h);
+    bmp.close && bmp.close();
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',PHOTO_Q));
+    if(!blob || blob.size>=f.size) return f;
+    return new File([blob], f.name.replace(/\.[^.]+$/,'')+'.jpg', {type:'image/jpeg', lastModified:Date.now()});
+  }catch(e){ return f; }
+}
+async function uploadPsFile(psId, f){
+  const safe=f.name.replace(/[^\w.\-]+/g,'_').slice(-80);
+  const path='ps/'+psId+'/'+Date.now()+'_'+Math.floor(Math.random()*1e6)+'_'+safe;
+  const st=sref(storage,path);
+  await uploadBytes(st,f,{contentType:f.type||'application/octet-stream'});
+  return {name:f.name, path, url:await getDownloadURL(st), size:f.size, at:today(), by:me.name};
+}
+async function handlePsFiles(list){
+  const p=collectPs(); if(!p) return;
+  const raw=[...(list||[])].filter(Boolean); if(!raw.length) return;
+  psMsg='Zpracovávám přílohy…'; render();
+  const ok=[];
+  for(const f0 of raw){
+    const f=await shrinkImage(f0);
+    if(f.size>MAX_PS_FILE){ toast(`„${f.name}" je i po zmenšení větší než 5 MB.`,'err'); continue; }
+    ok.push(f);
+  }
+  if(!ok.length){ psMsg=''; render(); return; }
+  psMsg='Nahrávám přílohy…'; render();
+  const arr=(p.files||[]).slice(), hist=(p.hist||[]).slice();
+  let n=0;
+  for(const f of ok){
+    try{ arr.push(await uploadPsFile(p._id,f)); hist.push(`${today()} · ${me.name} · přidal přílohu ${f.name}`); n++; }
+    catch(e){ toast('Nenahrálo se: '+f.name+' — '+((e&&e.message)||e),'err'); }
+  }
+  if(n){
+    try{ await updateDoc(doc(db,'problems',p._id),{files:arr, hist}); p.files=arr; p.hist=hist;
+         toast(n===1?'Příloha nahrána.':n+' přílohy nahrány.','ok'); }
+    catch(e){ toast('Uložení příloh selhalo. '+writeHint(e),'err'); }
+  }
+  psMsg=''; render();
+}
+async function removePsFile(i){
+  const p=collectPs(); if(!p) return;
+  const files=(p.files||[]).slice(), f=files[i]; if(!f) return;
+  if(!confirm(`Odebrat přílohu „${f.name}"?`)) return;
+  try{ await deleteObject(sref(storage,f.path)); }catch(e){ /* v úložišti už být nemusí */ }
+  files.splice(i,1);
+  const hist=(p.hist||[]).concat(`${today()} · ${me.name} · smazal přílohu ${f.name}`);
+  try{ await updateDoc(doc(db,'problems',p._id),{files, hist}); p.files=files; p.hist=hist; }
+  catch(e){ toast('Smazání selhalo. '+writeHint(e),'err'); }
+  render();
+}
+
+/* Smazat task akčního plánu i s jeho přílohami. Smí jen správce — na serveru
+   to hlídá pravidlo `allow delete: if isAdmin()` u kolekce tasks. */
+async function deleteTask(id){
+  if(!canImport()){ toast('Mazat tasky smí jen správce.','err'); return; }
+  const t=tasks.find(x=>x._id===id); if(!t) return;
+  const fls=(t.files||[]).length;
+  const co = fls ? `\nSmaže se i ${fls===1?'1 příloha':fls+' přílohy'}.` : '';
+  const ps = t.psNo ? `\nJe to nápravné opatření k problem solvingu ${t.psNo} — ten zůstane.` : '';
+  if(!confirm(`Opravdu smazat task ${t.no}?\n\n${t.task||''}${co}${ps}\n\nTohle už nejde vrátit zpět.`)) return;
+  busy='Mažu task '+t.no+'…'; render();
+  try{
+    for(const fl of (t.files||[])){ try{ await deleteObject(sref(storage,fl.path)); }catch(e){ /* už tam být nemusí */ } }
+    await deleteDoc(doc(db,'tasks',id));
+    tasks=tasks.filter(x=>x._id!==id);
+    if(openTask && openTask._id===id){ openTask=null; tMsg=''; }
+    toast('Task '+t.no+' smazán.','ok');
+  }catch(e){ toast('Smazání selhalo. '+writeHint(e),'err'); }
+  busy=''; render();
+}
+
+async function deleteProblem(id){
+  if(!canImport()){ toast('Mazat problem solving smí jen správce.','err'); return; }
+  const p=problems.find(x=>x._id===id); if(!p) return;
+  const acts=actsOf(id), mine=tasksOfPs(id);
+  const kolik = mine.length===0 ? 'Úkoly v akčním plánu k němu nejsou.'
+    : `Úkolů v akčním plánu k němu je ${mine.length} — ty v akčním plánu zůstanou, jen ztratí vazbu.`;
+  if(!confirm(`Opravdu smazat problem solving ${p.no}?\n\n${p.title}\n\n${kolik}\nTohle už nejde vrátit zpět.`)) return;
+  busy='Mažu '+p.no+'…'; render();
+  try{
+    for(const fl of (p.files||[])){ try{ await deleteObject(sref(storage,fl.path)); }catch(e){ /* už tam být nemusí */ } }
+    for(const a of acts) await deleteDoc(doc(db,'actions',a._id));
+    await deleteDoc(doc(db,'problems',id));
+    problems=problems.filter(x=>x._id!==id);
+    actions=actions.filter(a=>a.problemId!==id);
+    if(openPs===id){ openPs=null; psMsg=''; }
+    toast('Problem solving '+p.no+' smazán.','ok');
+  }catch(e){ toast('Smazání selhalo. '+writeHint(e),'err'); }
+  busy=''; render();
+}
+
+/* ==========================================================
+   Čísla pro dlaždice procesů na hlavní stránce.
+   Všechno se počítá z denních souhrnů dt_days, které už máme v paměti —
+   žádné další čtení z Firestore navíc.
+   ========================================================== */
+/* Do jakého procesu patří task akčního plánu — nejdřív podle stroje, pak podle oblasti. */
+function procOfTask(t){
+  const byMachine = t.machine ? procOfLine(t.machine) : 'OTHER';
+  if(byMachine!=='OTHER') return byMachine;
+  return procOfLine(t.area||'');
+}
+function procStats(){
+  const weeks=weeklyPerf(mgDays, engcfg);
+  const wks=sortedWeeks(weeks);
+  const nowWk=isoWeekOf(today());
+  /* „Minulý týden" = poslední uzavřený týden, ne rozdělaný. */
+  const lastWk = wks.filter(k=>k<nowWk).slice(-1)[0] || wks.slice(-1)[0] || '';
+  const prevWk = lastWk ? weekPrev(lastWk,1) : '';
+  /* „Tento měsíc" = měsíc posledních dat. Když se na začátku měsíce ještě nic
+     nenaimportovalo, ukáže se poslední měsíc s daty, ne prázdná nula. */
+  const newest = mgDays.map(d=>d.date).sort().slice(-1)[0] || today();
+  const month  = newest.slice(0,7);
+  const prevMonth = (()=>{ const [y,m]=month.split('-').map(Number);
+    return m===1 ? `${y-1}-12` : `${y}-${pad2(m-1)}`; })();
+
+  /* Dlaždice ukazují buď celý měsíc, nebo jeden vybraný týden (tileWk). */
+  const wk = (tileWk && weeks[tileWk]) ? tileWk : '';
+  const prevOfWk = wk ? weekPrev(wk,1) : '';
+  const inMain = d => wk ? isoWeekOf(d.date)===wk       : String(d.date).slice(0,7)===month;
+  const inPrev = d => wk ? isoWeekOf(d.date)===prevOfWk : String(d.date).slice(0,7)===prevMonth;
+  const mainLabel = wk ? weekLabel(wk) : monthCz(month);
+  const prevLabel = wk ? weekShort(prevOfWk) : monthCz(prevMonth);
+
+  const out={};
+  const blank=k=>({k, sec:0, secPrev:0, cnt:0, lines:{},
+    coSec:0, coCnt:0, spark:[], hasCo:false,
+    secWeek:0, secPrevWeek:0, perfWeek:null, worst:null, groups:{}, days:new Set()});
+  for(const p of PROCESSES) out[p.k]=blank(p.k);
+  out.OTHER=blank('OTHER');
+
+  /* součty za vybrané období z denních souhrnů */
+  for(const d of mgDays){
+    const main=inMain(d), prev=inPrev(d);
+    if(!main && !prev) continue;
+    for(const v of Object.values(d.segs||{})){
+      const pk=procOfLine(v.label), o=out[pk]; if(!o) continue;
+      if(main){
+        o.sec+=v.sec||0; o.cnt+=v.cnt||0; o.days.add(d.date);
+        const L=o.lines[v.label]||(o.lines[v.label]={label:v.label,sec:0,coCnt:0,coSec:0});
+        L.sec+=v.sec||0;
+        if(v.co){ o.hasCo=true;
+          o.coSec+=v.co.sec||0; o.coCnt+=v.co.cnt||0;
+          L.coSec+=v.co.sec||0; L.coCnt+=v.co.cnt||0; }
+        for(const [gk,g] of Object.entries(v.g||{})){
+          const x=o.groups[gk]||(o.groups[gk]={label:g.label,sec:0}); x.sec+=g.sec||0;
+        }
+      } else o.secPrev+=v.sec||0;
+    }
+  }
+  /* posledních 8 týdnů pro malý graf trendu v dlaždici */
+  const last8=wks.slice(-8);
+  for(const o of Object.values(out)) o.spark=last8.map(k=>({wk:k, sec:0, on:k===wk}));
+  last8.forEach((k,i)=>{
+    const w=weeks[k]; if(!w) return;
+    for(const l of Object.values(w.lines)){
+      const o=out[procOfLine(l.label)]; if(!o) continue;
+      o.spark[i].sec += l.sec||0;
+    }
+  });
+
+  /* výkon a doplňkový řádek — v režimu měsíce poslední uzavřený týden,
+     v režimu týdne ten vybraný */
+  const perfWk = wk || lastWk;
+  const sideWk = wk ? '' : lastWk;
+  for(const [k,target] of [[perfWk,'_perf'],[sideWk,'secWeek'],[sideWk?prevWk:'','secPrevWeek']]){
+    const w=k?weeks[k]:null; if(!w) continue;
+    for(const l of Object.values(w.lines)){
+      const o=out[procOfLine(l.label)]; if(!o) continue;
+      if(target==='_perf'){ if(l.perf!=null){ o._pp=(o._pp||0)+l.perf; o._pn=(o._pn||0)+1; } }
+      else o[target]+=l.sec||0;
+    }
+  }
+  for(const o of Object.values(out)){
+    o.perfWeek = o._pn ? o._pp/o._pn : null;
+    o.worst = Object.values(o.lines).sort((a,b)=>b.sec-a.sec)[0]||null;
+    o.coWorst = Object.values(o.lines).filter(l=>l.coCnt>0).sort((a,b)=>b.coCnt-a.coCnt)[0]||null;
+    o.topGroup = Object.values(o.groups).sort((a,b)=>b.sec-a.sec)[0]||null;
+    o.sparkAvg = o.spark.length ? o.spark.reduce((a,x)=>a+x.sec,0)/o.spark.length : 0;
+    o.dayCount = o.days.size; delete o.days; delete o._pp; delete o._pn;
+    o.openPs    = problems.filter(p=>p.status!=='uzavřeno' && procOfLine(p.line)===o.k);
+    o.psLate    = o.openPs.filter(p=>psLate(p)||needsEscalation(p));
+    o.openTasks = tasks.filter(t=>!taskDone(t) && procOfTask(t)===o.k);
+    o.lateTasks = o.openTasks.filter(taskLate);
+  }
+  return {out, lastWk, prevWk, month, weeks, wk, mainLabel, prevLabel, wks:last8};
+}
+const trendArrow = (now, before) => {
+  if(!before) return '';
+  const d=(now-before)/before*100;
+  if(Math.abs(d)<3) return '<span class="tarrow flat">→ beze změny</span>';
+  return d>0 ? `<span class="tarrow up">▲ +${num(d,0)} %</span>`
+             : `<span class="tarrow down">▼ ${num(d,0)} %</span>`;
+};
+
+/* Malý sloupcový graf prostojů po týdnech do dlaždice procesu.
+   Poslední sloupec je zvýrazněný, čárkovaně je průměr — ať je hned vidět trend. */
+function sparkWeeks(series, color){
+  const data=(series||[]).filter(Boolean);
+  if(data.length<2 || !data.some(d=>d.sec>0))
+    return '<div class="spark empty">Na trend zatím není dost týdnů.</div>';
+  const W=300, H=60;
+  const max=Math.max(...data.map(d=>d.sec))||1;
+  const avg=data.reduce((a,d)=>a+d.sec,0)/data.length;
+  const step=W/data.length, bw=step*0.62;
+  const ay=H-(avg/max)*(H-4);
+  /* Sloupce jsou v SVG roztaženém na šířku dlaždice. Popisky týdnů proto NEJSOU
+     v SVG — roztažení by z písma udělalo nečitelnou kaši — ale pod ním jako
+     obyčejný text ve stejně širokých sloupcích. */
+  const bars=data.map((d,i)=>{
+    const h=Math.max(d.sec>0?2.5:0.8,(d.sec/max)*(H-4));
+    const x=i*step+(step-bw)/2, y=H-h;
+    const last=data.some(z=>z.on) ? !!d.on : i===data.length-1;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}"
+      fill="${color}" opacity="${last?1:.42}"><title>${weekShort(d.wk)} — ${fmtDur(d.sec)}</title></rect>`;
+  }).join('');
+  const anyOn=data.some(z=>z.on);
+  const labs=data.map((d,i)=>{
+    const last=anyOn ? !!d.on : i===data.length-1;
+    return `<span class="${last?'now':''}" title="${weekShort(d.wk)} — ${fmtDur(d.sec)}">${weekShort(d.wk)}</span>`;
+  }).join('');
+  return `<div class="spark">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Prostoje po týdnech">
+      <line x1="0" y1="${ay.toFixed(1)}" x2="${W}" y2="${ay.toFixed(1)}" stroke="#9aa8ba" stroke-width="1" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>
+      ${bars}
+    </svg>
+    <div class="sparkx" style="grid-template-columns:repeat(${data.length},1fr)">${labs}</div>
+    <div class="sparkcap">prostoje po týdnech · čárkovaně průměr ${fmtDur(avg)}</div>
+  </div>`;
+}
+
+/* ---------- dlaždice procesů na hlavní stránce ---------- */
+function procTiles(){
+  const {out, lastWk, month, wk, mainLabel, prevLabel, wks} = procStats();
+  const card = p => {
+    const o=out[p.k], hMain=(o.sec||0)/3600, hWeek=(o.secWeek||0)/3600;
+    const bad = o.perfWeek!=null && o.perfWeek < (engcfg.threshold||90);
+    const alarm = o.psLate.length || o.lateTasks.length;
+    return `
+    <button class="ptile ${alarm?'alarm':''}" data-a="proc-kpi" data-v="${p.k}"
+      title="Otevře KPI procesu ${esc(p.label)}">
+      <div class="ph" style="--pc:${p.color}">
+        <span class="ic">${p.icon}</span>
+        <span class="nm">${esc(p.label)}</span>
+        ${o.perfWeek!=null?`<span class="perf ${bad?'bad':'ok'}" title="Výkon linek ${esc(wk?weekLabel(wk):(lastWk?weekLabel(lastWk):''))}">${num(o.perfWeek,1)} %</span>`:''}
+      </div>
+      <div class="pbody">
+        <div class="pmain">
+          <div class="big">${num(hMain,1)}<small> h</small></div>
+          <div class="cap">prostoje · ${esc(mainLabel)}${
+            (!wk && month!==today().slice(0,7))?' <b>(poslední data)</b>':''}</div>
+          <div class="sub">${Math.round(o.sec/60).toLocaleString('cs-CZ')} min · ${o.cnt.toLocaleString('cs-CZ')} událostí
+            ${trendArrow(o.sec, o.secPrev)}<span class="muted" style="font-size:11px">proti ${esc(prevLabel)}</span></div>
+        </div>
+        <div class="prow">
+          ${wk
+            ? `<div><span class="v">${num((o.sparkAvg||0)/3600,1)} h</span><span class="l">průměr za posledních ${o.spark.length} týdnů</span>
+                <span class="t">${trendArrow(o.sec, o.sparkAvg)}</span></div>`
+            : `<div><span class="v">${num(hWeek,1)} h</span><span class="l">minulý týden${lastWk?' ('+weekShort(lastWk)+')':''}</span>
+                <span class="t">${trendArrow(o.secWeek, o.secPrevWeek)}</span></div>`}
+          <div><span class="v">${o.hasCo?o.coCnt+'×':'—'}</span><span class="l">přestaveb${
+            !o.hasCo ? ' · nahraj report znovu'
+            : o.coCnt ? ` · ⌀ ${Math.round(o.coSec/o.coCnt/60)} min · celkem ${fmtDur(o.coSec)}` : ''}</span></div>
+        </div>
+        ${sparkWeeks(o.spark, p.color)}
+        <div class="pgrid">
+          <div class="${o.psLate.length?'bad':''}"><span class="v">${o.openPs.length}</span><span class="l">otevřených problem solvingů${o.psLate.length?` · ${o.psLate.length} hoří`:''}</span></div>
+          <div class="${o.lateTasks.length?'bad':''}"><span class="v">${o.openTasks.length}</span><span class="l">otevřených úkolů${o.lateTasks.length?` · ${o.lateTasks.length} po termínu`:''}</span></div>
+        </div>
+        <div class="pfoot">
+          ${o.worst?`<span>Nejhorší linka: <b>${esc(o.worst.label)}</b> · ${fmtDur(o.worst.sec)}</span>`:'<span class="muted">Za tohle období žádná data.</span>'}
+          ${o.topGroup?`<span>Největší důvod: <b>${esc(o.topGroup.label)}</b> · ${fmtDur(o.topGroup.sec)}</span>`:''}
+          ${o.coWorst?`<span>Nejvíc přestaveb: <b>${esc(o.coWorst.label)}</b> · ${o.coWorst.coCnt}×</span>`:''}
+
+        </div>
+      </div>
+      <div class="pgo">KPI procesu →</div>
+    </button>`;
+  };
+  const other=out.OTHER;
+  return `
+  <div class="ptilebar">
+    <span class="muted" style="font-size:12.5px;font-weight:700">Dlaždice ukazují:</span>
+    <button class="rangebtn ${wk?'':'on'}" data-a="tile-wk" data-v="">Celý měsíc</button>
+    ${(wks||[]).map(k=>`<button class="rangebtn ${wk===k?'on':''}" data-a="tile-wk" data-v="${k}">${weekShort(k)}</button>`).join('')}
+    <span class="muted" style="font-size:11.5px;margin-left:4px">${esc(mainLabel)}</span>
+  </div>
+  <div class="ptiles">${PROCESSES.map(card).join('')}</div>
+  ${other.sec>0?`<div class="notice warn" style="margin-bottom:14px">
+    <b>Nezařazené linky</b> — ${fmtDur(other.sec)} za ${esc(mainLabel)} nespadlo do žádného procesu:
+    ${Object.values(other.lines).sort((a,b)=>b.sec-a.sec).slice(0,8).map(l=>esc(l.label)).join(', ')}.
+    Řekni mi, kam patří, a doplním je.</div>`:''}`;
+}
+
 /* ---------- obrazovka Řízení ---------- */
 function mgmtView(){
   if(!mgDays.length){
@@ -1488,7 +2490,7 @@ function mgmtView(){
       <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Zatím není z čeho řídit</div>
       <p class="muted" style="max-width:540px;margin:0 auto 14px">Nahraj prostoje ze Symesticu a tahle stránka sama spočítá
         týdenní výkon linek, označí ty pod ${engcfg.threshold} % a založí k nim povinný problem solving.</p>
-      ${canImport()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
+      ${canImportDt()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
     </div></div>`;
   }
   const weeks=weeklyPerf(mgDays, engcfg);
@@ -1506,6 +2508,8 @@ function mgmtView(){
   const missing=complete ? under.filter(l=>!problemFor(cur,l.slug)) : [];
 
   return `
+  ${procTiles()}
+
   <div class="tabs" style="margin-bottom:10px">
     <span class="muted" style="font-size:12px">Týden:</span>
     ${wks.slice(-8).map(k=>`<button class="rangebtn ${k===cur?'on':''}" data-a="mg-week" data-v="${k}">${weekShort(k)}</button>`).join('')}
@@ -1591,18 +2595,20 @@ function mgmtView(){
   <div class="panel">
     <h2>Otevřené problémy<span class="right">${openPs2.length} · Process Engineer je owner analýzy</span></h2>
     <div class="tblwrap"><table>
-      <thead><tr><th>Číslo</th><th>Linka / týden</th><th>Stav</th><th>Owner analýzy</th><th>Coordinator</th><th>Opatření</th><th>Nejbližší termín</th><th></th></tr></thead>
+      <thead><tr><th>Číslo</th><th>Linka / týden</th><th>Stav</th><th>Owner analýzy</th><th>Coordinator</th><th>Úkoly</th><th>Nejbližší termín</th><th></th></tr></thead>
       <tbody>${openPs2.map(p=>{
-        const acts=actsOf(p._id), op=openActs(acts);
-        const nearest=op.map(a=>a.due).filter(Boolean).sort()[0]||'';
-        const late=op.some(isOverdue);
-        return `<tr class="${late?'long':''}">
-          <td data-label="Číslo"><b>${p.no}</b>${(p.escalated||needsEscalation(p))?' <span class="badge b-red">eskalace</span>':''}</td>
+        const mine=tasksOfPs(p._id), op=mine.filter(t=>!taskDone(t));
+        const nearest=op.map(dueValid).filter(Boolean).sort()[0]||'';
+        const late=op.some(taskLate);
+        return `<tr class="${late||psLate(p)?'long':''}">
+          <td data-label="Číslo"><b${psLate(p)?' style="color:var(--red)"':''}>${p.no}</b>${
+            psLate(p)?` <span class="badge b-red">po termínu ${psLateDays(p)} dní</span>`:''}${
+            (p.escalated||needsEscalation(p))?' <span class="badge b-red">eskalace</span>':''}</td>
           <td data-label="Linka" class="desc">${esc(p.line)} · ${weekShort(p.week)}${p.trigger==='opakovaný problém'?' <span class="badge b-amber">opakovaný</span>':''}</td>
           <td data-label="Stav"><span class="badge ${psDef(p.status).cls}">${p.status}</span></td>
           <td data-label="Owner">${esc(p.owner||'—')}</td>
           <td data-label="Coordinator">${esc(p.coordinator||'—')}</td>
-          <td data-label="Opatření">${acts.length-op.length}/${acts.length} hotovo</td>
+          <td data-label="Úkoly">${mine.length-op.length}/${mine.length} hotovo</td>
           <td data-label="Termín">${nearest?(late?`<b style="color:var(--red)">${dayCz(nearest)}</b>`:dayCz(nearest)):'—'}</td>
           <td data-label=""><button class="btn-ghost" data-a="mg-open" data-v="${p._id}">Otevřít</button></td>
         </tr>`;}).join('') || `<tr><td colspan="8" class="empty">Žádný otevřený problém.</td></tr>`}
@@ -1729,117 +2735,131 @@ function mgmtSettings(){
   </div>`;
 }
 /* ---------- okno problému ---------- */
+/* Zjednodušené A3: kolik minut, kdo to řeší, popis, okamžité opatření,
+   kořenová příčina, nápravná opatření (jako tasky akčního plánu),
+   upravené dokumenty a ověření účinnosti. */
 function problemModal(){
   const p=problems.find(x=>x._id===openPs); if(!p) return '';
-  const acts=actsOf(p._id);
   const engs=engEngineers(), coos=engCoordinators();
+  const mine=tasksOfPs(p._id);
   const sel=(id,val,list)=>`<select id="${id}"><option value="">— nevybráno —</option>${
     list.map(o=>`<option ${val===o?'selected':''}>${esc(o)}</option>`).join('')}${
     val&&!list.includes(val)?`<option selected>${esc(val)}</option>`:''}</select>`;
-  const ta=(id,val,ph,rows)=>`<textarea id="${id}" rows="${rows||3}" placeholder="${esc(ph)}">${esc(val||'')}</textarea>`;
+  const ta=(id,val,ph,rows)=>`<textarea id="${id}" rows="${rows||4}" placeholder="${esc(ph)}">${esc(val||'')}</textarea>`;
   const blocked=canCloseWith(p);
+  const checked=new Set(p.docs||[]);
+  const waiting=p.status==='ke schválení', closed=p.status==='uzavřeno';
+  const coord=isPsCoordinator(p), mgr=isEngManager();
   return `
-  <div class="overlay" id="ovl"><div class="modal" style="max-width:1180px" role="dialog" aria-modal="true" aria-label="A3 problem solving">
-    <h3>${p.no} — A3 problem solving<button class="x" data-a="mg-close" aria-label="Zavřít">✕</button></h3>
+  <div class="overlay" id="ovl"><div class="modal" style="max-width:980px" role="dialog" aria-modal="true" aria-label="Problem solving">
+    <h3>${p.no} — problem solving<button class="x" data-a="mg-close" aria-label="Zavřít">✕</button></h3>
     <div class="robar">
-      <b>${esc(p.line)}</b> · ${weekLabel(p.week)} · výkon ${p.perf!=null?num(p.perf,1)+' %':'—'} · prostoje ${fmtDur(p.downtimeSec||0)}
-      · spouštěč: ${esc(p.trigger)} ${(p.escalated||needsEscalation(p))?'<span class="badge b-red">eskalace na Engineering Managera</span>':''}
+      <b>${esc(p.line)}</b> · ${weekLabel(p.week)} · výkon ${p.perf!=null?num(p.perf,1)+' %':'—'}
+      · spouštěč: ${esc(p.trigger)}
+      ${closed?`<span class="badge b-green">uzavřeno ${dateCz(p.closedAt||'')}${p.approvedBy?' · schválil '+esc(p.approvedBy):''}</span>`:''}
+      ${waiting?`<span class="badge b-amber">čeká na schválení manažerem${p.closeRequestedBy?' · uzavřel '+esc(p.closeRequestedBy):''}</span>`:''}
+      ${psLate(p)?`<span class="badge b-red">po termínu ${psLateDays(p)} dní</span>`:''}
+      ${(p.escalated||needsEscalation(p))?'<span class="badge b-red">eskalace na Engineering Managera</span>':''}
     </div>
     <div class="a3wrap">
 
       <div class="a3top">
-        <div class="f"><label>Stav A3</label>
-          <select id="ps-status">${PS_STATUS.map(s=>`<option ${p.status===s.k?'selected':''}>${s.k}</option>`).join('')}</select>
+        <div class="f"><label>Prostoj (minuty)</label>
+          <input id="ps-min" type="number" min="0" step="1" value="${Math.round((p.downtimeSec||0)/60)}">
+          <div class="muted" style="font-size:11px">napočítáno z importu, dá se přepsat</div></div>
+        <div class="f"><label>Vlastník <span style="color:var(--red)">*</span></label>${sel('ps-owner',p.owner,engs)}
+          <div class="muted" style="font-size:11px">procesní inženýr, který to řeší</div></div>
+        <div class="f"><label>Supervizor</label>${sel('ps-coord',p.coordinator,coos)}
+          <div class="muted" style="font-size:11px">PE coordinator</div></div>
+        <div class="f"><label>Termín uzavření</label>
+          <input id="ps-due" type="date" value="${esc(p.dueDate||'')}" class="${psLate(p)?'late':''}">
+          <div class="muted" style="font-size:11px">${psLate(p)?`<b style="color:var(--red)">po termínu ${psLateDays(p)} dní</b>`:'do kdy má být hotovo'}</div></div>
+        <div class="f"><label>Stav</label>
+          ${PS_LOCKED.includes(p.status)
+            ? `<div class="ro"><span class="badge ${psDef(p.status).cls}">${esc(p.status)}</span></div>`
+            : `<select id="ps-status">${PS_STATUS.filter(x=>!PS_LOCKED.includes(x.k))
+                .map(x=>`<option ${p.status===x.k?'selected':''}>${x.k}</option>`).join('')}</select>`}
           <div class="muted" style="font-size:11px">${psDef(p.status).d}</div></div>
-        <div class="f"><label>Vlastník A3 problem solving <span style="color:var(--red)">*</span></label>${sel('ps-owner',p.owner,engs)}
-          <div class="muted" style="font-size:11px">procesní inženýr</div></div>
-        <div class="f"><label>Problem solving supervizor</label>${sel('ps-coord',p.coordinator,coos)}
-          <div class="muted" style="font-size:11px">koordinátor (1 ze tří)</div></div>
-      </div>
-
-      <div class="a3head">
-        <div class="c"><span class="lb">Název</span><input id="a3-title" value="${esc(p.a3Title||p.title||'')}"></div>
-        <div class="c"><span class="lb">Lokalita / oddělení</span><input id="a3-loc" value="${esc(p.a3Loc||p.line||'')}"></div>
-        <div class="c"><span class="lb">Autor</span><input id="a3-author" value="${esc(p.a3Author||'')}"></div>
-        <div class="c"><span class="lb">Datum</span><input id="a3-date" type="date" value="${esc(p.a3Date||p.opened||today())}"></div>
       </div>
 
       <div class="a3grid">
         <div class="a3col">
           <div class="a3box"><div class="bh"><span class="n">1.</span> Popis problému</div>
-            <div class="bb">${ta('a3-desc',p.problemDesc,'Co se děje, kde a jak se to projevuje. Fakta, ne domněnky.',4)}</div></div>
-          <div class="a3box grow"><div class="bh"><span class="n">2.</span> Současný stav</div>
-            <div class="bb">${ta('a3-cur',p.currentState,'Jak to vypadá dnes — čísla, výkon, prostoje, dopad.',7)}</div></div>
-          <div class="a3box"><div class="bh"><span class="n">3.</span> Cíl / cílové zlepšení</div>
-            <div class="bb">${ta('a3-goal',p.goal,'Čeho chceme dosáhnout a do kdy.',4)}</div></div>
+            <div class="bb">${ta('ps-desc',p.problemDesc,'Co se stalo, kde a jak se to projevilo. Fakta, ne domněnky.',5)}</div></div>
+          <div class="a3box"><div class="bh"><span class="n">2.</span> Okamžité opatření</div>
+            <div class="bb">${ta('ps-immediate',p.immediate,'Jak jsme linku rozjeli — nebo co pro to uděláme.',5)}</div></div>
+          <div class="a3box"><div class="bh"><span class="n">3.</span> Kořenová příčina <span style="color:var(--red)">*</span></div>
+            <div class="bb">${ta('ps-root',p.rootCause,'Proč se to stalo. Bez ní nejde problem solving uzavřít.',5)}</div></div>
         </div>
 
         <div class="a3col">
-          <div class="a3box grow"><div class="bh"><span class="n">4.</span> Analýza kořenové příčiny</div>
+          <div class="a3box"><div class="bh"><span class="n">4.</span> Nápravné opatření</div>
             <div class="bb">
-              <div class="a3lbl">Analýza — jak jsme došli ke kořenové příčině</div>
-              ${ta('a3-analysis', p.analysis || (p.whys||[]).filter(Boolean).join('\n'), 'Postup analýzy ke kořenové příčině.',7)}
-              <div class="a3lbl">Kořenová příčina <span style="color:var(--red)">*</span></div>
-              <input id="ps-root" value="${esc(p.rootCause||'')}" placeholder="bez ní nejde A3 uzavřít">
+              ${ta('ps-corrective',p.corrective,'Co uděláme, aby se to neopakovalo — nebo aby byl prostoj do budoucna menší.',4)}
+              <div class="a3lbl">Úkoly v akčním plánu</div>
+              <div class="pstasks">${mine.length?mine.map(t=>`
+                <div class="pstask ${taskLate(t)?'late':''}" data-a="tk-open" data-v="${t._id}" title="Otevřít task">
+                  <b>${esc(t.no)}</b>
+                  <span class="tx">${esc(t.task)}</span>
+                  <span class="who">${esc(taskOwners(t).join(', ')||'—')}</span>
+                  <span class="dd">${dueValid(t)?dateCz(dueValid(t)):'—'}</span>
+                  <span class="badge ${stDef(t.status).cls}">${esc(t.status)}</span>
+                </div>`).join(''):'<div class="muted" style="font-size:12px;padding:2px 0">Zatím žádný úkol.</div>'}</div>
+              <button class="btn-primary" data-a="ps-newtask" style="align-self:flex-start">+ Přidat úkol do akčního plánu</button>
+              <div class="pslastact">Poslední akce uzavřena:
+                <b>${lastActionClosed(p._id)?dateCz(lastActionClosed(p._id)):'zatím žádná'}</b></div>
             </div></div>
-          <div class="a3box"><div class="bh"><span class="n">5.</span> Protiopatření</div>
-            <div class="bb">
-              <div class="a3lbl">Okamžité opatření (containment)</div>
-              <input id="ps-immediate" value="${esc(p.immediate||'')}" placeholder="co jsme udělali hned — výměna dílu, snížená rychlost, 100% kontrola">
-              <div class="a3lbl">Opatření — každé s ownerem a termínem</div>
-              <div class="tblwrap" style="border:1px solid var(--line);border-radius:var(--radius)">
-                <table><thead><tr><th>Č.</th><th>Opatření</th><th>Typ</th><th>Owner</th><th>Termín</th><th>Stav</th><th></th></tr></thead>
-                <tbody>${acts.map(a=>`<tr class="${isOverdue(a)?'long':''}">
-                  <td data-label="Č."><b>${a.no}</b></td>
-                  <td data-label="Opatření" class="desc">${esc(a.text)}</td>
-                  <td data-label="Typ"><span class="badge ${a.type==='preventive'?'b-teal':'b-grey'}">${a.type==='preventive'?'preventive':'corrective'}</span></td>
-                  <td data-label="Owner">${esc(a.owner)}</td>
-                  <td data-label="Termín">${isOverdue(a)?`<b style="color:var(--red)">${dayCz(a.due)}</b>`:dayCz(a.due)}</td>
-                  <td data-label="Stav"><span class="badge ${(AC_STATUS.find(s=>s.k===a.status)||AC_STATUS[0]).cls}">${a.status}</span></td>
-                  <td data-label="">${openActs([a]).length?`<button class="btn-ok" style="padding:3px 9px;font-size:11px" data-a="mg-adone" data-v="${a._id}">Hotovo</button>`:''}</td>
-                </tr>`).join('') || `<tr><td colspan="7" class="empty">Zatím žádné opatření. Corrective odstraní následek, preventive zabrání opakování — mít obojí je součást standardu.</td></tr>`}
-                </tbody></table>
-              </div>
-              <div class="addrow">
-                <input id="na-text" placeholder="Co se udělá">
-                <select id="na-type">${AC_TYPE.map(t=>`<option value="${t.k}">${t.label}</option>`).join('')}</select>
-                <input id="na-owner" placeholder="Owner" list="ownerlist">
-                <datalist id="ownerlist">${[...new Set(engs.concat(coos))].map(o=>`<option>${esc(o)}</option>`).join('')}</datalist>
-                <input id="na-due" type="date" value="">
-                <button class="btn-primary" data-a="mg-addaction">+ Přidat</button>
-              </div>
-            </div></div>
-        </div>
 
-        <div class="a3col">
-          <div class="a3box"><div class="bh"><span class="n">6.</span> Plán implementace</div>
-            <div class="bb">${ta('a3-impl',p.implPlan,'Kdo / kdy / jak protiopatření zavede. Kroky a termíny.',6)}</div></div>
-          <div class="a3box grow"><div class="bh"><span class="n">7.</span> Kontrola výsledků — ověření</div>
+          <div class="a3box"><div class="bh"><span class="n">5.</span> Upravené dokumenty</div>
             <div class="bb">
-              <div class="a3lbl">Ověřit do</div>
-              <input id="ps-effdue" type="date" value="${esc(p.effCheckDue||'')}">
-              <div class="a3lbl">Výsledek ověření <span style="color:var(--red)">*</span></div>
-              ${ta('ps-effres',p.effResult,'např. 4 týdny bez opakování, výkon linky zpět nad 90 %',5)}
+              <div class="muted" style="font-size:11.5px;margin-bottom:-2px">Co se kvůli tomuhle problému muselo přepsat.</div>
+              <div class="psdocs">${PS_DOCS.map(d=>`<label class="psdoc"><input type="checkbox" data-psdoc="${esc(d)}" ${checked.has(d)?'checked':''}> ${esc(d)}</label>`).join('')}</div>
+            </div></div>
+
+          <div class="a3box"><div class="bh"><span class="n">6.</span> Ověření účinnosti <span style="color:var(--red)">*</span></div>
+            <div class="bb">
+              <div class="psverify">
+                <div><div class="a3lbl">Ověřit do</div><input id="ps-effdue" type="date" value="${esc(p.effCheckDue||'')}"></div>
+                <div><div class="a3lbl">Výsledek ověření</div><input id="ps-effres" value="${esc(p.effResult||'')}" placeholder="např. 4 týdny bez opakování"></div>
+              </div>
+            </div></div>
+
+          <div class="a3box"><div class="bh"><span class="n">7.</span> Přílohy</div>
+            <div class="bb">
+              <div class="psfilebtns">
+                <label class="btn-cam">📷 Vyfotit<input type="file" id="ps-cam" accept="image/*" capture="environment"></label>
+                <label class="filebtn">📎 Vybrat soubor<input type="file" id="ps-file" multiple></label>
+              </div>
+              <div class="drop" id="ps-drop" style="padding:11px;font-size:12px">nebo sem soubory přetáhni · do 5 MB · fotky se samy zmenší</div>
+              ${(p.files||[]).length?`<div class="filelist">${(p.files||[]).map((fl,i)=>`
+                <div class="fileitem">
+                  <span class="ic">${/\.(jpe?g|png|gif|webp|heic)$/i.test(fl.name)?'🖼️':'📎'}</span>
+                  <span class="nm"><a href="${esc(fl.url)}" target="_blank" rel="noopener">${esc(fl.name)}</a></span>
+                  <span class="muted">${fileSize(fl.size||0)}</span>
+                  <button class="btn-ghost" style="margin-left:auto;padding:2px 8px;font-size:11px" data-a="ps-delfile" data-v="${i}">Odebrat</button>
+                </div>`).join('')}</div>`:'<div class="muted" style="font-size:12px">Zatím žádná příloha.</div>'}
             </div></div>
         </div>
       </div>
-
-      <div class="a3box" style="margin-top:12px"><div class="bh"><span class="n">8.</span> Aktualizace standardu práce</div>
-        <div class="bb">${ta('a3-std',p.stdWork,'Co se zapíše do standardu / návodky / OPL, aby se problém nevrátil.',3)}</div></div>
     </div>
-    ${(p.hist||[]).length?`<div class="hist">${(p.hist||[]).slice().reverse().slice(0,6).map(h=>`<div>${esc(h)}</div>`).join('')}</div>`:''}
+    ${(p.hist||[]).length?`<div class="hist">${(p.hist||[]).slice().reverse().slice(0,4).map(h=>`<div>${esc(h)}</div>`).join('')}</div>`:''}
     <div class="foot">
       ${psMsg?`<span style="color:var(--red);font-weight:700;font-size:12px">${esc(psMsg)}</span>`
-        :`<span class="muted" style="font-size:11.5px">${blocked?'K uzavření zbývá: '+blocked:'A3 je připravené k uzavření.'}</span>`}
+        : closed?`<span class="muted" style="font-size:11.5px">Uzavřeno ${dateCz(p.closedAt||'')}${p.approvedBy?', schválil '+esc(p.approvedBy):''}.</span>`
+        : waiting?`<span class="muted" style="font-size:11.5px">Uzavřel ${esc(p.closeRequestedBy||'koordinátor')} ${dateCz(p.closeRequestedAt||'')} — ${mgr?'schval to, nebo vrať k dopracování.':'čeká na schválení Engineering Managera'+(engcfg.manager?' ('+esc(engcfg.manager)+')':'')+'.'}</span>`
+        : `<span class="muted" style="font-size:11.5px">${blocked?'K uzavření zbývá: '+blocked:(coord?'Můžeš uzavřít a poslat ke schválení.':'Připravené k uzavření — uzavírá koordinátor.')}</span>`}
       <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-ghost" data-a="mg-escalate" data-v="${p._id}">${p.escalated?'Zrušit eskalaci':'Eskalovat na manažera'}</button>
-        <button class="btn-ok" data-a="mg-save">Uložit</button>
+        ${!closed?`<button class="btn-ghost" data-a="mg-escalate" data-v="${p._id}">${p.escalated?'Zrušit eskalaci':'Eskalovat<span class="wide"> na manažera</span>'}</button>`:''}
+        ${canImport()?`<button class="btn-del" data-a="mg-del" data-v="${p._id}">Smazat</button>`:''}
+        ${(!closed&&!waiting&&coord)?`<button class="btn-teal" data-a="ps-submit">Uzavřít<span class="wide"> a poslat ke schválení</span></button>`:''}
+        ${(waiting&&mgr)?`<button class="btn-ghost" data-a="ps-reject">Vrátit<span class="wide"> k dopracování</span></button>
+          <button class="btn-ok" data-a="ps-approve">Schválit<span class="wide"> a uzavřít</span></button>`:''}
+        ${!closed?'<button class="btn-ok" data-a="mg-save">Uložit</button>':''}
         <button class="btn-ghost" data-a="mg-close">Zavřít</button>
       </span>
     </div>
   </div></div>`;
 }
-
 
 
 /* ---------- obrazovka Problem solving (A3) ---------- */
@@ -1848,14 +2868,19 @@ function psVisible(){
   if(psF.status) r=r.filter(p=>p.status===psF.status);
   if(psF.line)   r=r.filter(p=>p.line===psF.line);
   if(psF.owner)  r=r.filter(p=>p.owner===psF.owner);
-  if(psHideClosed) r=r.filter(p=>p.status!=='uzavřeno');
+  if(psHideClosed) r=r.filter(p=>p.status!=='uzavřeno');   // ke schválení se schovat nesmí
   if(psF.q){ const q=psF.q.toLowerCase();
-    r=r.filter(p=>[p.no,p.title,p.line,p.owner,p.coordinator,p.rootCause,p.analysis||'',(p.whys||[]).join(' ')].join(' ').toLowerCase().includes(q)); }
+    r=r.filter(p=>[p.no,p.title,p.line,p.owner,p.coordinator,p.problemDesc||'',p.immediate||'',
+      p.rootCause,p.corrective||''].join(' ').toLowerCase().includes(q)); }
   /* nejdřív to, co hoří: eskalace, pak po termínu, pak podle stáří */
   return r.sort((a,b)=>{
+    const ca=a.status==='uzavřeno'?1:0, cb=b.status==='uzavřeno'?1:0;
+    if(ca!==cb) return ca-cb;
+    const da=psLate(a)?0:1, db2=psLate(b)?0:1;
+    if(da!==db2) return da-db2;
     const ea=(a.escalated||needsEscalation(a))?0:1, eb=(b.escalated||needsEscalation(b))?0:1;
     if(ea!==eb) return ea-eb;
-    const la=openActs(actsOf(a._id)).some(isOverdue)?0:1, lb=openActs(actsOf(b._id)).some(isOverdue)?0:1;
+    const la=tasksOfPs(a._id).some(taskLate)?0:1, lb=tasksOfPs(b._id).some(taskLate)?0:1;
     if(la!==lb) return la-lb;
     return String(a.opened||'').localeCompare(String(b.opened||''));
   });
@@ -1865,9 +2890,11 @@ function psView(){
     return `<div class="panel"><div class="body" style="text-align:center;padding:32px 18px">
       <div style="font-size:34px">🔎</div>
       <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Zatím žádný problem solving</div>
-      <p class="muted" style="max-width:560px;margin:0 auto 14px">Zakládá se v záložce <b>Řízení</b> tlačítkem
-        <b>Vytvořit A3 problem solving</b> u linky, která spadla pod práh výkonu. Tady pak uvidíš všechny otevřené A3 pohromadě.</p>
-      <button class="btn-primary" data-a="tab" data-v="mgmt">Přejít na Řízení</button>
+      <p class="muted" style="max-width:560px;margin:0 auto 14px">Nový A3 si otevřeš tlačítkem níž na jakýkoli problém.
+        Sám se taky nabídne na <b>Hlavní stránce</b> u linky, která spadla pod práh výkonu.</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" data-a="ps-new">+ Nový A3 problem solving</button>
+        <button class="btn-ghost" data-a="tab" data-v="mgmt">Přejít na hlavní stránku</button></div>
     </div></div>`;
   }
   const rows=psVisible();
@@ -1875,6 +2902,7 @@ function psView(){
   const analysis=open.filter(p=>p.status==='nový'||p.status==='analýza');
   const inAction=open.filter(p=>p.status==='opatření');
   const verify=open.filter(p=>p.status==='ověřování');
+  const approval=problems.filter(p=>p.status==='ke schválení');
   const esc2=open.filter(p=>p.escalated||needsEscalation(p));
   const lines=[...new Set(problems.map(p=>p.line))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
   const owners=[...new Set(problems.map(p=>p.owner))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
@@ -1885,9 +2913,14 @@ function psView(){
     <div class="kcard" style="border-left-color:#c0392b"><div class="lbl">Čeká na A3 analýzu</div>
       <div class="val">${analysis.length}</div><div class="note">bez kořenové příčiny</div></div>
     <div class="kcard" style="border-left-color:#b7791f"><div class="lbl">V opatřeních</div>
-      <div class="val">${inAction.length}</div><div class="note">${openActs(actions).length} otevřených opatření</div></div>
+      <div class="val">${inAction.length}</div><div class="note">${
+        tasks.filter(t=>t.psId && !taskDone(t)).length} otevřených úkolů v akčním plánu</div></div>
     <div class="kcard" style="border-left-color:#0d7377"><div class="lbl">Čeká na ověření</div>
       <div class="val">${verify.length}</div><div class="note">effectiveness check</div></div>
+    <div class="kcard" style="border-left-color:#b7791f"><div class="lbl">Ke schválení</div>
+      <div class="val">${approval.length}</div><div class="note">uzavřel koordinátor, čeká na manažera</div></div>
+    <div class="kcard" style="border-left-color:${open.filter(psLate).length?'#c0392b':'#1f9254'}"><div class="lbl">Po termínu</div>
+      <div class="val">${open.filter(psLate).length}</div><div class="note">prošvihnutý termín uzavření</div></div>
     <div class="kcard" style="border-left-color:${esc2.length?'#c0392b':'#1f9254'}"><div class="lbl">K eskalaci</div>
       <div class="val">${esc2.length}</div><div class="note">na Engineering Managera</div></div>
   </div>
@@ -1895,6 +2928,7 @@ function psView(){
   <div class="panel">
     <h2>Problem solving — A3<span class="right">${rows.length} z ${problems.length} · klikni na řádek pro detail</span></h2>
     <div class="filters">
+      <button class="btn-primary" data-a="ps-new">+ Nový A3 problem solving</button>
       <input class="grow" id="ps-q" placeholder="Hledat v problému, lince, příčině…" value="${esc(psF.q)}">
       <select id="ps-fline"><option value="">Všechny linky</option>${lines.map(l=>`<option ${psF.line===l?'selected':''}>${esc(l)}</option>`).join('')}</select>
       <select id="ps-fowner"><option value="">Všichni owneři</option>${owners.map(o=>`<option ${psF.owner===o?'selected':''}>${esc(o)}</option>`).join('')}</select>
@@ -1906,15 +2940,19 @@ function psView(){
       <thead><tr>
         <th>Č.</th><th>Linka</th><th>Týden</th><th>Spouštěč</th><th>Problém</th>
         <th>Výkon</th><th>Prostoje</th><th>Stav</th><th>Owner analýzy</th><th>Coordinator</th>
-        <th>Kořenová příčina</th><th>Opatření</th><th>Nejbližší termín</th><th>Ověřit do</th><th></th>
+        <th>Kořenová příčina</th><th>Úkoly</th><th>Poslední akce</th><th>Termín uzavření</th><th>Ověřit do</th><th></th>
       </tr></thead>
       <tbody>${rows.map(p=>{
-        const acts=actsOf(p._id), op=openActs(acts);
-        const nearest=op.map(a=>a.due).filter(Boolean).sort()[0]||'';
-        const late=op.some(isOverdue);
-        const esk=p.escalated||needsEscalation(p);
-        return `<tr class="clickable ${esk||late?'late':''} ${p.status==='uzavřeno'?'closed':''}" data-a="mg-open" data-v="${p._id}">
-          <td data-label="Č." class="nowrap"><b>${esc(p.no)}</b>${esk?' <span class="badge b-red">eskalace</span>':''}</td>
+        const mine=tasksOfPs(p._id), op=mine.filter(t=>!taskDone(t));
+        const nearest=op.map(dueValid).filter(Boolean).sort()[0]||'';
+        const late=op.some(taskLate);
+        const esk=p.escalated||needsEscalation(p), pl=psLate(p), lastAct=lastActionClosed(p._id);
+        const done=p.status==='uzavřeno', wait=p.status==='ke schválení';
+        return `<tr class="clickable ${done?'closed':(wait?'wait':((esk||late||pl)?'late':''))}" data-a="mg-open" data-v="${p._id}">
+          <td data-label="Č." class="nowrap"><b${(pl&&!done)?' style="color:var(--red)"':''}>${esc(p.no)}</b>${
+            done?' <span class="badge b-green">uzavřeno</span>'
+            : wait?' <span class="badge b-amber">ke schválení</span>'
+            : (pl?' <span class="badge b-red">po termínu</span>':'')+(esk?' <span class="badge b-red">eskalace</span>':'')}</td>
           <td data-label="Linka" class="nowrap"><b>${esc(p.line)}</b></td>
           <td data-label="Týden" class="nowrap">${weekShort(p.week)}</td>
           <td data-label="Spouštěč">${p.trigger==='opakovaný problém'?'<span class="badge b-amber">opakovaný</span>':esc(p.trigger||'')}</td>
@@ -1925,25 +2963,35 @@ function psView(){
           <td data-label="Owner">${esc(p.owner||'—')}</td>
           <td data-label="Coordinator">${esc(p.coordinator||'—')}</td>
           <td data-label="Kořenová příčina" class="desc">${p.rootCause?esc(p.rootCause):'<span class="badge b-red">chybí</span>'}</td>
-          <td data-label="Opatření" class="num nowrap">${acts.length-op.length}/${acts.length}${acts.some(a=>a.type==='preventive')?'':' <span class="badge b-amber" title="chybí preventivní opatření">P!</span>'}</td>
-          <td data-label="Nejbližší termín" class="nowrap">${nearest?(late?`<b style="color:var(--red)">${dateCz(nearest)}</b>`:dateCz(nearest)):'—'}</td>
-          <td data-label="Ověřit do" class="nowrap">${p.effResult?'<span class="badge b-green">ověřeno</span>':(p.effCheckDue?dateCz(p.effCheckDue):'—')}</td>
-          <td data-label=""><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button></td>
-        </tr>`;}).join('') || `<tr><td colspan="15" class="empty">Nic neodpovídá filtru.</td></tr>`}
+          <td data-label="Úkoly" class="num nowrap">${mine.length-op.length}/${mine.length}</td>
+          <td data-label="Poslední akce" class="nowrap">${lastAct?dateCz(lastAct):'<span class="muted">—</span>'}</td>
+          <td data-label="Termín uzavření" class="nowrap">${p.dueDate
+            ? (pl?`<b style="color:var(--red)">${dateCz(p.dueDate)} · ${psLateDays(p)} dní</b>`:dateCz(p.dueDate))
+            : '<span class="muted">—</span>'}</td>
+          <td data-label="Ověřit do" class="nowrap">${done
+            ? `uzavřeno ${dateCz(p.closedAt||'')}`
+            : (p.effResult?'<span class="badge b-green">ověřeno</span>':(p.effCheckDue?dateCz(p.effCheckDue):'—'))}</td>
+          <td data-label="" class="nowrap"><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button>${
+            canImport()?` <button class="btn-del" style="padding:3px 9px;font-size:11px" data-a="mg-del" data-v="${p._id}" title="Smazat problem solving">Smazat</button>`:''}</td>
+        </tr>`;}).join('') || `<tr><td colspan="17" class="empty">Nic neodpovídá filtru.</td></tr>`}
       </tbody></table></div>
   </div>`;
 }
 function exportPsCsv(){
   const rows=psVisible();
   const line=a=>a.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';');
-  const head=['Č.','Linka','Týden','Spouštěč','Problém','Výkon %','Prostoje (min)','Stav','Vlastník A3','Supervizor',
-    'Okamžité opatření','Analýza','Kořenová příčina',
-    'Opatření hotovo','Opatření celkem','Ověřit do','Výsledek ověření','Eskalace'];
+  const head=['Č.','Linka','Týden','Spouštěč','Problém','Výkon %','Prostoj (min)','Stav','Vlastník','Supervizor',
+    'Popis problému','Okamžité opatření','Kořenová příčina','Nápravné opatření','Upravené dokumenty',
+    'Úkoly hotovo','Úkoly celkem','Poslední akce uzavřena','Termín uzavření','Dní po termínu',
+    'Ověřit do','Výsledek ověření','Příloh','Eskalace',
+    'Uzavřel koordinátor','Kdy','Schválil manažer','Uzavřeno dne'];
   const csv=[line(head)].concat(rows.map(p=>{
-    const acts=actsOf(p._id), analysis=p.analysis || (p.whys||[]).filter(Boolean).join(' | ');
+    const mine=tasksOfPs(p._id);
     return line([p.no,p.line,p.week,p.trigger,p.title,p.perf!=null?num(p.perf,1):'',Math.round((p.downtimeSec||0)/60),
-      p.status,p.owner,p.coordinator,p.immediate,analysis,p.rootCause,
-      acts.length-openActs(acts).length,acts.length,p.effCheckDue,p.effResult,(p.escalated||needsEscalation(p))?'ano':'']);
+      p.status,p.owner,p.coordinator,p.problemDesc,p.immediate,p.rootCause,p.corrective,(p.docs||[]).join(', '),
+      mine.filter(taskDone).length,mine.length,lastActionClosed(p._id),p.dueDate,psLate(p)?psLateDays(p):'',
+      p.effCheckDue,p.effResult,(p.files||[]).length,(p.escalated||needsEscalation(p))?'ano':'',
+      p.closeRequestedBy||'',p.closeRequestedAt||'',p.approvedBy||'',p.closedAt||'']);
   })).join('\n');
   const url=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a'); a.href=url; a.download='problem_solving_'+today()+'.csv';
@@ -2053,7 +3101,8 @@ function tasksView(){
           <td data-label="Stav"><span class="badge ${stDef(t.status).cls}">${esc(t.status)}</span></td>
           <td data-label="Po termínu" class="gcol num">${late?`<b style="color:var(--red)">${lateDays(t)} dní</b>`:'<span class="muted">—</span>'}</td>
           <td data-label="Uzavřeno">${t.closedOn?dateCz(t.closedOn):'<span class="muted">—</span>'}</td>
-          <td data-label=""><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button></td>
+          <td data-label="" class="nowrap"><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Otevřít</button>${
+            canImport()?` <button class="btn-del" style="padding:3px 9px;font-size:11px" data-a="tk-del" data-v="${t._id}" title="Smazat task">Smazat</button>`:''}</td>
         </tr>`;}).join('') || `<tr><td colspan="17" class="empty">Zatím žádný task. Založ ho tlačítkem <b>+ Nový task</b>.</td></tr>`}
       </tbody></table></div>
   </div>`;
@@ -2068,6 +3117,7 @@ function taskModal(){
   <div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="Task akčního plánu">
     <h3>${isNew?'Nový task':esc(t.no)+' — '+esc(t.area)}<button class="x" data-a="tk-close" aria-label="Zavřít">✕</button></h3>
     <div class="robar">
+      ${t.psNo?`<span class="badge b-teal">nápravné opatření k ${esc(t.psNo)}</span>`:''}
       bílé vyplňuješ ty · <span class="ychip">žluté</span> až při posunu termínu · <span class="gchip">šedé</span> se dopočítá samo
       ${!isNew&&taskLate(t)?`<span class="badge b-red" style="margin-left:auto">po termínu ${lateDays(t)} dní</span>`:''}
     </div>
@@ -2078,7 +3128,7 @@ function taskModal(){
       <div class="f"><label>Stroj</label>
         <input id="tk-machine" list="tk-machines" value="${esc(t.machine||'')}" placeholder="Začni psát nebo vyber">
         <datalist id="tk-machines">${machinesFor(t.area).map(m=>`<option>${esc(m)}</option>`).join('')}</datalist>
-        <div class="muted" style="font-size:11px">seznam si doplníš v Řízení → Nastavení standardu</div></div>
+        <div class="muted" style="font-size:11px">seznam si doplníš na hlavní stránce → Nastavení standardu</div></div>
       <div class="f"><label>Typ</label>
         <select id="tk-type">${TASK_TYPES.map(x=>`<option ${t.type===x?'selected':''}>${x}</option>`).join('')}</select></div>
       <div class="f"><label>Zadáno</label><input id="tk-created" type="date" value="${esc(t.createdOn||'')}"></div>
@@ -2154,6 +3204,7 @@ function taskModal(){
       ${tMsg?`<span style="color:var(--red);font-weight:700;font-size:12px">${esc(tMsg)}</span>`
             :`<span class="muted" style="font-size:11.5px">${isNew?'Číslo se přidělí po uložení.':'Změny se zapíšou do historie.'}</span>`}
       <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        ${(!isNew && canImport())?`<button class="btn-del" data-a="tk-del" data-v="${t._id}">Smazat</button>`:''}
         <button class="btn-ok" data-a="tk-save">${isNew?'Založit task':'Uložit'}</button>
         <button class="btn-ghost" data-a="tk-close">Zavřít</button>
       </span>
@@ -2183,25 +3234,46 @@ function emptyView(){
     <div style="font-size:34px">📊</div>
     <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Zatím tu nejsou žádné prostoje</div>
     <p class="muted" style="max-width:520px;margin:0 auto 14px">Vyjeď v Symesticu report prostojů (Downtimes) za období,
-      ulož ho do Excelu a nahraj ho v záložce <b>Import ze Symesticu</b>. Přehled a KPI se spočítají samy.</p>
-    ${canImport()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
+      ulož ho do Excelu a nahraj ho v záložce <b>Import</b>. KPI se spočítají samy.</p>
+    ${canImportDt()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
   </div></div>`;
 }
+function dashSubtabs(){
+  return `<div class="subtabs">
+    <button class="stab ${dashProc===''?'on':''}" data-a="dash-proc" data-v="">Celý závod</button>
+    ${PROCESSES.map(p=>`<button class="stab ${dashProc===p.k?'on':''}" data-a="dash-proc" data-v="${p.k}">${p.icon} ${esc(p.label)}</button>`).join('')}
+  </div>`;
+}
 function dashView(){
-  if(!days.length) return emptyView();
-  const t=totals();
-  const segs=top(t.segs,12), groups=top(t.groups);
+  if(!days.length) return dashSubtabs()+emptyView();
+  const proc=dashProc, pd=proc?procDef(proc):null;
+  const t=totals(proc);
+  const segs=top(t.segs,12).map(x=>Object.assign({},x,{drill:'seg:'+x.label}));
+  const groups=top(t.groups).map(x=>Object.assign({},x,{drill:'group:'+x.label}));
   const unk=Object.values(t.groups||{}).find(g=>g.label===UNKNOWN);
   const unkPct = t.sec ? Math.round((unk?unk.sec:0)/t.sec*100) : 0;
   const coAvg = t.co.cnt ? Math.round(t.co.sec/t.co.cnt/60) : 0;
   const worst = segs[0];
   const n=days.length;
-  return `
+  if(proc && !t.sec){
+    return dashSubtabs()+`<div class="panel"><div class="body" style="text-align:center;padding:30px 18px">
+      <div style="font-size:32px">${pd.icon}</div>
+      <div style="font-size:16px;font-weight:800;margin:8px 0 6px">${esc(pd.label)} — za vybrané období žádné prostoje</div>
+      <p class="muted" style="max-width:520px;margin:0 auto">Buď se opravdu nic nestalo, nebo se linky tohohle procesu
+        jmenují jinak, než aplikace čeká. Podívej se na hlavní stránku do „Nezařazené linky".</p>
+    </div></div>`;
+  }
+  return dashSubtabs()+
+  (t.noSplit?`<div class="notice warn">Část dat (${fmtDur(t.noSplit)}) je ze staršího importu, který ještě neukládal rozpad
+    důvodů po linkách — v grafech „Podle důvodu", „Podle směny" a „TOP 10 důvodů" tahle část chybí.
+    Stačí ten report nahrát znovu.</div>`:'')+`
   <div class="cards">
     <div class="kcard" style="border-left-color:#1b4b8f">
       <div class="lbl">Prostoje celkem</div>
       <div class="val">${num(t.sec/3600,0)}<small> h</small></div>
-      <div class="note">${t.cnt.toLocaleString('cs-CZ')} událostí za ${n} ${n===1?'den':(n<5?'dny':'dní')}</div>
+      <div class="note">${t.cnt.toLocaleString('cs-CZ')} událostí ${
+        String(range).startsWith('m') ? '· '+rangeBounds().label+' ('+n+' '+(n===1?'den':(n<5?'dny':'dní'))+' s daty)'
+                                      : 'za '+n+' '+(n===1?'den':(n<5?'dny':'dní'))}${proc?' · '+esc(pd.label):''}</div>
     </div>
     <div class="kcard" style="border-left-color:#c0392b">
       <div class="lbl">Nejhorší linka</div>
@@ -2218,7 +3290,7 @@ function dashView(){
       <div class="val">${unkPct}<small> %</small></div>
       <div class="note">${fmtDur(unk?unk.sec:0)} bez důvodu (00 Unknown)</div>
     </div>
-    ${(function(){
+    ${proc?'':(function(){
       const L=scLatest();
       if(!L) return `<div class="kcard soon"><div class="lbl">Scrap</div><div class="val">—</div>
         <div class="note">nahraj report scrapu v záložce Import</div></div>`;
@@ -2234,23 +3306,25 @@ function dashView(){
 
   <div class="grid2">
     <div class="panel">
-      <h2>Prostoje po linkách<span class="right">${Object.keys(t.segs).length} linek · TOP 12</span></h2>
-      <div class="body">${bars(segs,'#1b4b8f')}</div>
+      <h2>Prostoje po linkách<span class="right">${proc?esc(pd.label)+' · ':''}${Object.keys(t.segs).length} linek · TOP 12</span></h2>
+      <div class="body">${bars(segs,'#1b4b8f')}
+        <div class="drillhint">Klikni na linku a uvidíš její jednotlivé prostoje s důvodem i poznámkou.</div></div>
     </div>
     <div class="panel">
       <h2>Podle důvodu</h2>
-      <div class="body">${bars(groups.map(g=>Object.assign({},g,{color:GROUP_COLOR[g.label]||'#6b7a90'})))}</div>
+      <div class="body">${bars(groups.map(g=>Object.assign({},g,{color:GROUP_COLOR[g.label]||'#6b7a90'})))}
+        <div class="drillhint">Klikni na řádek a rozbalí se ti jednotlivé prostoje i s poznámkou.</div></div>
     </div>
   </div>
 
   <div class="grid2">
     <div class="panel">
-      <h2>Vývoj po dnech<span class="right">celkem přes všechny linky</span></h2>
-      <div class="body">${trend()}</div>
+      <h2>Vývoj po dnech<span class="right">${proc?esc(pd.label):'celkem přes všechny linky'}</span></h2>
+      <div class="body">${trend(proc)}</div>
     </div>
     <div class="panel">
       <h2>Podle směny</h2>
-      <div class="body">${bars(['R','O','N'].filter(k=>t.shifts[k]).map(k=>({label:SHIFT_LBL[k],sec:t.shifts[k].sec,cnt:t.shifts[k].cnt})),'#0d7377')}
+      <div class="body">${bars(['R','O','N'].filter(k=>t.shifts[k]).map(k=>({label:SHIFT_LBL[k],sec:t.shifts[k].sec,cnt:t.shifts[k].cnt,drill:'shift:'+k})),'#0d7377')}
         <div class="notice" style="margin:12px 0 0">Směny se počítají podle času začátku: ranní 6–14, odpolední 14–22, noční 22–6.</div>
       </div>
     </div>
@@ -2258,41 +3332,457 @@ function dashView(){
 
   <div class="panel">
     <h2>TOP 10 důvodů prostoje<span class="right">konkrétní kódy ze Symesticu</span></h2>
-    <div class="body">${bars(top(t.reasons,10),'#41506b')}</div>
+    <div class="body">${bars(top(t.reasons,10).map(x=>Object.assign({},x,{drill:'reason:'+x.label})),'#41506b')}</div>
   </div>`;
+}
+
+/* Prostoje po filtrech a v pořadí, které si David naklikal ve hlavičce tabulky. */
+function visibleEvents(){
+  let r=events.slice();
+  if(f.proc) r=r.filter(x=>procOfLine(x.seg)===f.proc);
+  if(f.seg) r=r.filter(x=>x.seg===f.seg);
+  if(f.group) r=r.filter(x=>(x.group||'')===f.group);
+  if(f.reason) r=r.filter(x=>(x.reason||'')===f.reason);
+  if(f.shift) r=r.filter(x=>x.shift===f.shift);
+  if(f.q){ const q=f.q.toLowerCase(); r=r.filter(x=>[x.seg,x.reason,x.comment].join(' ').toLowerCase().includes(q)); }
+  const col=EV_COLS.find(c=>c.k===evSort.k) || EV_COLS[0];
+  const sign=evSort.dir==='desc'?-1:1;
+  return r.sort((a,b)=>{
+    const x=col.get(a), y=col.get(b);
+    let d = col.num===true && typeof x==='number' ? x-y : String(x).localeCompare(String(y),'cs',{numeric:true});
+    if(d===0) d = String(b.start||'').localeCompare(String(a.start||''));   // stejné hodnoty: novější napřed
+    else d*=sign;
+    return d;
+  });
+}
+/* ==========================================================
+   GENEROVAT PARETO
+   Vyber si linky, období a typy prostojů a vypadne Paretův graf.
+   Rozpad umí tři úrovně: skupina důvodu, konkrétní důvod ze Symesticu
+   a — to je ta zajímavá — shluky podle poznámek, aby se opakující
+   „metalbolty" sečetly do jednoho sloupce.
+   ========================================================== */
+const PAR_PERIODS = [
+  {k:'thisweek',  t:'Tento týden'},
+  {k:'lastweek',  t:'Minulý týden'},
+  {k:'thismonth', t:'Tento měsíc'},
+  {k:'lastmonth', t:'Minulý měsíc'},
+  {k:'custom',    t:'Vlastní období'}
+];
+const PAR_DIMS = [
+  {k:'group',   t:'Skupina důvodu',  d:'Porucha stroje, Přestavba a seřízení…'},
+  {k:'reason',  t:'Konkrétní důvod', d:'kódy tak, jak chodí ze Symesticu'},
+  {k:'comment', t:'Poznámky ve shlucích', d:'opakující se slova z poznámek se sečtou'}
+];
+let par = {lines:[], period:'lastweek', from:'', to:'', groups:[], dim:'group',
+           rows:[], loaded:false, key:'', busy:'', err:'', sel:null,
+           pick:'', q:''};
+
+/* pondělí daného týdne, posun o n týdnů zpět */
+function parWeekBounds(back){
+  const d=new Date(); const day=(d.getDay()||7);
+  d.setDate(d.getDate()-day+1-7*(back||0));
+  const mon=new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  const iso=x=>`${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}`;
+  return {from:iso(mon), to:iso(sun)};
+}
+function parMonthBounds(back){
+  const n=new Date(), d=new Date(n.getFullYear(), n.getMonth()-(back||0), 1);
+  const last=new Date(d.getFullYear(), d.getMonth()+1, 0);
+  const iso=x=>`${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}`;
+  return {from:iso(d), to:iso(last), month:`${d.getFullYear()}-${pad2(d.getMonth()+1)}`};
+}
+function parBounds(){
+  if(par.period==='thisweek'){  const b=parWeekBounds(0);  return {...b, label:'tento týden ('+dayCz(b.from)+' – '+dayCz(b.to)+')'}; }
+  if(par.period==='lastweek'){  const b=parWeekBounds(1);  return {...b, label:'minulý týden ('+dayCz(b.from)+' – '+dayCz(b.to)+')'}; }
+  if(par.period==='thismonth'){ const b=parMonthBounds(0); return {from:b.from,to:b.to, label:monthCz(b.month)}; }
+  if(par.period==='lastmonth'){ const b=parMonthBounds(1); return {from:b.from,to:b.to, label:monthCz(b.month)}; }
+  const from=par.from||today(), to=par.to||today();
+  return {from, to, label:dayCz(from)+' – '+dayCz(to)};
+}
+/* Nabídka linek — co opravdu přišlo z importu, doplněné o stroje z nastavení. */
+function parAllLines(){
+  const set=new Set();
+  mgDays.forEach(d=>Object.values(d.segs||{}).forEach(v=>v.label&&set.add(v.label)));
+  Object.values(engcfg.machines||{}).forEach(arr=>(arr||[]).forEach(m=>m&&set.add(m)));
+  return [...set].sort((a,b)=>a.localeCompare(b,'cs'));
+}
+const PAR_GROUPS = ENG_GROUPS.map(g=>g.g).concat([UNKNOWN]);
+
+async function parGenerate(){
+  const b=parBounds();
+  if(b.from>b.to){ par.err='Datum „od" je až za datem „do".'; render(); return; }
+  par.busy='Načítám prostoje…'; par.err=''; par.sel=null; render();
+  try{
+    const qs=await getDocs(query(collection(db,'downtimes'),
+      where('date','>=',b.from), where('date','<=',b.to), orderBy('date','desc'), limit(6000)));
+    par.rows=qs.docs.map(d=>Object.assign({_id:d.id}, d.data()));
+    par.more=qs.docs.length>=6000;
+    par.loaded=true; par.key=b.from+'…'+b.to;
+  }catch(e){ par.err=ruleHint(e); }
+  par.busy=''; render();
+}
+/* Co z načtených prostojů projde výběrem linek a typů. */
+function parFiltered(){
+  let r=par.rows.slice();
+  if(par.lines.length) r=r.filter(x=>par.lines.includes(x.seg));
+  if(par.groups.length) r=r.filter(x=>par.groups.includes(x.group||engGroup(x.reason)));
+  return r;
+}
+
+/* ---------- shlukování poznámek ----------
+   Poznámky píšou lidi volně, takže se nedají srovnat na přesnou shodu.
+   Postup: poznámku zbavíme diakritiky a interpunkce, slova zkrátíme na kmen
+   (metalbolty / metalboltu / metalbolt → metalb) a hledáme slova a dvojice
+   slov, které se opakují. Každý prostoj se přiřadí k tomu nejsilnějšímu
+   výrazu, který obsahuje. Co nikam nepasuje, spadne do „Ostatní".        */
+const PAR_STOP = new Set(('a i v k o u s z na se je po do za od to the of and or pro byl byla bylo byly kvuli pri pred nebo ale jen uz tak co ze si ke ku bez pod nad mezi pak asi moc vic min hod hodin hodiny minut minuty cca atd apod ale tam tady ted zase znovu nove novy nova stara stary vse vsechno nic neni bylo jsme jsem bylo mel mela melo musel museli nutne potreba treba prostoj prostoje stroj stroje linka linky smena smeny').split(' '));
+const parNorm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+  .replace(/[^a-z0-9]+/g,' ').trim();
+const parStem = w => w.length<=5 ? w : w.slice(0,6);
+function parTokens(txt){
+  const words=parNorm(txt).split(' ').filter(w=>w.length>=3 && !PAR_STOP.has(w) && !/^\d+$/.test(w));
+  const out=[];
+  words.forEach((w,i)=>{
+    out.push({key:parStem(w), surf:w});
+    if(i+1<words.length) out.push({key:parStem(w)+' '+parStem(words[i+1]), surf:w+' '+words[i+1]});
+  });
+  return out;
+}
+function clusterComments(rows){
+  const terms=new Map();       // kmen -> {sec, idx:Set, surf:Map}
+  rows.forEach((r,i)=>{
+    const seen=new Set();
+    for(const t of parTokens(r.comment)){
+      if(seen.has(t.key)) continue; seen.add(t.key);
+      const o=terms.get(t.key)||{sec:0,cnt:0,idx:new Set(),surf:new Map()};
+      o.sec+=Number(r.sec)||0; o.cnt++; o.idx.add(i);
+      o.surf.set(t.surf,(o.surf.get(t.surf)||0)+1);
+      terms.set(t.key,o);
+    }
+  });
+  /* dvojice slov popisují problém líp než jedno slovo — malá výhoda */
+  const cand=[...terms.entries()].map(([k,o])=>({k,o,w:o.sec*(k.includes(' ')?1.35:1)}))
+    .sort((a,b)=>b.w-a.w);
+  const taken=new Set(), out=[];
+  for(const c of cand){
+    const mine=[...c.o.idx].filter(i=>!taken.has(i));
+    if(mine.length<2) continue;                       // shluk dává smysl od dvou výskytů
+    mine.forEach(i=>taken.add(i));
+    const label=[...c.o.surf.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    out.push({label:label.charAt(0).toUpperCase()+label.slice(1),
+      sec:mine.reduce((a,i)=>a+(Number(rows[i].sec)||0),0), cnt:mine.length, items:mine.map(i=>rows[i])});
+  }
+  const rest=rows.map((r,i)=>i).filter(i=>!taken.has(i));
+  const empty=rest.filter(i=>!parNorm(rows[i].comment));
+  const single=rest.filter(i=>parNorm(rows[i].comment));
+  if(single.length) out.push({label:'Ostatní (jednotlivé případy)', other:true,
+    sec:single.reduce((a,i)=>a+(Number(rows[i].sec)||0),0), cnt:single.length, items:single.map(i=>rows[i])});
+  if(empty.length) out.push({label:'Bez poznámky', other:true,
+    sec:empty.reduce((a,i)=>a+(Number(rows[i].sec)||0),0), cnt:empty.length, items:empty.map(i=>rows[i])});
+  return out.sort((a,b)=>b.sec-a.sec);
+}
+/* Položky Paretova grafu podle zvoleného rozpadu. */
+function parItems(){
+  const rows=parFiltered();
+  if(par.dim==='comment') return clusterComments(rows);
+  const key = par.dim==='reason' ? (r=>r.reason||'—') : (r=>r.group||engGroup(r.reason));
+  const m=new Map();
+  for(const r of rows){
+    const k=key(r), o=m.get(k)||{label:k, sec:0, cnt:0, items:[]};
+    o.sec+=Number(r.sec)||0; o.cnt++; o.items.push(r); m.set(k,o);
+  }
+  return [...m.values()].sort((a,b)=>b.sec-a.sec);
+}
+
+/* Paretův graf: sloupce od největšího a kumulativní křivka s hranicí 80 %.
+   Sloupce jdou rozkliknout — pod grafem se vypíšou jednotlivé prostoje. */
+function paretoChart(items){
+  const top=items.slice(0,14);
+  if(!top.length) return '<div class="empty">Za zvolené období a filtr nejsou žádné prostoje.</div>';
+  const total=items.reduce((a,i)=>a+i.sec,0)||1;
+  const W=980, H=330, ml=58, mr=48, mt=16, mb=74;
+  const iw=W-ml-mr, ih=H-mt-mb;
+  const max=Math.max(...top.map(i=>i.sec))||1;
+  const step=iw/top.length, bw=Math.min(62, step*0.66);
+  const yh=v=>ih-(v/max)*ih;
+  /* osa vlevo v hodinách */
+  const ticks=4, grid=[];
+  for(let i=0;i<=ticks;i++){
+    const v=max/ticks*i, y=mt+yh(v);
+    grid.push(`<line x1="${ml}" y1="${y.toFixed(1)}" x2="${ml+iw}" y2="${y.toFixed(1)}" stroke="#e6ebf2"/>
+      <text x="${ml-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" fill="#7b8ba3">${num(v/3600,v/3600>=10?0:1)} h</text>`);
+  }
+  /* osa vpravo v procentech */
+  for(let i=0;i<=4;i++){
+    const y=mt+ih-(ih*i/4);
+    grid.push(`<text x="${ml+iw+8}" y="${(y+4).toFixed(1)}" font-size="11" fill="#7b8ba3">${i*25} %</text>`);
+  }
+  let cum=0; const pts=[], bars=[], labs=[];
+  top.forEach((it,i)=>{
+    const x=ml+i*step+(step-bw)/2, h=ih-yh(it.sec), y=mt+yh(it.sec);
+    const on=par.sel===i;
+    bars.push(`<g class="pbar ${on?'on':''}" data-a="par-sel" data-v="${i}">
+      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,h).toFixed(1)}" rx="3"
+        fill="${it.other?'#98a5b6':(GROUP_COLOR[it.label]||'#1b4b8f')}"/>
+      <title>${esc(it.label)} — ${fmtDur(it.sec)} · ${it.cnt}×</title>
+      <text x="${(x+bw/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle" font-size="11.5"
+        font-weight="700" fill="#16233a">${fmtDur(it.sec)}</text></g>`);
+    cum+=it.sec;
+    pts.push([ml+i*step+step/2, mt+ih-(cum/total)*ih]);
+    const short = it.label.length>16 ? it.label.slice(0,15)+'…' : it.label;
+    labs.push(`<text x="${(ml+i*step+step/2).toFixed(1)}" y="${(mt+ih+16).toFixed(1)}" text-anchor="end"
+      font-size="11" fill="#41506b" transform="rotate(-35 ${(ml+i*step+step/2).toFixed(1)} ${(mt+ih+16).toFixed(1)})">${esc(short)}</text>`);
+  });
+  const y80=mt+ih-0.8*ih;
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  return `<div class="parchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paretův graf prostojů">
+    ${grid.join('')}
+    <line x1="${ml}" y1="${y80.toFixed(1)}" x2="${ml+iw}" y2="${y80.toFixed(1)}" stroke="#c0392b" stroke-dasharray="6 4"/>
+    <text x="${ml+iw-2}" y="${(y80-6).toFixed(1)}" text-anchor="end" font-size="10.5" fill="#c0392b" font-weight="700">80 %</text>
+    ${bars.join('')}
+    <path d="${line}" fill="none" stroke="#0d7377" stroke-width="2"/>
+    ${pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="#fff" stroke="#0d7377" stroke-width="2">
+      <title>kumulativně ${num((top.slice(0,i+1).reduce((a,x)=>a+x.sec,0))/total*100,1)} %</title></circle>`).join('')}
+    <line x1="${ml}" y1="${(mt+ih).toFixed(1)}" x2="${ml+iw}" y2="${(mt+ih).toFixed(1)}" stroke="#b9c8da"/>
+    ${labs.join('')}
+  </svg></div>
+  ${items.length>14?`<div class="muted" style="font-size:11.5px;padding:0 4px 6px">V grafu je 14 největších položek z ${items.length}. Zbytek je v tabulce pod ním.</div>`:''}`;
+}
+
+function parPickModal(){
+  if(par.pick==='lines'){
+    const all=parAllLines();
+    const q=parNorm(par.q);
+    const show=q?all.filter(l=>parNorm(l).includes(q)):all;
+    const byProc={};
+    show.forEach(l=>{ const k=procOfLine(l); (byProc[k]=byProc[k]||[]).push(l); });
+    const order=PROCESSES.map(p=>p.k).concat(['OTHER']).filter(k=>byProc[k]);
+    return `<div class="overlay" id="ovl"><div class="modal" style="max-width:760px">
+      <h3>Vyber linky a stroje<button class="x" data-a="par-pickclose" aria-label="Zavřít">✕</button></h3>
+      <div class="robar">
+        <input id="par-q" placeholder="Hledat linku…" value="${esc(par.q)}" style="max-width:260px">
+        <span class="muted">vybráno ${par.lines.length} z ${all.length}</span>
+        <span style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn-ghost" data-a="par-lines-all">Vybrat vše</button>
+          <button class="btn-ghost" data-a="par-lines-none">Zrušit výběr</button></span>
+      </div>
+      <div class="pickwrap">
+        ${order.map(k=>`<div class="pickgrp">
+          <div class="h"><b>${procDef(k).icon} ${esc(procDef(k).label)}</b>
+            <button class="btn-ghost" data-a="par-proc-all" data-v="${k}">celý proces</button></div>
+          <div class="chk">${byProc[k].map(l=>`<label class="check"><input type="checkbox" data-parline="${esc(l)}"
+            ${par.lines.includes(l)?'checked':''}> ${esc(l)}</label>`).join('')}</div>
+        </div>`).join('') || '<div class="empty">Nic neodpovídá hledání.</div>'}
+      </div>
+      <div class="foot"><span class="muted" style="font-size:11.5px">Nic nevybráno = počítají se všechny linky.</span>
+        <button class="btn-ok" style="margin-left:auto" data-a="par-pickclose">Hotovo</button></div>
+    </div></div>`;
+  }
+  if(par.pick==='groups'){
+    return `<div class="overlay" id="ovl"><div class="modal" style="max-width:560px">
+      <h3>Typy prostojů<button class="x" data-a="par-pickclose" aria-label="Zavřít">✕</button></h3>
+      <div class="robar"><span class="muted">vybráno ${par.groups.length} z ${PAR_GROUPS.length}</span>
+        <span style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn-ghost" data-a="par-grp-all">Vybrat vše</button>
+          <button class="btn-ghost" data-a="par-grp-none">Zrušit výběr</button></span></div>
+      <div class="pickwrap"><div class="chk">${PAR_GROUPS.map(g=>`<label class="check"><input type="checkbox"
+        data-pargrp="${esc(g)}" ${par.groups.includes(g)?'checked':''}>
+        <span class="gdot" style="background:${GROUP_COLOR[g]||'#6b7a90'}"></span> ${esc(g)}</label>`).join('')}</div></div>
+      <div class="foot"><span class="muted" style="font-size:11.5px">Nic nevybráno = všechny typy.</span>
+        <button class="btn-ok" style="margin-left:auto" data-a="par-pickclose">Hotovo</button></div>
+    </div></div>`;
+  }
+  return '';
+}
+
+function parView(){
+  const b=parBounds();
+  const rows=par.loaded?parFiltered():[];
+  const items=par.loaded?parItems():[];
+  const total=items.reduce((a,i)=>a+i.sec,0);
+  const lineTxt = par.lines.length ? (par.lines.length<=2?par.lines.join(', '):par.lines.length+' linek') : 'všechny linky';
+  const grpTxt  = par.groups.length ? (par.groups.length<=2?par.groups.join(', '):par.groups.length+' typů') : 'všechny typy';
+  return `
+  <div class="panel">
+    <h2>Generovat pareto<span class="right">z jednotlivých prostojů, ne z denních souhrnů</span></h2>
+    <div class="body">
+      <div class="pargrid">
+        <div class="f"><label>1 · Linky a stroje</label>
+          <button class="btn-ghost pickbtn" data-a="par-pick" data-v="lines">🏭 ${esc(lineTxt)} <span class="ar">▾</span></button></div>
+        <div class="f"><label>2 · Období</label>
+          <div class="parper">${PAR_PERIODS.map(p=>`<button class="rangebtn ${par.period===p.k?'on':''}"
+            data-a="par-period" data-v="${p.k}">${p.t}</button>`).join('')}</div>
+          ${par.period==='custom'?`<div class="parcustom">
+            <label>od <input id="par-from" type="date" value="${esc(par.from||b.from)}"></label>
+            <label>do <input id="par-to" type="date" value="${esc(par.to||b.to)}"></label></div>`
+            :`<div class="muted" style="font-size:11.5px;margin-top:4px">${esc(b.label)}</div>`}</div>
+        <div class="f"><label>3 · Typy prostojů</label>
+          <button class="btn-ghost pickbtn" data-a="par-pick" data-v="groups">🏷️ ${esc(grpTxt)} <span class="ar">▾</span></button></div>
+        <div class="f"><label>4 · Rozpad podle</label>
+          <select id="par-dim">${PAR_DIMS.map(d=>`<option value="${d.k}" ${par.dim===d.k?'selected':''}>${d.t}</option>`).join('')}</select>
+          <div class="muted" style="font-size:11px">${esc((PAR_DIMS.find(d=>d.k===par.dim)||{}).d||'')}</div></div>
+      </div>
+      <div class="parrun">
+        <button class="btn-teal" data-a="par-run" ${par.busy?'disabled':''}>${par.busy?'Počítám…':'📊 Generovat pareto'}</button>
+        ${par.loaded?`<span class="muted" style="font-size:12px">${rows.length.toLocaleString('cs-CZ')} prostojů · ${fmtDur(total)} · ${esc(b.label)}</span>`:''}
+        ${par.loaded?`<button class="btn-ghost" data-a="par-export" style="margin-left:auto">⭳ Export CSV</button>`:''}
+      </div>
+      ${par.err?`<div class="notice warn" style="margin-top:12px">${esc(par.err)}</div>`:''}
+      ${par.more?`<div class="notice warn" style="margin-top:12px">Období je tak velké, že se načetlo jen prvních 6 000 prostojů. Zkrať ho, ať je pareto úplné.</div>`:''}
+    </div>
+  </div>
+
+  ${!par.loaded ? `<div class="panel"><div class="body" style="text-align:center;padding:34px 18px">
+      <div style="font-size:34px">📊</div>
+      <div style="font-size:17px;font-weight:800;margin:8px 0 6px">Nastav si filtr a dej Generovat</div>
+      <p class="muted" style="max-width:600px;margin:0 auto">Pareto ti ukáže, které problémy žerou nejvíc času.
+        Když v rozpadu zvolíš <b>Poznámky ve shlucích</b> a v typech necháš třeba jen poruchy a seřizování,
+        sečtou se opakující se věci z poznámek dohromady — když se na IMM-007 pořád řeší metalbolty,
+        uvidíš je jako jeden sloupec.</p>
+    </div></div>`
+  : `<div class="panel">
+      <h2>Pareto — ${esc((PAR_DIMS.find(d=>d.k===par.dim)||{}).t||'')}<span class="right">${esc(lineTxt)} · ${esc(b.label)}</span></h2>
+      <div class="body">${paretoChart(items)}</div>
+    </div>
+    <div class="panel">
+      <h2>Rozpad<span class="right">klikni na řádek a uvidíš jednotlivé prostoje</span></h2>
+      <div class="tblwrap"><table>
+        <thead><tr><th>#</th><th>Položka</th><th>Čas</th><th>Případů</th><th>Podíl</th><th>Kumulativně</th><th></th></tr></thead>
+        <tbody>${(()=>{ let c=0; return items.map((it,i)=>{ c+=it.sec;
+          const p=total?it.sec/total*100:0, cp=total?c/total*100:0;
+          return `<tr class="clickable" data-a="par-sel" data-v="${i}">
+            <td data-label="#" class="num">${i+1}</td>
+            <td data-label="Položka" class="desc"><b>${esc(it.label)}</b></td>
+            <td data-label="Čas" class="num nowrap"><b>${fmtDur(it.sec)}</b></td>
+            <td data-label="Případů" class="num">${it.cnt}</td>
+            <td data-label="Podíl" class="num">${num(p,1)} %</td>
+            <td data-label="Kumulativně" class="num">${cp<=80.5?`<b style="color:var(--red)">${num(cp,1)} %</b>`:num(cp,1)+' %'}</td>
+            <td data-label=""><button class="btn-ghost" style="padding:3px 9px;font-size:11px">Detail</button></td>
+          </tr>`; }).join(''); })() || `<tr><td colspan="7" class="empty">Za zvolené období a filtr nejsou žádné prostoje.</td></tr>`}
+        </tbody></table></div>
+    </div>
+    `}`;
+}
+/* Okno s jednotlivými prostoji za rozkliknutý sloupec — od nejdelšího po nejkratší. */
+function parDetailModal(){
+  if(engTab!=='par' || par.sel==null) return '';
+  const items=parItems(), it=items[par.sel]; if(!it) return '';
+  const b=parBounds();
+  const rows=it.items.slice().sort((x,y)=>(Number(y.sec)||0)-(Number(x.sec)||0));
+  const show=rows.slice(0,300);
+  return `
+  <div class="overlay" id="ovl"><div class="modal" style="max-width:1180px" role="dialog" aria-modal="true"
+    aria-label="Prostoje položky ${esc(it.label)}">
+    <h3>${esc(it.label)}<button class="x" data-a="par-close" aria-label="Zavřít">✕</button></h3>
+    <div class="robar">
+      <b>${it.cnt}×</b> · celkem <b>${fmtDur(it.sec)}</b> · ${esc(par.lines.length?(par.lines.length<=2?par.lines.join(', '):par.lines.length+' linek'):'všechny linky')}
+      · ${esc(b.label)}
+      <span style="margin-left:auto"><button class="btn-ghost" data-a="par-export-one">⭳ Export CSV</button></span>
+    </div>
+    <div class="tblwrap" style="max-height:62vh;overflow-y:auto">
+      <table>
+        <thead><tr><th>Datum</th><th>Sm.</th><th>Linka / stroj</th><th>Od</th><th>Do</th><th>Trvání</th><th>Skupina</th><th>Důvod</th><th>Poznámka</th></tr></thead>
+        <tbody>${show.map(e=>`
+          <tr class="${e.sec>=3600?'long':''}">
+            <td data-label="Datum" class="nowrap">${dayCz(e.date)}</td>
+            <td data-label="Směna">${e.shift||''}</td>
+            <td data-label="Linka"><b>${esc(e.seg)}</b></td>
+            <td data-label="Od">${e.daily?'<span class="muted">celý den</span>':String(e.start).slice(11,16)}</td>
+            <td data-label="Do">${e.daily?'—':(e.end?String(e.end).slice(11,16):'—')}</td>
+            <td data-label="Trvání" class="num nowrap"><b>${fmtDur(e.sec)}</b></td>
+            <td data-label="Skupina"><span class="badge b-grey">${esc(e.group||engGroup(e.reason))}</span></td>
+            <td data-label="Důvod" class="desc">${esc(e.reason||'')}</td>
+            <td data-label="Poznámka" class="desc muted">${esc(e.comment||'')}</td>
+          </tr>`).join('') || `<tr><td colspan="9" class="empty">Žádné prostoje.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="foot">
+      <span class="muted" style="font-size:11.5px">${rows.length>300
+        ? 'Zobrazeno 300 nejdelších z '+rows.length.toLocaleString('cs-CZ')+' — celý výpis je v exportu.'
+        : 'Seřazeno od nejdelšího prostoje.'}</span>
+      <button class="btn-ghost" style="margin-left:auto" data-a="par-close">Zavřít</button>
+    </div>
+  </div></div>`;
+}
+/* Export jen toho, co je rozkliknuté v okně. */
+function parExportDetail(){
+  const items=parItems(), it=items[par.sel]; if(!it) return;
+  const rows=it.items.slice().sort((x,y)=>(Number(y.sec)||0)-(Number(x.sec)||0));
+  const line=a=>a.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';');
+  const csv=[line(['Datum','Směna','Linka','Od','Do','Trvání (min)','Skupina','Důvod','Poznámka'])]
+    .concat(rows.map(e=>line([e.date,e.shift,e.seg,String(e.start).slice(11,19),
+      e.end?String(e.end).slice(11,19):'',Math.round((e.sec||0)/60),
+      e.group||engGroup(e.reason),e.reason,e.comment]))).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url;
+  a.download='pareto_'+slug(it.label)+'_'+today()+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function parExportCsv(){
+  const items=parItems(), total=items.reduce((a,i)=>a+i.sec,0)||1;
+  const line=a=>a.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';');
+  let c=0;
+  const csv=[line(['#','Položka','Čas (min)','Případů','Podíl %','Kumulativně %'])]
+    .concat(items.map((it,i)=>{ c+=it.sec;
+      return line([i+1,it.label,Math.round(it.sec/60),it.cnt,(it.sec/total*100).toFixed(1),(c/total*100).toFixed(1)]); })).join('\n');
+  const url=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url; a.download='pareto_'+today()+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
 function listView(){
   if(!events.length && !busy) return emptyView();
-  let r=events.slice();
-  if(f.seg) r=r.filter(x=>x.seg===f.seg);
-  if(f.group) r=r.filter(x=>(x.group||'')===f.group);
-  if(f.shift) r=r.filter(x=>x.shift===f.shift);
-  if(f.q){ const q=f.q.toLowerCase(); r=r.filter(x=>[x.seg,x.reason,x.comment].join(' ').toLowerCase().includes(q)); }
+  const r=visibleEvents();
   const segList=[...new Set(events.map(x=>x.seg))].sort((a,b)=>a.localeCompare(b,'cs'));
   const grpList=[...new Set(events.map(x=>x.group||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
+  const rsnList=[...new Set(events.map(x=>x.reason||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
   const sum=r.reduce((s,x)=>s+(x.sec||0),0);
+  /* Když jsem sem přišel prokliknutím z KPI, ať je vidět odkud a jak se vrátit. */
+  const chips=[
+    f.proc   ? {t:'Proces: '+procDef(f.proc).label} : null,
+    f.seg    ? {t:'Linka: '+f.seg} : null,
+    f.group  ? {t:'Skupina: '+f.group} : null,
+    f.reason ? {t:'Důvod: '+f.reason} : null,
+    f.shift  ? {t:'Směna: '+(SHIFT_LBL[f.shift]||f.shift)} : null
+  ].filter(Boolean);
   return `
+  ${chips.length?`<div class="drillbar">
+    <button class="btn-ghost" data-a="drill-back">← Zpět na KPI</button>
+    <span class="muted" style="font-size:12px">Prostoje za ${esc(rangeBounds().label)}, zúžené na:</span>
+    ${chips.map(c=>`<span class="dchip">${esc(c.t)}</span>`).join('')}
+    <button class="btn-ghost" data-a="drill-clear" style="margin-left:auto">Zrušit filtr</button>
+  </div>`:''}
   <div class="panel">
-    <h2>Prostoje<span class="right">${r.length.toLocaleString('cs-CZ')} záznamů · ${fmtDur(sum)}</span></h2>
+    <h2>Prostoje<span class="right">${r.length.toLocaleString('cs-CZ')} záznamů · ${fmtDur(sum)} · ${esc(rangeBounds().label)}</span></h2>
     <div class="filters">
       <input class="grow" id="f-q" placeholder="Hledat v linkách, důvodech a poznámkách…" value="${esc(f.q)}">
+      <select id="f-proc"><option value="">Všechny procesy</option>${PROCESSES.map(p=>`<option value="${p.k}" ${f.proc===p.k?'selected':''}>${esc(p.label)}</option>`).join('')}</select>
       <select id="f-seg"><option value="">Všechny linky</option>${segList.map(s=>`<option ${f.seg===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
-      <select id="f-group"><option value="">Všechny důvody</option>${grpList.map(s=>`<option ${f.group===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+      <select id="f-group"><option value="">Všechny skupiny</option>${grpList.map(s=>`<option ${f.group===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+      <select id="f-reason"><option value="">Všechny důvody</option>${rsnList.map(s=>`<option ${f.reason===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
       <select id="f-shift"><option value="">Všechny směny</option>${['R','O','N'].map(k=>`<option value="${k}" ${f.shift===k?'selected':''}>${SHIFT_LBL[k]}</option>`).join('')}</select>
       <button class="btn-ghost" data-a="export">⭳ Export CSV</button>
     </div>
-    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Zobrazuji posledních 1 200 prostojů z vybraného období. Pro starší data zkrať období nebo použij export.</div>`:''}
+    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Z vybraného období je načteno posledních 1 200 prostojů, takže u starších dnů nemusí být výpis ani filtr úplný. Zkrať období nebo použij export.</div>`:''}
     <div class="tblwrap">
       <table>
-        <thead><tr><th>Datum</th><th>Sm.</th><th>Linka / stroj</th><th>Od</th><th>Do</th><th>Trvání</th><th>Skupina</th><th>Důvod</th><th>Poznámka</th></tr></thead>
+        <thead><tr>${EV_COLS.map(c=>{
+          const on=evSort.k===c.k;
+          return `<th class="sortth ${on?'on':''}" data-a="ev-sort" data-v="${c.k}"
+            title="Seřadit podle ${esc(c.t)}">${esc(c.t)}<span class="sar">${on?(evSort.dir==='desc'?'▼':'▲'):'⇅'}</span></th>`;
+        }).join('')}</tr></thead>
         <tbody>${r.slice(0,300).map(e=>`
           <tr class="${e.sec>=3600?'long':''}">
             <td data-label="Datum">${dayCz(e.date)}</td>
             <td data-label="Směna">${e.shift||''}</td>
             <td data-label="Linka"><b>${esc(e.seg)}</b></td>
-            <td data-label="Od">${String(e.start).slice(11,16)}</td>
-            <td data-label="Do">${e.end?String(e.end).slice(11,16):'—'}</td>
+            <td data-label="Od">${e.daily?'<span class="muted">celý den</span>':String(e.start).slice(11,16)}</td>
+            <td data-label="Do">${e.daily?'—':(e.end?String(e.end).slice(11,16):'—')}</td>
             <td data-label="Trvání" class="num"><b>${fmtDur(e.sec)}</b></td>
             <td data-label="Skupina"><span class="badge b-grey">${esc(e.group||'—')}</span></td>
             <td data-label="Důvod" class="desc">${esc(e.reason)}</td>
@@ -2306,20 +3796,22 @@ function listView(){
 }
 
 function importView(){
-  if(!canImport()) return `<div class="notice warn">Import reportu dělá správce.</div>`;
+  if(!canImportDt()) return `<div class="notice warn">Import reportu dělá procesní inženýr nebo správce.</div>`;
   const s=imp;
   let body='';
   if(s.step===1){
-    const isScrap = s.kind==='scrap';
+    const isScrap = s.kind==='scrap', isTasks = s.kind==='tasks';
     body=`<div class="body">
       <div class="kindpick">
-        <button class="kind ${isScrap?'':'on'}" data-a="imp-kind" data-v="dt">
-          <span class="i">⏱️</span><span><b>Prostoje</b><i>report Downtimes ze Symesticu</i></span></button>
-        <button class="kind ${isScrap?'on':''}" data-a="imp-kind" data-v="scrap">
-          <span class="i">🧾</span><span><b>Scrap</b><i>zmetky v eurech proti tržbám</i></span></button>
+        <button class="kind ${s.kind==='dt'?'on':''}" data-a="imp-kind" data-v="dt">
+          <span class="i">⏱️</span><span><b>Prostoje</b><i>report ze Symesticu i z G463 — pozná se sám</i></span></button>
+        <button class="kind ${s.kind==='tasks'?'on':''}" data-a="imp-kind" data-v="tasks">
+          <span class="i">📋</span><span><b>Akční plán</b><i>úkoly z Excelu ME TASK TRACKER</i></span></button>
+        ${canImport()?`<button class="kind ${isScrap?'on':''}" data-a="imp-kind" data-v="scrap">
+          <span class="i">🧾</span><span><b>Scrap</b><i>zmetky v eurech proti tržbám</i></span></button>`:''}
       </div>
       <div class="drop" id="drop">
-        <div class="big">Přetáhni sem ${isScrap?'Excel se scrapem':'report prostojů ze Symesticu'}</div>
+        <div class="big">Přetáhni sem ${isScrap?'Excel se scrapem':(isTasks?'Excel s akčním plánem':'report prostojů')}</div>
         <div style="margin:8px 0">nebo <label class="filebtn">Vybrat soubor<input type="file" id="file" accept=".xlsx,.xls,.csv"></label></div>
         <div style="font-size:12px">Formáty <b>.xlsx</b> a <b>.csv</b> · soubor se zpracuje přímo v prohlížeči, nikam se neposílá.</div>
       </div>
@@ -2401,7 +3893,55 @@ function importView(){
       <button class="btn-ok" data-a="imp-run" ${(s.prog||!rows.length)?'disabled':''}>${s.prog?'Importuji…':'Importovat '+rows.length.toLocaleString('cs-CZ')+' řádků'}</button>
     </div>`;
   }
-  if(s.step===2 && s.kind!=='scrap'){
+  if(s.step===2 && s.kind==='tasks'){
+    const rows=s.rows||[];
+    const bezTerm=rows.filter(r=>!r.dueOrig).length;
+    const bezOwn=rows.filter(r=>!r.owners.length).length;
+    const hadane=rows.filter(r=>r.areaGuessed).length;
+    const nezn=[...new Set(rows.flatMap(r=>r.owners).filter(o=>!(people||[]).some(u=>u.name===o)))];
+    const stavy={}; rows.forEach(r=>stavy[r.status]=(stavy[r.status]||0)+1);
+    body=`<div class="body">
+      <div class="file"><span class="nm">${esc(s.name)}</span>
+        <span class="sz">záložka „${esc(s.sheet||'')}" · ${rows.length} úkolů</span>
+        <button class="btn-ghost" style="margin-left:auto" data-a="imp-reset">Vybrat jiný soubor</button></div>
+      <div class="cards">
+        <div class="kcard" style="border-left-color:#1f9254"><div class="lbl">Načteno úkolů</div>
+          <div class="val">${rows.length}</div><div class="note">${Object.entries(stavy).map(([k,v])=>v+'× '+k).join(' · ')}</div></div>
+        <div class="kcard" style="border-left-color:${bezOwn?'#b7791f':'#1f9254'}"><div class="lbl">Bez ownera</div>
+          <div class="val">${bezOwn}</div><div class="note">${bezOwn?'doplň je potom v plánu':'všichni přiřazeni'}</div></div>
+        <div class="kcard" style="border-left-color:${bezTerm?'#b7791f':'#1f9254'}"><div class="lbl">Bez termínu</div>
+          <div class="val">${bezTerm}</div><div class="note">${bezTerm?'termín doplníš v plánu':'termín má každý'}</div></div>
+        <div class="kcard" style="border-left-color:${hadane?'#b7791f':'#1f9254'}"><div class="lbl">Oblast odhadnuta</div>
+          <div class="val">${hadane}</div><div class="note">z popisu nešla poznat, dal jsem ${esc(TASK_AREAS[0].k)}</div></div>
+      </div>
+      <div class="notice"><b>Jak to napasuju:</b> popis problému → <b>Task</b> · nápravná opatření → <b>Očekávaný výstup</b> ·
+        zodpovědná osoba → <b>Owner</b> · plán splnění → <b>Termín původní</b> · datum vzniku → <b>Zadáno</b> ·
+        status → <b>Stav</b>. Projekt, priorita, typ úkolu, okamžitá opatření, dlouhodobé úkoly a poznámky se složí
+        do <b>Poznámky</b>, ať se nic neztratí. Oblast a stroj hádám z popisu.</div>
+      ${nezn.length?`<div class="notice warn"><b>Tihle lidé nejsou v Nastavení minima:</b> ${nezn.map(x=>esc(x)).join(', ')}.
+        Úkoly se jim přiřadí i tak, ale ve filtrech se objeví jako samostatná jména — buď je do Nastavení přidej,
+        nebo jim potom ownera přepiš.</div>`:''}
+      ${s.err?`<div class="notice warn">${esc(s.err)}</div>`:''}
+      <div class="tblwrap" style="border:1px solid var(--line);border-radius:var(--radius)">
+        <table><thead><tr><th>Oblast</th><th>Stroj</th><th>Task</th><th>Očekávaný výstup</th><th>Owner</th><th>Zadáno</th><th>Termín</th><th>Stav</th></tr></thead>
+        <tbody>${rows.slice(0,12).map(r=>`<tr>
+          <td data-label="Oblast" class="nowrap">${esc(r.area)}${r.areaGuessed?' <span class="badge b-amber">odhad</span>':''}</td>
+          <td data-label="Stroj" class="nowrap">${esc(r.machine||'—')}</td>
+          <td data-label="Task" class="desc"><b>${esc(r.task)}</b></td>
+          <td data-label="Výstup" class="desc muted">${esc((r.output||'').slice(0,70))}</td>
+          <td data-label="Owner" class="nowrap">${r.owners.length?esc(r.owners.join(', ')):'<span class="badge b-amber">chybí</span>'}</td>
+          <td data-label="Zadáno" class="nowrap">${dateCz(r.createdOn)}</td>
+          <td data-label="Termín" class="nowrap">${r.dueOrig?dateCz(r.dueOrig):'<span class="badge b-amber">chybí</span>'}</td>
+          <td data-label="Stav"><span class="badge ${stDef(r.status).cls}">${esc(r.status)}</span></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      ${rows.length>12?`<div class="muted" style="font-size:11.5px;margin-top:8px">Ukázka prvních 12 z ${rows.length}.</div>`:''}
+      <div class="run">
+        <button class="btn-ok" data-a="imp-run" ${s.prog?'disabled':''}>${s.prog?'Zapisuji…':'Převzít '+rows.length+' úkolů do akčního plánu'}</button>
+      </div>
+    </div>`;
+  }
+  if(s.step===2 && s.kind!=='scrap' && s.kind!=='tasks'){
     const rows=s.rows||[];
     const dates=[...new Set(rows.map(r=>r.date))].sort();
     const segs=[...new Set(rows.map(r=>r.seg))].sort((a,b)=>a.localeCompare(b,'cs'));
@@ -2409,8 +3949,11 @@ function importView(){
     const tot=rows.reduce((a,r)=>a+r.sec,0);
     body=`<div class="body">
       <div class="file"><span class="nm">${esc(s.name)}</span>
-        <span class="sz">${rows.length.toLocaleString('cs-CZ')} prostojů · ${dates.length} dní · ${segs.length} linek</span>
+        <span class="sz">${s.src==='g463'?'report z G463':'report ze Symesticu'} · ${rows.length.toLocaleString('cs-CZ')} záznamů · ${dates.length} dní · ${segs.length} linek</span>
         <button class="btn-ghost" style="margin-left:auto" data-a="imp-reset">Vybrat jiný soubor</button></div>
+      ${s.src==='g463'?`<div class="notice">Rozpoznal jsem <b>report z G463</b> (záložky „Line – …"). Tenhle report nedává
+        jednotlivé prostoje s časem od–do, ale součet minut za den a důvod, takže z každé buňky vznikne jeden záznam
+        na den, linku a důvod. Linky v souboru: <b>${segs.map(x=>esc(x)).join(', ')}</b>.</div>`:''}
       <div class="cards">
         <div class="kcard" style="border-left-color:#1f9254"><div class="lbl">Načteno</div>
           <div class="val">${rows.length.toLocaleString('cs-CZ')}</div><div class="note">prostojů, celkem ${fmtDur(tot)}</div></div>
@@ -2426,7 +3969,7 @@ function importView(){
         <table><thead><tr><th>Datum</th><th>Sm.</th><th>Linka</th><th>Od</th><th>Trvání</th><th>Skupina</th><th>Důvod</th></tr></thead>
         <tbody>${rows.slice(0,8).map(e=>`<tr>
           <td data-label="Datum">${dayCz(e.date)}</td><td data-label="Směna">${e.shift}</td>
-          <td data-label="Linka"><b>${esc(e.seg)}</b></td><td data-label="Od">${e.start.slice(11,16)}</td>
+          <td data-label="Linka"><b>${esc(e.seg)}</b></td><td data-label="Od">${e.daily?'celý den':e.start.slice(11,16)}</td>
           <td data-label="Trvání" class="num">${fmtDur(e.sec)}</td>
           <td data-label="Skupina"><span class="badge b-grey">${esc(e.group)}</span></td>
           <td data-label="Důvod" class="desc">${esc(e.reason)}</td></tr>`).join('')}
@@ -2447,12 +3990,17 @@ function importView(){
     body=`<div class="body" style="text-align:center;padding:30px 18px">
       <div style="font-size:40px;line-height:1;color:#1f9254">✓</div>
       <div style="font-size:18px;font-weight:800;margin:8px 0 6px">Import hotový</div>
-      <div class="muted">${s.kind==='scrap'
+      <div class="muted">${s.kind==='tasks'
+        ? `Do akčního plánu přibylo <b>${(d.rows||0)}</b> ${(d.rows===1?'úkol':(d.rows<5?'úkoly':'úkolů'))}${
+            d.rows?` s čísly ${d.from}–${d.to}`:''}.${d.skip?` ${d.skip} už tam ${d.skip===1?'byl':'bylo'} z dřívějška, ${d.skip===1?'ten jsem nechal':'ty jsem nechal'} být.`:''}`
+        : s.kind==='scrap'
         ? `Uloženo <b>${(d.rows||0).toLocaleString('cs-CZ')}</b> řádků scrapu za ${d.days} ${d.days===1?'měsíc':(d.days<5?'měsíce':'měsíců')}
            (${monthCz(d.from||'')} – ${monthCz(d.to||'')}), celkem ${eur(d.scrapEur||0)}.`
         : `Uloženo <b>${(d.rows||0).toLocaleString('cs-CZ')}</b> prostojů za ${d.days} dní (${dayCz(d.from||'')} – ${dayCz(d.to||'')}).`}</div>
       <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        ${s.kind==='scrap'
+        ${s.kind==='tasks'
+          ? `<button class="btn-primary" data-a="tab" data-v="tasks">Zobrazit akční plán</button>`
+          : s.kind==='scrap'
           ? `<a class="btn-primary" style="display:inline-block;padding:8px 14px;border-radius:var(--radius);text-decoration:none;font-size:12px;font-weight:600" href="${SCRAP_URL}">Otevřít Quality loss report ↗</a>`
           : `<button class="btn-primary" data-a="tab" data-v="dash">Zobrazit přehled</button>`}
         <button class="btn-ghost" data-a="imp-reset">Importovat další soubor</button>
@@ -2462,7 +4010,7 @@ function importView(){
   const stepsHtml = `<ul class="steps">${[['1','Vybrat a nahrát'],['2','Kontrola'],['3','Hotovo']].map(([n,t],i)=>{
     const idx=i+1; return `<li class="${idx===s.step?'on':''} ${idx<s.step?'done':''}"><b>${idx<s.step?'✓':n}</b>${t}</li>`;}).join('')}</ul>`;
   return stepsHtml + `
-  <div class="panel"><h2>Import — ${s.kind==='scrap'?'scrap':'prostoje ze Symesticu'}<span class="right">krok ${s.step} ze 3</span></h2>${body}</div>
+  <div class="panel"><h2>Import — ${s.kind==='scrap'?'scrap':(s.kind==='tasks'?'akční plán':(s.src==='g463'?'prostoje z G463':'prostoje'))}<span class="right">krok ${s.step} ze 3</span></h2>${body}</div>
   <div class="panel">
     <h2>Historie importů</h2>
     <div class="tblwrap"><table>
@@ -2480,11 +4028,7 @@ function importView(){
 }
 
 function exportCsv(){
-  let r=events.slice();
-  if(f.seg) r=r.filter(x=>x.seg===f.seg);
-  if(f.group) r=r.filter(x=>(x.group||'')===f.group);
-  if(f.shift) r=r.filter(x=>x.shift===f.shift);
-  if(f.q){ const q=f.q.toLowerCase(); r=r.filter(x=>[x.seg,x.reason,x.comment].join(' ').toLowerCase().includes(q)); }
+  const r=visibleEvents();
   const line=a=>a.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';');
   const csv=[line(['Datum','Směna','Linka','Začátek','Konec','Trvání (min)','Netto (min)','Skupina','Důvod','Poznámka'])]
     .concat(r.map(e=>line([e.date,e.shift,e.seg,String(e.start).slice(11,19),e.end?String(e.end).slice(11,19):'',
@@ -2499,44 +4043,48 @@ function exportCsv(){
 function render(){
   const app=document.getElementById('app');
   if(!me){ app.innerHTML=loginView(); bind(); return; }
-  if(!isOwner(me.email)){
-    app.innerHTML = shell(`<div class="notice">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`);
+  if(!canEnter(me)){
+    app.innerHTML = shell(`<div class="notice">Do Engineeringu má přístup jen procesní inženýr nebo koordinátor.
+      Pokud sem patříš, ať ti v <b>Nastavení</b> přidají pozici (např. IMM PE nebo PE coordinator).</div>`);
     bind(); return;
   }
   const inner = engTab==='ps'    ? psView()
               : engTab==='tasks' ? tasksView()
               : engTab==='mgmt'  ? mgmtView()
               : engTab==='dash'  ? dashView()
+              : engTab==='par'   ? parView()
               : engTab==='list'  ? listView()
               : engTab==='scrap' ? scrapView()
               : importView();
   app.innerHTML = shell(`
     <div class="tabs">
-      <button class="tab ${engTab==='mgmt'?'on':''}" data-a="tab" data-v="mgmt">Řízení</button>
+      <button class="tab ${engTab==='mgmt'?'on':''}" data-a="tab" data-v="mgmt">Hlavní stránka</button>
       <button class="tab ${engTab==='ps'?'on':''}" data-a="tab" data-v="ps">Problem solving</button>
       <button class="tab ${engTab==='tasks'?'on':''}" data-a="tab" data-v="tasks">Akční plán</button>
-      <button class="tab ${engTab==='dash'?'on':''}" data-a="tab" data-v="dash">Přehled a KPI</button>
+      <button class="tab ${engTab==='dash'?'on':''}" data-a="tab" data-v="dash">KPI</button>
       <button class="tab ${engTab==='list'?'on':''}" data-a="tab" data-v="list">Prostoje</button>
+      <button class="tab ${engTab==='par'?'on':''}" data-a="tab" data-v="par">Generovat pareto</button>
       <a class="tab" href="${SCRAP_URL}" title="Otevře aplikaci Quality loss report — Scrap">Scrap ↗</a>
-      ${canImport()?`<button class="tab ${engTab==='imp'?'on':''}" data-a="tab" data-v="imp">Import</button>`:''}
       <span class="sp">
-        ${engTab==='ps'?'<span class="muted" style="font-size:11.5px">Problem solving zakládáš v Řízení u linky pod prahem.</span>'
+        ${engTab==='ps'?'<span class="muted" style="font-size:11.5px">Nový A3 založíš tlačítkem v seznamu — na jakoukoli linku i stroj.</span>'
           :engTab==='tasks'?'<span class="muted" style="font-size:11.5px">Akční plán je nezávislý na období — vidíš všechny tasky.</span>'
-          :engTab==='mgmt'?'<span class="muted" style="font-size:11.5px">Řízení počítá po týdnech z posledních 12 týdnů.</span>'
+          :engTab==='mgmt'?'<span class="muted" style="font-size:11.5px">Hlavní stránka počítá po týdnech z posledních 12 týdnů.</span>'
           :engTab==='scrap'?'<span class="muted" style="font-size:11.5px">Scrap se počítá po měsících — posledních 12.</span>'
+          :engTab==='par'?'<span class="muted" style="font-size:11.5px">Období si u parety vybereš přímo na stránce.</span>'
           :`<span class="muted" style="font-size:11.5px">Období:</span>
-        ${[7,14,30].map(n=>`<button class="rangebtn ${range===n?'on':''}" data-a="range" data-v="${n}">${n} dní</button>`).join('')}`}
+        ${RANGES.map(r=>`<button class="rangebtn ${range===r.k?'on':''}" data-a="range" data-v="${r.k}">${r.t}</button>`).join('')}`}
         <button class="btn-ghost" data-a="reload">↻ Načíst znovu</button>
       </span>
+      ${canImportDt()?`<button class="tab tab-imp ${engTab==='imp'?'on':''}" data-a="tab" data-v="imp">Import</button>`:''}
     </div>
     ${errMsg?`<div class="notice warn">${esc(errMsg)}</div>`:''}
     ${busy?`<div class="notice">${esc(busy)}</div>`:''}
-    ${inner}`) + (openPs?problemModal():'') + (openTask?taskModal():'')
+    ${inner}`) + (openPs?problemModal():'') + (openTask?taskModal():'') + psNewModal() + parPickModal() + parDetailModal()
     + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   bind();
 }
 function shell(inner){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Engineering', cur:'engineering',
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Engineering', cur:'engineering', positions:(me&&me.positions)||[],
     user:esc(me.email), level:(LEVEL_LABEL[me.level]||''), photoURL:me.photoURL||'', firstName:me.firstName||'', lastName:me.lastName||'', logoutAttr:'id="btn-logout"',
     modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering']}) : '';
   return uh + `<main>${inner}</main>`;
@@ -2565,10 +4113,29 @@ function bind(){
   const lo=document.getElementById('btn-logout'); if(lo) lo.onclick=()=>signOut(auth);
   document.querySelectorAll('[data-a]').forEach(el=>{ el.onclick=ev=>{ ev.stopPropagation(); act(el.dataset.a, el.dataset.v); }; });
 
+  document.querySelectorAll('[data-parline]').forEach(el=>{
+    el.onchange=()=>{ const l=el.dataset.parline;
+      par.lines = el.checked ? [...new Set(par.lines.concat(l))] : par.lines.filter(x=>x!==l);
+      render(); };
+  });
+  document.querySelectorAll('[data-pargrp]').forEach(el=>{
+    el.onchange=()=>{ const g=el.dataset.pargrp;
+      par.groups = el.checked ? [...new Set(par.groups.concat(g))] : par.groups.filter(x=>x!==g);
+      render(); };
+  });
+  const parq=document.getElementById('par-q');
+  if(parq) parq.oninput=()=>{ par.q=parq.value; const c=parq.selectionStart; render();
+    const n=document.getElementById('par-q'); if(n){ n.focus(); n.setSelectionRange(c,c); } };
+  const pdim=document.getElementById('par-dim');
+  if(pdim) pdim.onchange=()=>{ par.dim=pdim.value; par.sel=null; render(); };
+  [['par-from','from'],['par-to','to']].forEach(([id,k])=>{
+    const el=document.getElementById(id); if(el) el.onchange=()=>{ par[k]=el.value; render(); };
+  });
+
   const q=document.getElementById('f-q');
   if(q) q.oninput=()=>{ f.q=q.value; const p=q.selectionStart; render();
     const n=document.getElementById('f-q'); if(n){ n.focus(); n.setSelectionRange(p,p); } };
-  [['f-seg','seg'],['f-group','group'],['f-shift','shift']].forEach(([id,k])=>{
+  [['f-seg','seg'],['f-group','group'],['f-shift','shift'],['f-reason','reason'],['f-proc','proc']].forEach(([id,k])=>{
     const el=document.getElementById(id); if(el) el.onchange=()=>{ f[k]=el.value; render(); };
   });
 
@@ -2612,6 +4179,14 @@ function bind(){
   }
   const tka=document.getElementById('tk-area');
   if(tka) tka.onchange=()=>{ collectTask(); render(); };   // ať se přenačtou stroje k oblasti
+  ['ps-file','ps-cam'].forEach(id=>{ const el=document.getElementById(id);
+    if(el) el.onchange=()=>{ if(el.files&&el.files.length) handlePsFiles(el.files); }; });
+  const pdz=document.getElementById('ps-drop');
+  if(pdz){
+    ['dragenter','dragover'].forEach(ev=>pdz.addEventListener(ev,e=>{e.preventDefault();pdz.classList.add('hot');}));
+    ['dragleave','drop'].forEach(ev=>pdz.addEventListener(ev,e=>{e.preventDefault();pdz.classList.remove('hot');}));
+    pdz.addEventListener('drop',e=>{ if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length) handlePsFiles(e.dataTransfer.files); });
+  }
   const tfi=document.getElementById('tk-file');
   if(tfi) tfi.onchange=()=>{ if(tfi.files&&tfi.files.length) handleTaskFiles(tfi.files); };
   const tdz=document.getElementById('tk-drop');
@@ -2626,7 +4201,7 @@ function bind(){
   const oo=document.getElementById('mg-onlyopen');
   if(oo) oo.onchange=()=>{ mgOnlyOpen=oo.checked; render(); };
   const ovl=document.getElementById('ovl');
-  if(ovl) ovl.onclick=e=>{ if(e.target.id==='ovl'){ openPs=null; psMsg=''; openTask=null; tMsg=''; render(); } };
+  if(ovl) ovl.onclick=e=>{ if(e.target.id==='ovl'){ collectPsNew(); openPs=null; psMsg=''; openTask=null; tMsg=''; psNew=null; render(); } };
 
   const fi=document.getElementById('file');
   if(fi) fi.onchange=()=>{ if(fi.files&&fi.files[0]) takeFile(fi.files[0]); };
@@ -2638,6 +4213,7 @@ function bind(){
   }
 }
 async function act(a,v){
+  collectPsNew();
   switch(a){
     case 'tab':
       engTab=v;
@@ -2646,10 +4222,12 @@ async function act(a,v){
       if(v==='ps') loadMgmt();
       if(v==='tasks') loadTasks();
       if(v==='scrap'){ location.href=SCRAP_URL; return; }
+      if(v==='dash') loadDays();
+      if(v==='par') loadMgmt();
       if(v==='imp' && imp.step===3) imp=newImp(imp.kind);
       break;
     case 'range':
-      range=Number(v)||7; loaded=false; evLoaded='';
+      range=String(v||'7'); loaded=false; evLoaded='';
       loadDays(true); if(engTab==='list') loadEvents();
       break;
     case 'reload':
@@ -2666,8 +4244,10 @@ async function act(a,v){
       if(openTask) openTask.owners=taskOwners(openTask).filter(x=>x!==v);
       break; }
     case 'tk-new': openTask=emptyTask(); pendingTaskFiles=[]; moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
-    case 'tk-open': openTask=JSON.parse(JSON.stringify(tasks.find(x=>x._id===v)||{})); moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
+    case 'tk-open': if(openPs) collectPs();
+      openTask=JSON.parse(JSON.stringify(tasks.find(x=>x._id===v)||{})); moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
     case 'tk-close': openTask=null; pendingTaskFiles=[]; moveDraft={date:'',why:''}; ownQ=''; tMsg=''; break;
+    case 'tk-del': await deleteTask(v); return;
     case 'tk-save': await saveTask(); return;
     case 'tk-addmove': await addMove(); return;
     case 'tk-delfile': await removeTaskFile(Number(v)); return;
@@ -2678,12 +4258,89 @@ async function act(a,v){
 
     /* ----- řízení výkonu ----- */
     case 'mg-week': mgWeek=v; break;
-    case 'mg-open': openPs=v; psMsg=''; break;
+    /* Vybraný týden v dlaždicích posune i tabulku výkonu linek pod nimi,
+       ať na stránce nesvítí dva různé týdny. */
+    case 'tile-wk': tileWk=v||''; if(v) mgWeek=v; break;
+    case 'dash-proc': dashProc=v||''; break;
+    /* ----- generovat pareto ----- */
+    case 'par-pick':      par.pick=v; par.q=''; break;
+    case 'par-pickclose': par.pick=''; par.q=''; break;
+    case 'par-period':    par.period=v; if(v==='custom'&&!par.from){ const b=parBounds(); par.from=b.from; par.to=b.to; } break;
+    case 'par-lines-all': par.lines=parAllLines(); break;
+    case 'par-lines-none':par.lines=[]; break;
+    case 'par-proc-all':{ const add=parAllLines().filter(l=>procOfLine(l)===v);
+      const has=add.every(l=>par.lines.includes(l));
+      par.lines = has ? par.lines.filter(l=>!add.includes(l)) : [...new Set(par.lines.concat(add))];
+      break; }
+    case 'par-grp-all':   par.groups=PAR_GROUPS.slice(); break;
+    case 'par-grp-none':  par.groups=[]; break;
+    case 'par-sel':       par.sel=Number(v); break;
+    case 'par-close':     par.sel=null; break;
+    case 'par-export-one': parExportDetail(); return;
+    case 'par-export':    parExportCsv(); return;
+    case 'par-run':       await parGenerate(); return;
+    /* Proklik z grafu v KPI do Prostojů — stejné období, jen zúžené na to,
+       na co jsem klikl. Ostatní filtry se přitom vynulují. */
+    case 'kpi-drill':{
+      const i=String(v).indexOf(':'), kind=String(v).slice(0,i), val=String(v).slice(i+1);
+      f={seg:'', group:'', shift:'', reason:'', proc:dashProc||'', q:''};
+      if(kind==='seg'){ f.seg=val; f.proc=''; }      // konkrétní linka proces nepotřebuje
+      else if(kind==='group')  f.group=val;
+      else if(kind==='shift')  f.shift=val;
+      else if(kind==='reason') f.reason=val;
+      drillFrom=dashProc||''; engTab='list'; loadEvents();
+      break; }
+    case 'drill-back': engTab='dash'; dashProc=drillFrom||''; break;
+    case 'drill-clear': f={seg:'',group:'',shift:'',reason:'',proc:'',q:''}; break;
+    /* Klik na sloupec: nový sloupec začne od největšího (u textu od A),
+       další klik na ten samý pořadí otočí. */
+    case 'ev-sort':{
+      const col=EV_COLS.find(c=>c.k===v); if(!col) break;
+      evSort = evSort.k===v
+        ? {k:v, dir: evSort.dir==='desc'?'asc':'desc'}
+        : {k:v, dir: col.num?'desc':'asc'};
+      break; }
+    case 'proc-kpi': dashProc=v||''; engTab='dash'; loadDays(); break;
+    case 'mg-open': openPs=v; psMsg=''; await loadTasks(); break;
+    case 'ps-newtask':{
+      collectPs();
+      const p=problems.find(x=>x._id===openPs); if(!p) break;
+      openTask=Object.assign(emptyTask(), {psId:p._id, psNo:p.no,
+        area:areaForLine(p.line), machine:p.line||'',
+        output:'Problém se neopakuje, výkon linky zpět nad '+(engcfg.threshold||90)+' %.'});
+      pendingTaskFiles=[]; moveDraft={date:'',why:''}; ownQ=''; tMsg='';
+      break; }
     case 'mg-close': openPs=null; psMsg=''; break;
     case 'mg-save': await saveProblem(); break;
     case 'mg-addaction': await addAction(); return;
     case 'mg-adone': await setActionStatus(v,'hotová'); return;
     case 'mg-escalate': await toggleEscalation(v); return;
+    case 'mg-del': await deleteProblem(v); return;
+    case 'ps-delfile': await removePsFile(Number(v)); return;
+    case 'ps-submit':  await submitPsForApproval(); return;
+    case 'ps-approve': await approvePs(); return;
+    case 'ps-reject':  await rejectPs(); return;
+    case 'ps-new':
+      psNew={line:'', week:isoWeekOf(today()), trigger:PS_TRIGGERS[0], title:'', err:''};
+      await loadTasks();
+      break;
+    case 'ps-newclose': psNew=null; break;
+    case 'ps-newgo':{
+      const d=psNew; if(!d) break;
+      if(!d.line){ d.err='Napiš, o kterou linku nebo stroj jde.'; break; }
+      if(!d.title){ d.err='Napiš krátký popis problému.'; break; }
+      d.err='';
+      const wk=d.week||isoWeekOf(today());
+      const known=psLineOpts().find(l=>l.label.toLowerCase()===d.line.toLowerCase());
+      const label=known?known.label:d.line, sl=known?known.slug:slug(d.line);
+      /* když o té lince máme data za vybraný týden, vezmi z nich výkon a prostoj */
+      const w=weeklyPerf(mgDays, engcfg)[wk];
+      const found=w && Object.values(w.lines).find(l=>l.slug===sl);
+      const line=found || {label, slug:sl, perf:null, sec:0};
+      psNew=null;
+      await createProblem(wk, line, d.trigger, {title:d.title});
+      return;
+    }
     case 'mg-create':{
       const [wk,slug]=String(v).split('|');
       const weeks=weeklyPerf(mgDays, engcfg);
@@ -2700,9 +4357,10 @@ async function act(a,v){
       openPs=null; render(); return;
     }
     case 'imp-reset': imp=newImp(imp.kind); break;
-    case 'imp-kind': imp=newImp(v); break;
+    case 'imp-kind': imp=newImp(v==='scrap' && !canImport() ? 'dt' : v); break;
     case 'imp-run':
-      if(!canImport()) return;
+      if(!canImportDt()) return;
+      if(imp.kind==='scrap' && !canImport()){ toast('Scrap nahrává správce.','err'); return; }
       imp.err=''; imp.prog='Připravuji zápis…'; render();
       await runImport();
       break;

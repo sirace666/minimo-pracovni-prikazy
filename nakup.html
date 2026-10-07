@@ -125,6 +125,9 @@
   .btn-new{background:linear-gradient(180deg,#f6821f,#e8590c);color:#fff;font-size:18px;font-weight:800;padding:16px 36px;border-radius:10px;
     box-shadow:0 4px 14px rgba(232,89,12,.4);letter-spacing:.4px;text-transform:uppercase}
   .btn-new:hover{background:linear-gradient(180deg,#e8590c,#c94f0a);box-shadow:0 6px 18px rgba(232,89,12,.5)}
+  .btn-imp{background:linear-gradient(180deg,#2d6cb5,#1f5496);color:#fff;font-size:18px;font-weight:800;padding:16px 36px;border-radius:10px;
+    border:0;box-shadow:0 4px 12px rgba(31,84,150,.35)}
+  .btn-imp:hover{background:linear-gradient(180deg,#1f5496,#17406f);box-shadow:0 6px 18px rgba(31,84,150,.5)}
   .btn-manage{background:#fff;border:1px solid var(--navy-2);color:var(--navy-2);font-size:14px;font-weight:700;padding:14px 22px;border-radius:10px}
   .btn-manage:hover{background:#eef3fb}
   .btn-manage.on{background:var(--navy-2);color:#fff}
@@ -205,6 +208,44 @@
   .overlay{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto;z-index:50}
   .modal{background:#fff;border-radius:10px;width:min(1040px,95vw);height:min(90vh,880px);margin:auto;box-shadow:0 18px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
   .modalbody{flex:1 1 auto;overflow-y:auto;min-height:0}
+
+  /* ===== okno „+ Import požadavků" ===== */
+  .ireq-step{margin:14px 14px 0;border:1px solid #cddaf0;border-radius:8px;overflow:hidden;background:#fff}
+  .ireq-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 12px;background:#f4f6f9;
+    font-weight:700;font-size:12px;color:#41506b;border-bottom:1px solid var(--line)}
+  .ireq-h .muted{font-weight:500}
+  .ireq-h .r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ireq-drop{margin:12px;border:2px dashed #9db4d4;border-radius:10px;background:#f7faff;padding:22px 14px;
+    text-align:center;font-size:13px;color:#41506b;line-height:1.7}
+  .ireq-drop.drag{background:#eaf2ff;border-color:var(--navy-2);box-shadow:inset 0 0 0 2px rgba(37,90,158,.25)}
+  .ireq-drop b{display:block;font-size:15px;margin-bottom:3px}
+  .ireq-pick{display:inline-block;background:var(--navy-2);color:#fff;font-weight:700;border-radius:8px;
+    padding:8px 16px;cursor:pointer;margin-top:8px}
+  .ireq-pick:hover{background:#17406f}
+  .ireq-file{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px;padding:10px 12px;
+    background:var(--green-bg);border:1px solid #c4e6d3;border-radius:8px;font-size:12.5px;color:#1c5c3a}
+  .ireq-file .nm{font-weight:700}
+  .ireq-file .x{margin-left:auto;background:#fff;border:1px solid #c4e6d3;color:#c0392b;border-radius:6px;
+    padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;position:static;width:auto;height:auto}
+  .ireq-form{padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+  .ireq-form .f label{font-size:11px}
+  .ireq-form .f input,.ireq-form .f select{font-size:13px;padding:7px 8px}
+  .ireq-act{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:0 12px 12px}
+  .ireq-tbl{font-size:12px}
+  .ireq-tbl thead th{position:sticky;top:0;z-index:2}
+  .ireq-tbl td{padding:4px 6px;vertical-align:middle}
+  .ireq-tbl input,.ireq-tbl select{font-size:12px;padding:4px 6px;height:auto;border-radius:5px}
+  .ireq-tbl td.bad input,.ireq-tbl td.bad select{border-color:var(--red);background:#fdf1ef}
+  .ireq-tbl td.bad{background:#fdf1ef}
+  .ireq-tbl tr.badrow td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+  .ireq-tbl .rowx{background:#fff;border:1px solid #f5cfca;color:var(--red);border-radius:6px;
+    padding:2px 7px;font-size:12px;font-weight:700;cursor:pointer}
+  .ireq-empty{padding:26px;text-align:center;color:var(--muted);font-size:12.5px}
+  .ireq-pdftext{margin:0 12px 12px;font-size:11.5px}
+  .ireq-pdftext pre{max-height:210px;overflow:auto;background:#f6f7f9;border:1px solid var(--line);
+    border-radius:6px;padding:9px;white-space:pre-wrap;font-size:11px;margin:6px 0 0}
+  @media(max-width:900px){ .ireq-form{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:680px){ .ireq-form{grid-template-columns:1fr} }
   .modal > h3,.modal > .mtabs,.modal > .foot{flex:none}
   .modal h3{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;margin:0;padding:14px 18px;font-size:17px;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:10px}
   .modal h3 .x{margin-left:auto;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;line-height:1;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,transform .05s}
@@ -297,6 +338,7 @@
     main{padding:12px 10px 34px}
     .newbar{flex-direction:column;align-items:stretch}
     .newbar .btn-new{width:100%;font-size:17px;padding:15px 20px}
+    .newbar .btn-imp{width:100%;font-size:17px;padding:15px 20px}
     .newbar .btn-manage{width:100%}
     .mgrgrid{grid-template-columns:1fr}
 
@@ -508,6 +550,8 @@ let recvEdit=false;                                           // editace sekce P
 let uploadBusy=false;                                         // právě se nahrává příloha
 let downOnOverlay=false;                                      // stisk myši začal na ztmavené ploše (kvůli zavírání kliknutím vedle)
 let importState=null;                                         // import z Maxima: {items:[{d,dup,sel}], busy, done}
+let impReq=null;                                               // okno „+ Import požadavků" (nabídka → víc požadavků najednou)
+let impKey=0;                                                  // počítadlo pro klíče řádků importu
 let modalTab='pozadavek';                                     // aktivní záložka v detailu (pozadavek/prijem/prilohy)
 let pendingFiles=[];                                          // přílohy čekající na nahrání u nového požadavku [{file,cat}]
 /* Volitelné zobrazení sloupců tabulky (skrytí + šířka) – pamatuje si to jen prohlížeč. */
@@ -604,7 +648,8 @@ async function loadProfile(user){
     const level = (d.level && LEVEL_RANK[d.level]) ? d.level : (ROLE2LEVEL[role]||'basic');
     const firstName=d.firstName||'', lastName=d.lastName||'';
     const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
-    return {uid:user.uid, email:user.email, name, role, team:d.team||'—', level, modules:d.modules||{}, photoURL:d.photoURL||'', firstName, lastName};
+    return {uid:user.uid, email:user.email, name, role, team:d.team||'—', level, modules:d.modules||{}, photoURL:d.photoURL||'', firstName, lastName,
+            positions:d.positions||[]};
   }
   // první uživatel v systému = admin; účty ze seznamu taky; ostatní zadavatelé
   const anyUsers = await getDocs(collection(db,'users'));
@@ -671,10 +716,12 @@ function render(){
   // zapamatuj pozici scrollu, ať po otevření/zavření detailu seznam nepřeskočí nahoru
   const _pw=document.getElementById('tblwrap'); const _sTbl=_pw?_pw.scrollTop:null; const _sWin=window.scrollY;
   const _pi=document.getElementById('imp-tblwrap'); const _sImp=_pi?_pi.scrollTop:null;
+  const _pr=document.getElementById('ireq-tblwrap'); const _sIrq=_pr?_pr.scrollTop:null;
   app.innerHTML = shell()+dlgView()+(qrOpen?qrScanView():'')+`<div id="toast-node">${toastView()}</div>`;
   bind();
   const _nw=document.getElementById('tblwrap'); if(_nw&&_sTbl!=null) _nw.scrollTop=_sTbl;
   const _ni=document.getElementById('imp-tblwrap'); if(_ni&&_sImp!=null) _ni.scrollTop=_sImp;
+  const _nr=document.getElementById('ireq-tblwrap'); if(_nr&&_sIrq!=null) _nr.scrollTop=_sIrq;
   if(_sWin) window.scrollTo(0,_sWin);
   const di=document.getElementById('dlg-input'); if(di){di.focus();di.select();}
 }
@@ -711,7 +758,7 @@ function loginView(){
 
 /* ---------- shell ---------- */
 function shell(){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nákupní požadavky',cur:'nakup',user:esc(me.name),email:esc(me.email),level:esc(me.team+' · '+P().label),photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'data-a="logout"',modules:allowedMods(me&&me.modules,(me&&me.level)||'basic')}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nákupní požadavky',cur:'nakup',user:esc(me.name),email:esc(me.email),level:esc(me.team+' · '+P().label),photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'data-a="logout"',modules:allowedMods(me&&me.modules,(me&&me.level)||'basic'),positions:(me&&me.positions)||[]}) : '';
   return `
   ${uh}
   <div class="tabbar">
@@ -723,7 +770,8 @@ function shell(){
   </div>
   <main>${tab==='admin'?adminView():listView()}</main>
   ${editing?modalView():''}
-  ${importState?importView():''}`;
+  ${importState?importView():''}
+  ${impReq?ireqView():''}`;
 }
 
 /* ---------- seznam ---------- */
@@ -838,7 +886,7 @@ function listView(){
     ${card('Hodnota požadavků',num(sumEur,0)+' €','za období, bez zamítnutých · kurz '+num(cfg.rates.CZK,2)+' CZK/EUR','#6b46c1')}
   </div>
   ${roleNotice()}
-  ${isNakupRO()?'<div class="notice">👁️ Tento modul máte <b>jen pro čtení</b> – požadavky vidíte, ale nemůžete je zakládat ani upravovat.</div>':`<div class="newbar"><button class="btn-new" data-a="new">+ Nový požadavek</button>${P().edit?`<button class="btn-manage ${manage.on?'on':''}" data-a="toggle-manage" title="Hromadné doplňování údajů a změna stavu">⚙ Správa požadavků</button><label class="btn-manage" id="import-drop" style="cursor:pointer" title="Import podlimitních položek z Maxima — klikni a vyber Excel, nebo sem přetáhni soubor">📥 Import z Maxima<input type="file" data-a="import-file" accept=".xlsx,.xls" hidden></label>`:''}<button class="btn-manage ${colPanel?'on':''}" data-a="toggle-cols" title="Vyber, které sloupce zobrazit, a jejich šířku">🧩 Sloupce</button></div>`}
+  ${isNakupRO()?'<div class="notice">👁️ Tento modul máte <b>jen pro čtení</b> – požadavky vidíte, ale nemůžete je zakládat ani upravovat.</div>':`<div class="newbar"><button class="btn-new" data-a="new">+ Nový požadavek</button><button class="btn-imp" data-a="ireq-open" title="Nahraj nabídku a založ z ní víc požadavků najednou">+ Import požadavků</button>${P().edit?`<button class="btn-manage ${manage.on?'on':''}" data-a="toggle-manage" title="Hromadné doplňování údajů a změna stavu">⚙ Správa požadavků</button><label class="btn-manage" id="import-drop" style="cursor:pointer" title="Import podlimitních položek z Maxima — klikni a vyber Excel, nebo sem přetáhni soubor">📥 Import z Maxima<input type="file" data-a="import-file" accept=".xlsx,.xls" hidden></label>`:''}<button class="btn-manage ${colPanel?'on':''}" data-a="toggle-cols" title="Vyber, které sloupce zobrazit, a jejich šířku">🧩 Sloupce</button></div>`}
   ${colPanel?colsPanel():''}
   ${(manage.on&&P().edit)?mgrPanel():''}
   <div class="panel">
@@ -1417,6 +1465,514 @@ async function handleFiles(fileList,cat){
   uploadBusy=false; render();
 }
 
+/* ==========================================================
+   + IMPORT POŽADAVKŮ — z jedné nabídky založí víc požadavků najednou
+   Nahoře se nahraje nabídka (Excel / CSV / PDF), z ní se přečtou položky
+   a každá se stane jedním řádkem = jedním nákupním požadavkem.
+   Nabídka se nahraje do úložiště JEDNOU a připne se jako příloha ke všem
+   založeným požadavkům (metadata mají shared:true, viz akce „del-file").
+   ========================================================== */
+
+/* Sloupce tabulky importu = pole budoucího požadavku. */
+const IREQ_COLS=[
+  {k:'sklad',      l:'Skladové č.',          w:110},
+  {k:'popis',      l:'Popis',                w:230, req:true},
+  {k:'mnozstvi',   l:'Množ.',                w:78,  num:true, req:true},
+  {k:'jednotka',   l:'MJ',                   w:62,  opts:()=>['ks','m','kg']},
+  {k:'cena',       l:'Cena / ks',            w:98,  num:true},
+  {k:'mena',       l:'Měna',                 w:72,  opts:()=>['CZK','EUR','USD']},
+  {k:'_total',     l:'Celkem',               w:100, calc:true},
+  {k:'typ',        l:'Druh požadavku',       w:140, opts:()=>TYPES},
+  {k:'priorita',   l:'Priorita',             w:100, opts:()=>PRIORITIES.map(x=>x.k)},
+  {k:'dodavatel',  l:'Dodavatel',            w:140},
+  {k:'vyrobce',    l:'Výrobce',              w:140},
+  {k:'ucet',       l:'Účet',                 w:150, req:true, opts:()=>(cfg.accounts||[]).map(a=>({v:a.code,t:accLabel(a.code)}))},
+  {k:'costcenter', l:'CostCenter',           w:150, opts:()=>(cfg.costCenters||[]).map(c=>({v:c.code,t:ccLabel(c.code)}))},
+  {k:'usek',       l:'Linka',                w:130, req:true, opts:()=>(cfg.sections||[]).map(x=>x.name)},
+  {k:'stroj',      l:'Stroj / pod-úsek',     w:130, opts:r=>{const sec=(cfg.sections||[]).find(x=>x.name===r.usek);return sec?sec.machines:[];}},
+  {k:'datum',      l:'Dodání',               w:135, date:true},
+  {k:'duvod',      l:'Důvod objednání',      w:200, req:true},
+  {k:'url',        l:'URL odkaz',            w:160},
+  {k:'notifyEmail',l:'E-mail o naskladnění', w:170},
+  {k:'poznamka',   l:'Poznámka',             w:170}
+];
+/* Pole, která jde vyplnit hromadně v záhlaví (pořadí = pořadí v okně). */
+const IREQ_HEAD=['typ','priorita','dodavatel','vyrobce','ucet','costcenter','usek','stroj','duvod','url','notifyEmail','poznamka'];
+const ireqEmptyHead=()=>{const h={};IREQ_HEAD.forEach(k=>h[k]='');return h;};
+const ireqCol=k=>IREQ_COLS.find(c=>c.k===k)||{k,l:k};
+function ireqNewRow(from){
+  return Object.assign({_k:'r'+(++impKey), sklad:'', popis:'', mnozstvi:1, jednotka:'ks', cena:'', mena:'CZK',
+    typ:'Nový požadavek', priorita:'běžná', dodavatel:'', vyrobce:'', ucet:'', costcenter:'',
+    usek:'', stroj:'', datum:'', duvod:'', url:'', notifyEmail:'', poznamka:''}, from||{});
+}
+/* Doplní do řádku hodnoty ze záhlaví — jen ty, které jsou v záhlaví vyplněné. */
+function ireqApplyHead(r,head){
+  IREQ_HEAD.forEach(k=>{ if(String(head[k]??'').trim()!=='') r[k]=head[k]; });
+  return r;
+}
+const ireqRowTotal = r => (Number(r.cena)||0)*(Number(r.mnozstvi)||0);
+/* České skloňování u počtu řádků. */
+function ireqPlural(n,one,few,many){ return n===1?one:(n>=2&&n<=4?few:many); }
+
+/* ---------- čtení čísel z nabídky ---------- */
+/* Zvládne „1 234,56", „1.234,56", „1,234.56", „12 ks", „1 250 Kč". */
+function ireqNum(v){
+  if(v===null||v===undefined||v==='') return '';
+  if(typeof v==='number') return isFinite(v)?v:'';
+  let t=String(v).replace(/[\s ]/g,'').replace(/[^\d,.\-]/g,'');
+  if(!t||t==='-') return '';
+  const lc=t.lastIndexOf(','), ld=t.lastIndexOf('.');
+  if(lc>-1&&ld>-1){ t = lc>ld ? t.replace(/\./g,'').replace(',','.') : t.replace(/,/g,''); }
+  else if(lc>-1){ t = /^-?\d{1,3}(,\d{3})+$/.test(t) ? t.replace(/,/g,'') : t.replace(',','.'); }
+  else if(ld>-1){ if(/^-?\d{1,3}(\.\d{3})+$/.test(t)) t=t.replace(/\./g,''); }
+  const n=Number(t); return isFinite(n)?n:'';
+}
+function ireqCurrency(txt){
+  const t=String(txt||'').toUpperCase();
+  if(/EUR|€/.test(t)) return 'EUR';
+  if(/USD|\$/.test(t)) return 'USD';
+  if(/CZK|KČ|KC/.test(t)) return 'CZK';
+  return '';
+}
+
+/* ---------- nabídka v Excelu / CSV ---------- */
+const IREQ_HDR={
+  sklad:['skladové číslo','skladove cislo','sklad','skladové č.','maxitem','číslo položky','cislo polozky','item no','item no.','item number','part no','part no.','part number','artikelnummer','artikel-nr.','kód','kod','code','katalogové číslo','objednací číslo','obj. číslo','materiál','material'],
+  popis:['popis','popis položky','description','bezeichnung','název','nazev','název položky','položka','polozka','artikel','item','text','označení','oznaceni','produkt','product','zboží','zbozi'],
+  mnozstvi:['množství','mnozstvi','množ.','qty','qty.','quantity','ks','pcs','menge','počet','pocet','mn.'],
+  jednotka:['jednotka','unit','mj','m.j.','einheit','uom'],
+  cena:['cena','cena/ks','cena za ks','cena za jednotku','jednotková cena','jedn. cena','jednotkova cena','unit price','unit cost','price','einzelpreis','preis','cena bez dph','netto','cena/mj'],
+  mena:['měna','mena','currency','währung','waehrung'],
+  vyrobce:['výrobce','vyrobce','brand','manufacturer','značka','znacka','hersteller','make'],
+  dodavatel:['dodavatel','prodejce','supplier','vendor','lieferant'],
+  poznamka:['poznámka','poznamka','remark','remark 1','note','notes','comment','bemerkung']
+};
+/* CSV umí být ve Windows-1250 (Excel v češtině) — zkusíme UTF-8 a při rozsypaných
+   znacích přečteme znovu jako Windows-1250. */
+async function ireqCsvText(file){
+  const buf=await file.arrayBuffer();
+  let t=new TextDecoder('utf-8').decode(buf);
+  if(t.indexOf('�')>-1){ try{ t=new TextDecoder('windows-1250').decode(buf); }catch(e){} }
+  return t;
+}
+async function ireqSheetItems(file){
+  const XLSX=await loadXLSX();
+  const isCsv=/\.csv$/i.test(file.name);
+  const wb = isCsv ? XLSX.read(await ireqCsvText(file),{type:'string'})
+                   : XLSX.read(await file.arrayBuffer(),{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+  const nrm=x=>String(x??'').trim().toLowerCase().replace(/[:*]+$/,'');
+  // hlavičku hledáme jako řádek s nejvíc rozpoznanými názvy sloupců (musí mezi nimi být popis)
+  let hi=-1, map=null, best=0;
+  for(let i=0;i<Math.min(aoa.length,40);i++){
+    const cells=(aoa[i]||[]).map(nrm), m={}; let hits=0;
+    Object.keys(IREQ_HDR).forEach(key=>{
+      const idx=cells.findIndex(c=>c && IREQ_HDR[key].includes(c));
+      if(idx>=0){ m[key]=idx; hits++; }
+    });
+    if(m.popis!==undefined && hits>best){ best=hits; hi=i; map=m; }
+  }
+  if(hi<0) throw new Error('V tabulce jsem nenašel hlavičku sloupců (hledám aspoň sloupec „Popis"/„Description"). Zkontroluj, že je nabídka opravdu tabulka s hlavičkou.');
+  const items=[];
+  for(let i=hi+1;i<aoa.length;i++){
+    const r=aoa[i]; if(!Array.isArray(r)) continue;
+    const g=key=>map[key]===undefined?null:r[map[key]];
+    const popis=String(g('popis')??'').trim();
+    if(!popis) continue;
+    if(/^(celkem|total|mezisou|součet|soucet|sazba dph|dph)/i.test(popis)) continue;   // souhrnné řádky přeskoč
+    const qty=ireqNum(g('mnozstvi'));
+    const cena=ireqNum(g('cena'));
+    const mena=ireqCurrency(g('mena'))||ireqCurrency(g('cena'))||'CZK';
+    items.push({ sklad:'', popis,
+      mnozstvi:(qty===''||qty<=0)?1:qty, jednotka:String(g('jednotka')??'').trim()||'ks',
+      cena:cena===''?'':Math.round(cena*100)/100, mena,
+      vyrobce:String(g('vyrobce')??'').trim(), dodavatel:String(g('dodavatel')??'').trim(),
+      poznamka:String(g('poznamka')??'').trim() });
+    if(items.length>=300) break;
+  }
+  return {items, note:''};
+}
+
+/* ---------- nabídka v PDF ---------- */
+function loadPdfJs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if(loadPdfJs._p) return loadPdfJs._p;
+  loadPdfJs._p=new Promise((res,rej)=>{ const sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    sc.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(e){}
+      res(window.pdfjsLib); };
+    sc.onerror=()=>rej(new Error('Nepodařilo se načíst knihovnu na čtení PDF (zkontroluj internet).'));
+    document.head.appendChild(sc); });
+  return loadPdfJs._p;
+}
+/* Text z PDF po řádcích — kousky se slepí podle svislé pozice. */
+async function ireqPdfLines(file){
+  const pdfjsLib=await loadPdfJs();
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const lines=[];
+  for(let n=1;n<=Math.min(pdf.numPages,20);n++){
+    const page=await pdf.getPage(n);
+    const tc=await page.getTextContent();
+    const byY=new Map();
+    tc.items.forEach(it=>{
+      const str=String(it.str||''); if(!str.trim()) return;
+      const y=Math.round((it.transform&&it.transform[5])||0);
+      const x=(it.transform&&it.transform[4])||0;
+      let bucket=null;
+      for(const key of byY.keys()){ if(Math.abs(key-y)<=2){ bucket=key; break; } }
+      if(bucket===null){ bucket=y; byY.set(bucket,[]); }
+      byY.get(bucket).push({x,str});
+    });
+    [...byY.entries()].sort((a,b)=>b[0]-a[0]).forEach(([,parts])=>{
+      lines.push(parts.sort((a,b)=>a.x-b.x).map(q=>q.str).join(' ').replace(/\s+/g,' ').trim());
+    });
+  }
+  return lines;
+}
+const IREQ_PDF_SKIP=/(celkem|total|summe|mezisou|součet|soucet|dph|vat|strana|page|www\.|@|ičo|dič|iban|banka|platebn|zdanitel|splatnost|nabídka č|objednávka č|podpis|razítko|dodací|adresa)/i;
+/* Odhad položek z textového řádku PDF: „… popis … množství cena celkem". */
+const IREQ_UNIT=/^(ks|kus|kusy|kusů|pcs|pc|ea|m|bm|mb|kg|g|l|ml|bal|sada|set|par|pár|role|rl)$/i;
+const ireqUnit=u=>{u=String(u||'').toLowerCase();return /^(m|bm|mb)$/.test(u)?'m':(/^(kg|g)$/.test(u)?'kg':'ks');};
+const IREQ_ORD=/^\s*\d{1,3}[.)]\s+/;                 /* „1. …", „2) …" = začátek položky */
+const IREQ_STOP=/^(celkem|mezisou|součet|soucet|dph|vat|list\s*\d|strana|page|poznámk|vyhotovil|platnost|obchodní|e-?mail|telefon|mobil|iban|bic|bankovní|www\.|se zbožím|tato předběž|cenová nabídka)/i;
+/* Čísla rozdělená mezerou jako oddělovač tisíců spoj zpět: 1 728,00 -> 1728,00. */
+function ireqMergeThousands(tok){ const out=[]; for(let i=0;i<tok.length;i++){ let t=tok[i];
+  while(i+1<tok.length && /^\d{1,3}$/.test(t) && /^\d{3}([.,]\d+)?$/.test(tok[i+1])){ t+=tok[i+1]; i++; }
+  out.push(t); } return out; }
+/* Hlavní čtení PDF: nejdřív zkusí položky číslované 1., 2., … (popis a čísla bývají
+   na dvou řádcích), jinak spadne na jednodušší řádkový odhad. */
+function ireqPdfItems(lines){
+  const byBlock=ireqPdfItemsBlocks(lines);
+  return byBlock.length ? byBlock : ireqPdfItemsFlat(lines);
+}
+/* Číslované položky: řádky jedné položky se slepí do bloku; množství a cena podle
+   jednotky — číslo těsně před ks/KS… je množství, první číslo za ním je cena. */
+function ireqPdfItemsBlocks(lines){
+  const blocks=[]; let cur=null;
+  for(const raw of lines){ const t=String(raw||'').trim(); if(!t) continue;
+    if(IREQ_ORD.test(t)){ if(cur) blocks.push(cur); cur=[t]; }
+    else if(cur){ if(IREQ_STOP.test(t)){ blocks.push(cur); cur=null; } else cur.push(t); } }
+  if(cur) blocks.push(cur);
+  const items=[];
+  for(const bl of blocks){
+    const head=bl[0].replace(IREQ_ORD,'').trim();
+    const full=bl.join(' ').replace(/\s+/g,' ');
+    const tok=ireqMergeThousands(full.split(/\s+/));
+    let qty='', price='', unit='ks', ui=-1;
+    for(let i=0;i<tok.length;i++){ if(IREQ_UNIT.test(tok[i].replace(/[.,;]$/,''))){ ui=i; unit=tok[i]; break; } }
+    if(ui>0){ qty=ireqNum(tok[ui-1]); for(let j=ui+1;j<tok.length;j++){ const n=ireqNum(tok[j]); if(n!==''&&n>0){ price=n; break; } } }
+    if(qty===''||price===''){ const nums=tok.map(ireqNum).filter(n=>n!==''&&n>0); if(nums.length>=2){ if(qty==='')qty=nums[0]; if(price==='')price=nums[1]; } }
+    const popis=head;
+    if(!popis) continue;
+    // Skladové číslo z nabídky NEvyplňujeme — doplní si ho skladník/nákupčí sám.
+    items.push({ sklad:'', popis, mnozstvi:(qty===''||qty<=0)?1:qty,
+      jednotka:ireqUnit(unit), cena:price===''?'':Math.round(price*100)/100,
+      mena:ireqCurrency(full)||'CZK', vyrobce:'', dodavatel:'', poznamka:'' });
+    if(items.length>=300) break;
+  }
+  return items;
+}
+function ireqPdfItemsFlat(lines){
+  const numRe=/^-?\d{1,3}(?:[ . ]\d{3})*(?:[.,]\d+)?$|^-?\d+(?:[.,]\d+)?$/;
+  const items=[];
+  for(const raw of lines){
+    const t=String(raw||'').trim();
+    if(t.length<8 || IREQ_PDF_SKIP.test(t)) continue;
+    const tok=t.split(/\s+/);
+    let k=tok.length; const nums=[]; let cur='';
+    while(k>0 && nums.length<4){
+      const clean=tok[k-1].replace(/(Kč|CZK|EUR|€|USD|\$|ks|pcs|ea|m|kg)$/i,'');
+      if(clean && numRe.test(clean)){ if(!cur) cur=ireqCurrency(tok[k-1]); nums.unshift(ireqNum(clean)); k--; }
+      else break;
+    }
+    if(nums.length<2) continue;
+    let words=tok.slice(0,k);
+    // úvodní pořadové číslo položky („1", „1.", „1)") zahoď — není součást popisu
+    if(words.length>2 && /^\d{1,3}[.)]?$/.test(words[0])) words=words.slice(1);
+    // Skladové číslo z nabídky NEvyplňujeme — doplní si ho skladník/nákupčí sám.
+    const sklad='';
+    const desc=words.join(' ').trim();
+    if(desc.replace(/[^A-Za-zÀ-ž]/g,'').length<4) continue;      // bez slov to položka není
+    // vyber dvojici množství × cena tak, aby seděl součet na poslední číslo (celkem)
+    const last=nums[nums.length-1];
+    let qty=1, price=last, ok=false;
+    for(let i=0;i<nums.length-1 && !ok;i++){
+      for(let j=i+1;j<nums.length && !ok;j++){
+        const q=nums[i], pr=nums[j];
+        if(q>0 && pr>0 && Math.abs(q*pr-last)<=Math.max(0.05,Math.abs(last)*0.01)){ qty=q; price=pr; ok=true; }
+      }
+    }
+    if(!ok){
+      if(nums.length>=3){ qty=nums[nums.length-3]; price=nums[nums.length-2]; }
+      else if(Number.isInteger(nums[0]) && nums[0]>0 && nums[0]<=10000){ qty=nums[0]; price=nums[1]; }
+      else { qty=1; price=nums[nums.length-2]; }
+    }
+    if(!(qty>0)) qty=1;
+    items.push({ sklad, popis:desc,
+      mnozstvi:qty, jednotka:'ks', cena:price===''?'':Math.round(price*100)/100,
+      mena:cur||'CZK', vyrobce:'', dodavatel:'', poznamka:'' });
+    if(items.length>=200) break;
+  }
+  return items;
+}
+
+/* ---------- načtení nabídky ---------- */
+async function ireqTakeFile(file){
+  if(!impReq || !file) return;
+  if(file.size>MAX_FILE){ toast(`„${file.name}" je větší než 5 MB — nabídku zmenši nebo přilož jinou.`,'err'); return; }
+  impReq.file=file; impReq.fileInfo={name:file.name,size:file.size};
+  impReq.parseMsg='Čtu nabídku…'; impReq.parseErr=''; impReq.pdfText=''; render();
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  try{
+    let items=[], note='';
+    if(['xlsx','xls','xlsm','csv'].includes(ext)){
+      const res=await ireqSheetItems(file); items=res.items; note=res.note;
+    }else if(ext==='pdf'){
+      const lines=await ireqPdfLines(file);
+      impReq.pdfText=lines.join('\n');
+      items=ireqPdfItems(lines);
+      note='PDF se čte odhadem — <b>překontroluj množství a ceny</b>, ne každá nabídka je stejná.';
+    }else{
+      impReq.parseMsg=`Soubor je připnutý jako nabídka, ale položky z <b>.${esc(ext)}</b> přečíst neumím (jde to z Excelu, CSV a PDF). Přidej řádky ručně tlačítkem <b>+ Přidat řádek</b>.`;
+      render(); return;
+    }
+    if(!items.length){
+      impReq.parseMsg=`V nabídce jsem <b>nenašel žádné položky</b>. Soubor zůstane připnutý — řádky přidej ručně tlačítkem <b>+ Přidat řádek</b>.`
+        + (impReq.pdfText?' Text z PDF si můžeš rozbalit níž a zkopírovat z něj popisy.':'');
+      render(); return;
+    }
+    const added=items.map(d=>ireqApplyHead(ireqNewRow(d),impReq.head));
+    impReq.rows=impReq.rows.concat(added);
+    added.forEach(r=>impReq.sel.add(r._k));
+    impReq.parseMsg=`Načetl jsem <b>${items.length}</b> ${ireqPlural(items.length,'položku','položky','položek')} — každá je jeden budoucí požadavek.`+(note?' '+note:'');
+    impReq.errs={};
+  }catch(e){
+    impReq.parseMsg=`Položky se z nabídky přečíst nepovedly: ${esc(e.message||'neznámá chyba')} Soubor zůstane připnutý, řádky přidej ručně.`;
+  }
+  render();
+}
+
+/* ---------- okno ---------- */
+function ireqOptionsHtml(c,r,val){
+  const raw=typeof c.opts==='function'?c.opts(r||{}):[];
+  return raw.map(o=>{
+    const v=(o&&typeof o==='object')?o.v:o, t=(o&&typeof o==='object')?o.t:o;
+    return `<option value="${esc(v)}" ${String(val)===String(v)?'selected':''}>${esc(t)}</option>`;
+  }).join('');
+}
+function ireqHeadField(k){
+  const c=ireqCol(k), v=impReq.head[k]||'';
+  const inner = c.opts
+    ? `<select data-ih="${k}"><option value="">— nevyplňovat —</option>${ireqOptionsHtml(c,impReq.head,v)}${(k==='stroj'&&!impReq.head.usek)?'':''}</select>`
+    : `<input data-ih="${k}" value="${esc(v)}" placeholder="${esc(k==='duvod'?'proč to objednáváme':'')}">`;
+  return `<div class="f"><label>${esc(c.l)}</label>${inner}</div>`;
+}
+function ireqCellHtml(r,c){
+  const bad=(impReq.errs[r._k]||{})[c.k];
+  if(c.calc) return `<td class="num" id="ireq-tot-${r._k}">${(Number(r.cena)||0)?num(ireqRowTotal(r))+' '+esc(r.mena):'<span class="muted">—</span>'}</td>`;
+  if(!impReq.edit){
+    let v=r[c.k];
+    if(c.k==='ucet') v=v?accLabel(v):'';
+    else if(c.k==='costcenter') v=v?ccLabel(v):'';
+    else if(c.k==='datum') v=v?dateCz(v):'';
+    return `<td class="${bad?'bad':''} ${c.num?'num':''}">${(v!==''&&v!=null)?esc(v):'<span class="muted">—</span>'}</td>`;
+  }
+  const nm=`${r._k}|${c.k}`;
+  let inner;
+  if(c.opts) inner=`<select data-ir="${nm}">${c.k==='stroj'||c.k==='ucet'||c.k==='costcenter'||c.k==='usek'?`<option value="">— —</option>`:''}${ireqOptionsHtml(c,r,r[c.k])}</select>`;
+  else if(c.date) inner=`<input type="date" data-ir="${nm}" value="${esc(r[c.k]||'')}">`;
+  else if(c.num) inner=`<input type="number" min="0" step="0.01" data-ir="${nm}" value="${esc(r[c.k]===''||r[c.k]==null?'':r[c.k])}">`;
+  else inner=`<input data-ir="${nm}" value="${esc(r[c.k]||'')}">`;
+  return `<td class="${bad?'bad':''}">${inner}</td>`;
+}
+function ireqView(){
+  const R=impReq.rows, selN=R.filter(r=>impReq.sel.has(r._k)).length;
+  const fi=impReq.fileInfo;
+  const dropBox = fi
+    ? `<div class="ireq-file"><span>📎</span><span class="nm">${esc(fi.name)}</span><span>${esc(fmtSize(fi.size))}</span>
+         <span class="muted">· připne se ke všem založeným požadavkům jako příloha „Nabídka"</span>
+         <button class="x" data-a="ireq-clearfile" ${impReq.busy?'disabled':''}>Odebrat</button></div>`
+    : `<div class="ireq-drop" id="ireq-drop">
+         <b>📄 Přetáhni sem nabídku</b>
+         Excel, CSV nebo PDF — položky se z ní samy rozepíšou do řádků. Ostatní soubory se jen připnou jako příloha. Max 5 MB.
+         <label class="ireq-pick">Vybrat soubor z disku<input type="file" data-a="ireq-file" accept="${esc(ATT_ACCEPT)}" hidden></label>
+       </div>`;
+  const msg = impReq.parseMsg?`<div class="notice" style="margin:0 12px 12px">${impReq.parseMsg}</div>`:'';
+  const pdfBox = impReq.pdfText
+    ? `<details class="ireq-pdftext"><summary>📄 Zobrazit text přečtený z PDF (na zkopírování popisů)</summary><pre>${esc(impReq.pdfText.slice(0,20000))}</pre></details>`
+    : '';
+  return `<div class="overlay"><div class="modal" style="width:min(1320px,97vw)">
+    <h3>+ Import požadavků <span style="font-weight:400;opacity:.8;font-size:12px">z jedné nabídky založíš víc požadavků najednou</span><button class="x" data-a="ireq-close">✕</button></h3>
+    <div class="modalbody">
+
+      <div class="ireq-step">
+        <div class="ireq-h">1️⃣ Nabídka <span class="muted">nepovinné — řádky můžeš vyplnit i ručně</span></div>
+        ${dropBox}${msg}${pdfBox}
+      </div>
+
+      <div class="ireq-step">
+        <div class="ireq-h">2️⃣ Hromadné doplnění <span class="muted">vyplň, co mají položky společné, zaškrtni řádky a klikni Doplnit</span></div>
+        <div class="ireq-form">${IREQ_HEAD.map(ireqHeadField).join('')}</div>
+        <div class="ireq-act">
+          <button class="btn-primary" data-a="ireq-apply" ${(!selN||impReq.busy)?'disabled':''}>⤓ Doplnit do vybraných řádků (${selN})</button>
+          <button class="btn-ghost" data-a="ireq-head-clear" ${impReq.busy?'disabled':''}>Vyprázdnit záhlaví</button>
+          <span class="muted" style="font-size:11.5px">Prázdná políčka se nepřepisují — doplní se jen to, co tu vyplníš.</span>
+        </div>
+      </div>
+
+      <div class="ireq-step">
+        <div class="ireq-h">3️⃣ Řádky <span class="muted">každý řádek = jeden nákupní požadavek</span>
+          <span class="r">
+            <button class="btn-manage ${impReq.edit?'on':''}" style="font-size:12px;padding:7px 13px" data-a="ireq-edit" ${impReq.busy?'disabled':''}>✎ Editace</button>
+            <button class="btn-ghost" data-a="ireq-addrow" ${impReq.busy?'disabled':''}>+ Přidat řádek</button>
+            <button class="btn-ghost" data-a="ireq-delsel" ${(!selN||impReq.busy)?'disabled':''}>🗑 Odebrat vybrané (${selN})</button>
+          </span>
+        </div>
+        ${R.length?`<div class="tblwrap" id="ireq-tblwrap" style="max-height:46vh">
+          <table class="ireq-tbl"><thead><tr>
+            <th class="no-sort" style="width:34px"><input type="checkbox" data-a="ireq-selall" ${R.length&&R.every(r=>impReq.sel.has(r._k))?'checked':''}></th>
+            ${IREQ_COLS.map(c=>`<th class="no-sort" style="min-width:${c.w}px">${esc(c.l)}${c.req?' <span class="req">*</span>':''}</th>`).join('')}
+            <th class="no-sort" style="width:44px"></th>
+          </tr></thead><tbody>
+          ${R.map(r=>`<tr class="${impReq.errs[r._k]?'badrow':''}">
+            <td onclick="event.stopPropagation()"><input type="checkbox" data-a="ireq-selrow" data-v="${r._k}" ${impReq.sel.has(r._k)?'checked':''}></td>
+            ${IREQ_COLS.map(c=>ireqCellHtml(r,c)).join('')}
+            <td><button class="rowx" data-a="ireq-delrow" data-v="${r._k}" title="Odebrat řádek" ${impReq.busy?'disabled':''}>✕</button></td>
+          </tr>`).join('')}
+          </tbody></table>
+        </div>`:`<div class="ireq-empty">Zatím tu nejsou žádné řádky. Nahraj nabídku nahoře, nebo přidej řádek ručně tlačítkem <b>+ Přidat řádek</b>.</div>`}
+      </div>
+    </div>
+    <div class="foot">
+      ${impReq.busy
+        ? `<span class="msg" style="color:#1f9254">Zakládám… ${impReq.done||0}/${impReq.total||0}</span>`
+        : `<span class="muted" id="ireq-foot">Založí se <b>${R.length}</b> ${ireqPlural(R.length,'požadavek','požadavky','požadavků')}. Každý vznikne ve stavu <b>nový</b>. Pole s <span style="color:#c0392b">*</span> musí být vyplněná.</span>`}
+      <div class="r">
+        <button class="btn-ghost" data-a="ireq-close" ${impReq.busy?'disabled':''}>Zrušit</button>
+        <button class="btn-primary" data-a="ireq-create" ${(impReq.busy||!R.length)?'disabled':''}>Založit požadavky${R.length?` (${R.length})`:''}</button>
+      </div>
+    </div>
+  </div></div>`;
+}
+/* Přepočet jednoho řádku a počítadel — bez překreslení celého okna,
+   aby při psaní nevyskakoval kurzor z políčka. */
+function ireqRefreshTotal(k){
+  const r=impReq&&impReq.rows.find(x=>x._k===k); if(!r) return;
+  const el=document.getElementById('ireq-tot-'+k);
+  if(el) el.innerHTML=(Number(r.cena)||0)?num(ireqRowTotal(r))+' '+esc(r.mena):'<span class="muted">—</span>';
+}
+function ireqRefreshSel(){
+  if(!impReq) return;
+  const R=impReq.rows, selN=R.filter(r=>impReq.sel.has(r._k)).length;
+  const ap=document.querySelector('[data-a="ireq-apply"]');
+  if(ap){ ap.textContent=`⤓ Doplnit do vybraných řádků (${selN})`; ap.disabled=!selN||impReq.busy; }
+  const ds=document.querySelector('[data-a="ireq-delsel"]');
+  if(ds){ ds.textContent=`🗑 Odebrat vybrané (${selN})`; ds.disabled=!selN||impReq.busy; }
+  const sa=document.querySelector('input[data-a="ireq-selall"]');
+  if(sa) sa.checked = R.length>0 && R.every(r=>impReq.sel.has(r._k));
+}
+/* Políčka řádků a záhlaví — vlastní obsluha, ať se okno nepřekresluje při psaní. */
+function bindIreq(){
+  if(!impReq) return;
+  const z=document.getElementById('ireq-drop');
+  if(z){
+    z.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files')){ e.preventDefault(); z.classList.add('drag'); } });
+    z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+    z.addEventListener('drop',e=>{ e.preventDefault(); z.classList.remove('drag');
+      const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) ireqTakeFile(f); });
+  }
+  document.querySelectorAll('[data-ir]').forEach(el=>{
+    const [k,f]=el.dataset.ir.split('|');
+    const r=impReq.rows.find(x=>x._k===k); if(!r) return;
+    const h=()=>{
+      r[f]=(f==='mnozstvi'||f==='cena')?(el.value===''?'':Number(el.value)):el.value;
+      if(f==='cena'||f==='mnozstvi'||f==='mena') ireqRefreshTotal(k);
+      if(f==='usek'){ r.stroj=''; render(); }
+    };
+    if(el.tagName==='SELECT') el.onchange=h; else el.oninput=h;
+  });
+  document.querySelectorAll('[data-ih]').forEach(el=>{
+    const f=el.dataset.ih;
+    const h=()=>{ impReq.head[f]=el.value; if(f==='usek'){ impReq.head.stroj=''; render(); } };
+    if(el.tagName==='SELECT') el.onchange=h; else el.oninput=h;
+  });
+}
+
+/* ---------- založení požadavků ---------- */
+/* Nabídku nahrajeme do úložiště JEDNOU a stejná metadata dáme všem požadavkům.
+   Příznak shared:true říká mazání příloh, že se soubor z úložiště smazat nesmí
+   (patří i ostatním požadavkům z téhož importu). */
+async function ireqUploadOffer(f){
+  const safe=f.name.replace(/[^\w.\-]+/g,'_').slice(-80);
+  const path='nabidky/import_'+Date.now()+'_'+Math.floor(Math.random()*1e6)+'/'+safe;
+  const st=sref(storage,path);
+  await uploadBytes(st,f,{contentType:f.type||'application/octet-stream'});
+  const url=await getDownloadURL(st);
+  return {name:f.name,path,url,size:f.size,cat:'nabidka',at:today(),by:me.name,shared:true};
+}
+function ireqValidate(){
+  const errs={};
+  impReq.rows.forEach(r=>{
+    const e={};
+    if(!String(r.popis||'').trim()) e.popis=1;
+    if(!(Number(r.mnozstvi)>0)) e.mnozstvi=1;
+    if(!String(r.duvod||'').trim()) e.duvod=1;
+    if(fld('ucet').req && !r.ucet) e.ucet=1;
+    if(fld('usek').req && !r.usek) e.usek=1;
+    if(fld('priorita').req && !r.priorita) e.priorita=1;
+    if(r.url && !/^https?:\/\//i.test(r.url)) e.url=1;
+    if(Object.keys(e).length) errs[r._k]=e;
+  });
+  impReq.errs=errs;
+  return Object.keys(errs).length;
+}
+async function ireqCreate(){
+  if(!impReq || impReq.busy) return;
+  const R=impReq.rows;
+  if(!R.length){ toast('Nejdřív přidej aspoň jeden řádek.','err'); return; }
+  const bad=ireqValidate();
+  if(bad){
+    impReq.edit=true; render();
+    // chybějící políčko bývá mimo obrazovku vpravo — odroluj na první z nich
+    const first=document.querySelector('.ireq-tbl td.bad');
+    if(first) try{ first.scrollIntoView({block:'nearest',inline:'center'}); }catch(e){}
+    toast(`Doplň chybějící údaje — ${bad} ${ireqPlural(bad,'řádek nemá','řádky nemají','řádků nemá')} vyplněná všechna povinná pole.`,'err');
+    return;
+  }
+  impReq.busy=true; impReq.done=0; impReq.total=R.length; render();
+  let fileMeta=null;
+  if(impReq.file){
+    try{ fileMeta=await ireqUploadOffer(impReq.file); }
+    catch(e){ impReq.busy=false; render(); toast('Nabídku se nepodařilo nahrát: '+(e.message||''),'err'); return; }
+  }
+  const zdroj=impReq.fileInfo?` z nabídky ${impReq.fileInfo.name}`:'';
+  let ok=0, fail=0, lastErr='';
+  for(const r of R){
+    try{
+      const poradove=await nextNumber();
+      const hist=[`${today()} · ${me.name} · založil požadavek importem${zdroj}`];
+      const rec={ poradove, status:'nový', typ:r.typ||'Nový požadavek', sklad:String(r.sklad||'').trim(),
+        popis:String(r.popis||'').trim(), duvod:String(r.duvod||'').trim(), priorita:r.priorita||'běžná',
+        mnozstvi:Number(r.mnozstvi)||0, jednotka:r.jednotka||'ks', cena:Number(r.cena)||0, mena:r.mena||'CZK',
+        dodavatel:String(r.dodavatel||'').trim(), vyrobce:String(r.vyrobce||'').trim(),
+        ucet:r.ucet||'', costcenter:r.costcenter||'', usek:r.usek||'', stroj:r.stroj||'', datum:r.datum||'',
+        min:0, max:0, newStock:false, url:String(r.url||'').trim(), notifyEmail:String(r.notifyEmail||'').trim(),
+        poznamka:String(r.poznamka||'').trim(),
+        author:me.uid, authorName:me.name, authorEmail:me.email, created:today(), createdTs:serverTimestamp(),
+        approvedBy:null, approvedAt:null, hist };
+      const ref=await addDoc(collection(db,'requests'),rec);
+      if(fileMeta){
+        try{ await updateDoc(ref,{files:[fileMeta],hist:hist.concat(`${today()} · ${me.name} · připojena nabídka ${fileMeta.name}`)}); }catch(e){}
+      }
+      ok++;
+    }catch(e){ fail++; lastErr=e&&e.message||''; }
+    if(impReq){ impReq.done=ok+fail; render(); }
+  }
+  impReq=null; render();
+  toast(`Import hotový: založeno ${ok} ${ireqPlural(ok,'požadavek','požadavky','požadavků')}`+(fail?`, ${fail} se nepovedlo (${lastErr})`:'')+'.', fail?'err':'ok');
+}
+
 /* ---------- Import podlimitních položek z Maxima (Excel) ---------- */
 function loadXLSX(){
   if(window.XLSX) return Promise.resolve(window.XLSX);
@@ -1596,6 +2152,7 @@ function bind(){
   syncTopScroll();
   bindAttachDnD();
   bindImportDnD();
+  bindIreq();
 }
 /* Přetažení Excelu z Maxima přímo na tlačítko Import z Maxima. */
 function bindImportDnD(){
@@ -1637,6 +2194,7 @@ function syncTopScroll(){
 }
 
 const WRITE_ACTIONS=new Set(['new','save','del','dup','poptat','approve','reject','mgr-apply','mgr-receive','recv-save','upload-file','del-file','import-file','import-confirm',
+  'ireq-open','ireq-file','ireq-create',
   'add-user','add-sec','del-sec','add-mach','del-mach','add-acc','del-acc','acc-name','add-cc','del-cc','cc-name','save-rates','req',
   'user-role','user-name','user-email','user-phone','user-team']);
 async function act(a,v,el,ev){
@@ -1691,6 +2249,47 @@ async function act(a,v,el,ev){
       editing=Object.assign(JSON.parse(JSON.stringify(s)),{_id:null,poradove:'',status:'nový',datum:'',approvedBy:null,approvedAt:null,hist:[],files:[]});
       if(editing.newStock===undefined) editing.newStock=(Number(editing.min)||0)>0||(Number(editing.max)||0)>0;
       modalTab='pozadavek'; pendingFiles=[]; recvEdit=false; uploadBusy=false; errs={};footMsg='';break;}
+
+    /* --- + Import požadavků (nabídka → víc požadavků najednou) --- */
+    case 'ireq-open':
+      impReq={file:null,fileInfo:null,parseMsg:'',pdfText:'',rows:[],sel:new Set(),
+        edit:false,head:ireqEmptyHead(),errs:{},busy:false,done:0,total:0};
+      break;
+    case 'ireq-close':{
+      if(impReq&&impReq.busy) return;
+      if(impReq&&impReq.rows.length&&!await askYes('Zavřít import? Vyplněné řádky se zahodí a nic se nezaloží.',{title:'Zavřít import',ok:'Zavřít',danger:true})) return;
+      impReq=null; break;
+    }
+    case 'ireq-file':{ const f=el.files&&el.files[0]; el.value=''; await ireqTakeFile(f); return; }
+    case 'ireq-clearfile':{ if(!impReq||impReq.busy)return; impReq.file=null; impReq.fileInfo=null; impReq.parseMsg=''; impReq.pdfText=''; break; }
+    case 'ireq-edit':{ if(!impReq||impReq.busy)return; impReq.edit=!impReq.edit; break; }
+    case 'ireq-addrow':{
+      if(!impReq||impReq.busy)return;
+      const r=ireqApplyHead(ireqNewRow(),impReq.head);
+      impReq.rows.push(r); impReq.sel.add(r._k); impReq.edit=true; break;
+    }
+    case 'ireq-delrow':{ if(!impReq||impReq.busy)return; impReq.rows=impReq.rows.filter(x=>x._k!==v); impReq.sel.delete(v); break; }
+    case 'ireq-delsel':{
+      if(!impReq||impReq.busy)return;
+      const n=impReq.rows.filter(x=>impReq.sel.has(x._k)).length; if(!n) return;
+      if(!await askYes(`Odebrat ${n} ${ireqPlural(n,'vybraný řádek','vybrané řádky','vybraných řádků')} z importu?`,{title:'Odebrání řádků',ok:'Odebrat',danger:true})) return;
+      impReq.rows=impReq.rows.filter(x=>!impReq.sel.has(x._k)); impReq.sel.clear(); break;
+    }
+    case 'ireq-selrow':{ if(!impReq)return; if(el.checked) impReq.sel.add(v); else impReq.sel.delete(v); ireqRefreshSel(); return; }
+    case 'ireq-selall':{ if(!impReq)return; if(el.checked) impReq.rows.forEach(r=>impReq.sel.add(r._k)); else impReq.sel.clear(); break; }
+    case 'ireq-head-clear':{ if(!impReq||impReq.busy)return; impReq.head=ireqEmptyHead(); break; }
+    case 'ireq-apply':{
+      if(!impReq||impReq.busy)return;
+      const sel=impReq.rows.filter(r=>impReq.sel.has(r._k));
+      if(!sel.length){ toast('Nejdřív zaškrtni řádky, do kterých se to má doplnit.','err'); return; }
+      const pouzito=IREQ_HEAD.filter(k=>String(impReq.head[k]??'').trim()!=='');
+      if(!pouzito.length){ toast('V záhlaví není co doplnit — nejdřív něco vyplň.','err'); return; }
+      sel.forEach(r=>ireqApplyHead(r,impReq.head));
+      impReq.errs={};
+      toast(`Doplněno do ${sel.length} ${ireqPlural(sel.length,'řádku','řádků','řádků')} (${pouzito.map(k=>ireqCol(k).l).join(', ')}).`,'ok');
+      break;
+    }
+    case 'ireq-create': await ireqCreate(); return;
 
     case 'import-file':{
       const f=el.files&&el.files[0]; el.value='';
@@ -1789,9 +2388,13 @@ async function act(a,v,el,ev){
       if(!canAttach(cur)){ toast('Na smazání přílohy nemáš právo.','err'); return; }
       const files=(editing.files||[]).slice(); const f=files[Number(v)];
       if(!f) return;
-      if(!await askYes(`Smazat přílohu „${f.name}"? Soubor se odstraní z úložiště.`,{title:'Smazání přílohy',ok:'Smazat',danger:true})) return;
+      const otazka = f.shared
+        ? `Odebrat přílohu „${f.name}" z tohohle požadavku? Je to nabídka z hromadného importu — u ostatních požadavků z téže nabídky zůstane, proto se z úložiště nemaže.`
+        : `Smazat přílohu „${f.name}"? Soubor se odstraní z úložiště.`;
+      if(!await askYes(otazka,{title:'Smazání přílohy',ok:f.shared?'Odebrat':'Smazat',danger:true})) return;
       try{
-        try{ await deleteObject(sref(storage,f.path)); }catch(e){ /* soubor už možná není – pokračuj v odebrání z požadavku */ }
+        // sdílenou nabídku z importu z úložiště nemažeme — odkazují na ni i ostatní požadavky
+        if(!f.shared){ try{ await deleteObject(sref(storage,f.path)); }catch(e){ /* soubor už možná není – pokračuj v odebrání z požadavku */ } }
         files.splice(Number(v),1);
         const hist=(editing.hist||[]).concat(`${today()} · ${me.name} · smazal přílohu ${f.name}`);
         await updateDoc(doc(db,'requests',editing._id),{files,hist});

@@ -27,6 +27,17 @@ service cloud.firestore {
     function isAdmin() {
       return isEmailAdmin() || (signedIn() && (myRole() == 'admin' || myLevel() in ['wadmin','superadmin']));
     }
+    // Engineering: procesní inženýři a PE koordinátoři. Seznam pozic se drží
+    // shodně s klientem (header.js, index.html, engineering.html).
+    function myPositions() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('positions', []);
+    }
+    function isEngineer() {
+      return signedIn() && myPositions().hasAny(
+        ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator']);
+    }
+    // Kdo smí zakládat a upravovat problem solving, opatření a tasky.
+    function canEng()         { return isAdmin() || isEngineer(); }
     function isSklad()        { return signedIn() && myRole() == 'skladnik'; }
     function isSchvalovatel() { return signedIn() && myRole() == 'schvalovatel'; }
     function canEdit()        { return isAdmin() || isSklad(); }
@@ -110,15 +121,16 @@ service cloud.firestore {
     }
 
     // --- Engineering: prostoje ze Symesticu ---
-    // Prostoje a denní souhrny čte každý přihlášený, zapisuje je jen správce
-    // při importu reportu.
+    // Prostoje a denní souhrny čte každý přihlášený. Report nahraje kdokoli
+    // z engineeringu (procesní inženýr, koordinátor, správce) — import je
+    // idempotentní, opakované nahrání téhož reportu nic nezdvojí.
     match /downtimes/{id} {
       allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow write: if canEng();
     }
     match /dt_days/{datum} {
       allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow write: if canEng();
     }
     // --- Engineering: scrap (zmetky v eurech proti tržbám) ---
     match /scrap/{id} {
@@ -131,31 +143,44 @@ service cloud.firestore {
     }
 
     // --- Engineering: řízení výkonu (problem solving a opatření) ---
-    // Nastavení standardu (práh výkonu, ownery, čítače čísel PS a AK).
+    // Nastavení standardu (práh výkonu, manažer, stroje) mění jen správce.
+    // Inženýr smí zvýšit jen čítače čísel — bez toho by nezaložil nový záznam.
     match /meta/engcfg {
-      allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow read:   if signedIn();
+      // Dokument může poprvé vzniknout i pod inženýrem — jinak by nezaložil
+      // vůbec nic, dokud správce neuloží nastavení standardu.
+      allow create: if canEng();
+      allow update: if isAdmin()
+                    || (canEng()
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['seqPs','seqAct','seqTask']));
+      allow delete: if isAdmin();
     }
+    // Problem solving a opatření zakládají a upravují inženýři a koordinátoři,
+    // mazat je smí jen správce.
     match /problems/{id} {
-      allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow read:   if signedIn();
+      allow create, update: if canEng();
+      allow delete: if isAdmin();
     }
     match /actions/{id} {
-      allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow read:   if signedIn();
+      allow create, update: if canEng();
+      allow delete: if isAdmin();
     }
 
     // --- Engineering: akční plán managementu ---
-    // Tasky vidí každý přihlášený, zakládá a upravuje je správce.
+    // Tasky vidí každý přihlášený, zakládají a upravují je inženýři a správce.
     match /tasks/{id} {
-      allow read:  if signedIn();
-      allow write: if isAdmin();
+      allow read:   if signedIn();
+      allow create, update: if canEng();
+      allow delete: if isAdmin();
     }
 
     // Záznam v historii importů jde jen založit, ne měnit ani mazat.
     match /dt_imports/{id} {
       allow read:   if signedIn();
-      allow create: if isAdmin();
+      allow create: if canEng();
       allow update, delete: if false;
     }
 
