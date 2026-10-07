@@ -408,6 +408,33 @@ až se zeptá. Zkušební větev NENÍ důvod nic z toho vynechat.
 
 Než napíšeš „hotovo", projdi tyhle body. Když chybí byť jeden, hotovo není.
 
+## ZAČÁTEK KAŽDÉHO CHATU — udělej sám, Martin ti nic vkládat nemusí
+
+Martin není programátor a nechce do každého nového chatu psát zadání. Všechno potřebné je
+v tomhle souboru a v paměti složky (`MEMORY.md` se načítá sám). **Při první odpovědi udělej:**
+1. `git branch --show-current`, `git status`, `git log -3` — zjisti větev, verzi (`VERSION`) a
+   jestli něco není rozdělané. Pracuješ na `vzhled-zkouska-1` (nebo jiné zkouškové větvi),
+   NIKDY na `zakladni-vzhled` (viz „Větve a zálohy vzhledu" níž).
+2. Zkontroluj Davida (`git fetch upstream` + kolik změn má navíc, viz „Git remotes").
+3. Zkontroluj localhost: `curl http://localhost:8091/udrzba`. Když nejede, spusť ho jako
+   samostatný skrytý proces (PowerShell: `Start-Process cmd.exe -ArgumentList '/c','npx -y serve
+   -l 8091 .' -WorkingDirectory '<složka repa>' -WindowStyle Hidden`). **Nikdy `preview_start`** —
+   aplikace Claude servery spuštěné tím nástrojem sama ukončuje. Port je VŽDY 8091. Pomocný
+   `Spustit-localhost.bat` v kořeni repa (mimo git) spustí totéž dvojklikem.
+4. Přečti **otevřené body** v paměti (`project_zakladni_vzhled_a_zkousky.md`, sekce „Otevřené
+   body") a stručně Martinovi česky řekni: na jaké jsem větvi a verzi, kolik změn má David,
+   jestli běží localhost, co je otevřené. Pak se zeptej, co chce dělat.
+5. **Na konci každé větší práce otevřené body v paměti aktualizuj** (přidej nové, smaž vyřešené),
+   ať je další chat dostane bez Martina.
+
+Jak s Martinem mluvit a pracovat: **česky, lidsky a polopatě** (větve/tagy vysvětluj tak, že
+větev se posouvá s novými commity, tag je záložka, která se nehýbe). **„Zatím nic nedělej" =
+jen diskutovat a navrhovat, nepsat kód.** Při nejasnosti nabídni varianty (u vzhledu rád vidí
+náhled/mockup před zásahem do aplikace). Heslo k testovacímu účtu `admin.test@minimo.local`
+se Martina zeptej, když ho potřebuješ. **Kód v jednu chvíli smí v téhle složce měnit jen jeden
+chat** — dva chaty ve stejné složce a větvi si mohou přepsat práci nebo přepnout větev pod
+rukama.
+
 ## Co je tohle za repo a proč existuje
 
 Martin má editora do Davidova Firebase (`nakupni-pozadavky`) a přístup na
