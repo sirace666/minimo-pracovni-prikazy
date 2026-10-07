@@ -1488,6 +1488,27 @@ David appku dál vyvíjí (má i svoje Claude Code sezení napojené přes GitHu
 s jeho aktuálním stavem, ať se nepracuje na zastaralém kódu a pozdější PR
 je malý a čistý.
 
+**Stav srovnání s Davidem (2026-10-07):** jeho `upstream/main` (26 nových změn:
+Engineering — import prostojů z G463, import akčního plánu, pareto, problem
+solving, mazání tasků; Nákup — „+ Import požadavků" z PDF; nová pravidla Firestore
+a Storage) je sloučený do větve **`vzhled-zkouska-1`** (verze 0.18.1, přes pomocnou
+větev `sync-david`). **`main` (0.14.1) a `zakladni-vzhled` (0.17.6) ho NEMAJÍ** —
+`main` je pořád 77 změn před a 26 za Davidem. **NIKDY nepoužívej na GitHubu „Sync
+fork" → „Discard commits"** (smazalo by naši práci); sloučení se dělá lokálně:
+`git fetch upstream`, pak `git merge upstream/main` na samostatné větvi (pro testování
+v odděleném `git worktree`, ať nespadne localhost na 8091), konflikty řešit tak, že
+zůstanou OBĚ strany. Opakující se konfliktní místa jsou řádky s `uheaderHTML({…})`
+a objektem `me`: naše `photoURL/firstName/lastName` + Davidovo `positions`
+(a `modules` s `'engineering'`), a `index.html` (`MODULES`: Engineering má Davidovo
+`engOnly:true`, Údržba naše `ownerOnly:true`). `storage.rules` = Davidovy `nabidky`,
+`tasky`, `ps` + naše `avatars/{uid}` **PŘED** posledním pravidlem „nic jiného"
+(jinak by avatary zakázalo). `firestore.rules` = naše `isAdmin()` s `level` + Davidovy
+`myPositions()/isEngineer()/canEng()`. Po sloučení je nutné pravidla nasadit na
+TESTOVACÍ projekt (`firebase deploy --only firestore:rules`, zvlášť `--only storage`) —
+ověřit jde bez nasazení `--dry-run`. Do Davidova ostrého projektu se nesahá.
+Naše stránky `udrzba/profil/instalace` mají omezené menu (`modules:[…]`), takže
+`positions` hlavičce nepředávají a nic se tím nerozbíjí.
+
 ## Testovací Firebase projekt — NENÍ Davidův
 
 - Projekt **`minimo-pracovni-prikazy`**, účet `sirace666@gmail.com`, plán
