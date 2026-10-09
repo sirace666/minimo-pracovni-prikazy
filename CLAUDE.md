@@ -471,7 +471,7 @@ v tomhle souboru a v paměti složky (`MEMORY.md` se načítá sám). **Při prv
    jestli něco není rozdělané. Pracuješ na `vzhled-zkouska-1` (nebo jiné zkouškové větvi),
    NIKDY na `zakladni-vzhled` (viz „Větve a zálohy vzhledu" níž).
 2. Zkontroluj Davida (`git fetch upstream` + kolik změn má navíc, viz „Git remotes").
-3. Zkontroluj localhost: `curl http://localhost:8091/udrzba`. Když nejede, spusť ho jako
+3. Zkontroluj localhost: `curl http://localhost:8091/udrzba`. Když nejede, **nastartuj ho automaticky bez ptaní** — spusť ho jako
    samostatný skrytý proces (PowerShell: `Start-Process cmd.exe -ArgumentList '/c','npx -y serve
    -l 8091 .' -WorkingDirectory '<složka repa>' -WindowStyle Hidden`). **Nikdy `preview_start`** —
    aplikace Claude servery spuštěné tím nástrojem sama ukončuje. Port je VŽDY 8091. Pomocný
@@ -1661,6 +1661,14 @@ při PRVNÍ odpovědi v každém novém chatu a při první zprávě po upozorn�
 změn má David navíc) a Martinovi česky jednou větou řekni „David má N nových změn" (a co jsou
 zač) nebo „nic nového". **Nic nesluč bez jeho souhlasu.** Navíc běží týdenní naplánovaná úloha
 `kontrola-davida-tydne` (pondělí ~8:30, jen oznámí; běží, jen když je aplikace Claude otevřená).
+
+**Kontrola localhostu se dělá STEJNĚ jako kontrola Davida (Martin, 2026-10-09):** při PRVNÍ odpovědi v každém novém chatu a při první
+zprávě po upozornění, že se změnilo datum, spusť `curl -s -o /dev/null -w "%{http_code}" http://localhost:8091/udrzba`. **Když
+neodpoví 200, nastartuj ho SÁM, bez ptaní** (skrytý samostatný proces, ne `preview_start`):
+PowerShell `Start-Process cmd.exe -ArgumentList '/c','npx -y serve -l 8091 .' -WorkingDirectory '<složka repa>' -WindowStyle Hidden`,
+počkej asi 8 s a ověř 200 (`/udrzba`, `/shopfloor`). Port VŽDY 8091. Martinovi to řekni jednou větou („localhost běžel" /
+„localhost nejel, nastartoval jsem ho"). Stejně ho zkontroluj kdykoli Martin napíše, že „nejde localhost" nebo než ho pošleš
+něco prohlížet. Server může spadnout třeba po úklidu dočasných souborů nebo po restartu počítače.
 
 **Stav srovnání s Davidem (aktualizováno 2026-10-09, verze 0.18.2):** do verze 0.18.2 je sloučený i jeho modul **Shopfloor walk** (`shopfloor.html`, 9. 10. 2026; 1 změna navíc, pravidla Firestore i Storage — cesta `sfw/`). Předchozí sloučení (2026-10-07): jeho `upstream/main` (26 nových změn:
 Engineering — import prostojů z G463, import akčního plánu, pareto, problem
