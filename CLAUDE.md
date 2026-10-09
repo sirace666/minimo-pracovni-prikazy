@@ -427,7 +427,29 @@ v tomhle souboru a v paměti složky (`MEMORY.md` se načítá sám). **Při prv
 5. **Na konci každé větší práce otevřené body v paměti aktualizuj** (přidej nové, smaž vyřešené),
    ať je další chat dostane bez Martina.
 
-Jak s Martinem mluvit a pracovat: **česky, lidsky a polopatě** (větve/tagy vysvětluj tak, že
+### Klikací okénka ANO / NE (domluveno 2026-10-09, Martin to chtěl natrvalo)
+Martin (tyká se mu) chce, aby se na rozhodnutí ptalo **klikacím okénkem** (nástroj `AskUserQuestion`,
+nad políčkem pro psaní vyskočí otázka s tlačítky ANO / NE), ne obyčejným textem v chatu. Tohle
+prostředí okénka umí (vyzkoušeno). Platí dvě pravidla:
+1. **Kontrola Davida → návrh sloučení.** Když kontrola Davida (první odpověď v chatu / první zpráva
+   nového dne) najde **nové změny** (`upstream/main` má před naší větví 1 a víc commitů): nejdřív napiš
+   kontrolu jako **samostatný, jasně označený blok** („Kontrola Davida: má N nových změn — co jsou zač")
+   a odpověz na to, na co se Martin ptal; **až úplně NA KONEC zprávy** otevři klikací okénko „Sloučit
+   Davida do naší verze (`vzhled-zkouska-1`)? ANO / NE". Díky tomu Martin nemíchá odpověď na svůj dotaz
+   s odpovědí na kontrolu. **ANO** = sloučit bezpečně (oddělená větev + `git worktree`, konflikty tak,
+   aby zůstaly OBĚ strany, otestovat), pak nová verze podle povinného postupu, nasadit případně změněná
+   pravidla na TESTOVACÍ Firebase, napsat Martinovi co je nového. **NE** = nic nedělat, příště se zeptat
+   znovu. Návrh se týká VŽDY jen `vzhled-zkouska-1`, do `main` (ostrý web) nenavrhuj, dokud Martin sám
+   nerozhodne. Nic nesluč bez jeho „ano". Když okénko nejde zobrazit, zeptej se normální větou.
+   Týdenní úloha v Routines (`kontrola-davida-tydne`) jen oznamuje, okénko tam není — návrh přijde až
+   při první zprávě v chatu.
+2. **Pomocníci (subagenti, nástroj `Agent`).** Navrhuj je jen u **větších věcí, kde to opravdu dává
+   smysl** (prohledat velký kód, nezávislá kontrola po sloučení nebo před Pull Requestem, víc nezávislých
+   věcí najednou) — **ne pořád**. Vždy nejdřív **lidsky vysvětli, proč by se pomocník hodil** (co udělá
+   a čím pomůže, a že je dražší než práce přímo v chatu) a pak otevři klikací okénko ANO / NE. Bez
+   Martinova „ano" žádného nespouštěj. Drobnosti dělej sám.
+
+Jak s Martinem mluvit a pracovat: **česky, lidsky a polopatě, tykej mu** (větve/tagy vysvětluj tak, že
 větev se posouvá s novými commity, tag je záložka, která se nehýbe). **„Zatím nic nedělej" =
 jen diskutovat a navrhovat, nepsat kód.** Při nejasnosti nabídni varianty (u vzhledu rád vidí
 náhled/mockup před zásahem do aplikace). Heslo k testovacímu účtu `admin.test@minimo.local`
