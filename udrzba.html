@@ -1023,10 +1023,10 @@ function findWord(tl,w,firstOnly){          // tl = text jako pole malých znak�
 const textHas=(text,w)=>findWord(Array.from(String(text==null?'':text)).map(lcChar),w,true).length>0;
 // pole, která jsou v řádku tabulky vidět (zvýrazní se přímo tam)
 function visibleSearchText(o){
-  // Stav, Typ, Priorita, Obor, Stroj a Linka se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
+  // Stav, Typ, Priorita, Obor, Stroj, Linka a stav dílu se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
   return ([o.cislo,o.wo,o.nazev,...assignedNames(o).map(pn),
     o.authorName&&pn(o.authorName),
-    o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
+    o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
 }
 /* Řádek historie je „datum · kdo · co se stalo". Hledá se a označuje jen datum, jméno a skutečné hodnoty (stavy, jména
    přiřazených); šablonová slova („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) ne. */
@@ -1061,8 +1061,8 @@ function searchHiddenHint(o){
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
-const HL_OK='.r2-wo,.r2-pp,.tt,.r2-part,.r2-wn,.r2-pj,.r2-rel,.hv,'
-  +'.hero h2,.hero-desc,.meta dd,.badge.nd-potreba,.badge.nd-objednano,.badge.nd-prisel,.oi-title,.oi-top .muted';
+const HL_OK='.r2-wo,.r2-pp,.tt,.r2-wn,.r2-pj,.r2-rel,.hv,'
+  +'.hero h2,.hero-desc,.meta dd,.oi-title,.oi-top .muted';
 const UI_SKIP='.nohl,button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
