@@ -1618,7 +1618,7 @@ změn má David navíc) a Martinovi česky jednou větou řekni „David má N n
 zač) nebo „nic nového". **Nic nesluč bez jeho souhlasu.** Navíc běží týdenní naplánovaná úloha
 `kontrola-davida-tydne` (pondělí ~8:30, jen oznámí; běží, jen když je aplikace Claude otevřená).
 
-**Stav srovnání s Davidem (2026-10-07):** jeho `upstream/main` (26 nových změn:
+**Stav srovnání s Davidem (aktualizováno 2026-10-09, verze 0.18.2):** do verze 0.18.2 je sloučený i jeho modul **Shopfloor walk** (`shopfloor.html`, 9. 10. 2026; 1 změna navíc, pravidla Firestore i Storage — cesta `sfw/`). Předchozí sloučení (2026-10-07): jeho `upstream/main` (26 nových změn:
 Engineering — import prostojů z G463, import akčního plánu, pareto, problem
 solving, mazání tasků; Nákup — „+ Import požadavků" z PDF; nová pravidla Firestore
 a Storage) je sloučený do větve **`vzhled-zkouska-1`** (verze 0.18.1, přes pomocnou
@@ -1671,12 +1671,13 @@ tady). Před otevřením PR:
    `header.js`, `index.html` (`OWNERS`/`ADMIN_EMAILS`/`UDRZBA_OWNERS`/
    `OPRAVY_OWNERS`) a nechat jen Davidovy skutečné e-maily.
 2. **Přepnout `firebaseConfig` zpátky na ostrý projekt `nakupni-pozadavky`
-   — VE VŠECH 8 SOUBORECH**, ne jen v našich dvou novejch. Od
+   — VE VŠECH 9 SOUBORECH**, ne jen v našich dvou novejch. Od
    2026-09-12 (na Martinovo přání) míří na testovací projekt
    `minimo-pracovni-prikazy` i Davidovy PŮVODNÍ moduly, aby šlo celé
    Minimo lokálně proklikat s testovacími účty:
    `index.html`, `udrzba.html`, `profil.html`, `nakup.html`,
-   `dovolenky.html`, `opravy.html`, `engineering.html`, `nastaveni.html`.
+   `dovolenky.html`, `opravy.html`, `engineering.html`, `nastaveni.html`,
+   `shopfloor.html` (Davidův modul, od 0.18.2 taky přepnutý na testovací projekt).
    Hledej komentář `DOČASNĚ přepnuto` — je u configu v každém z nich.
    Ostrý config (`nakupni-pozadavky`, apiKey `AIzaSyDi3OVq2Al0WXFPgqhMAN9lPGuExOU80Cc`)
    je zapsaný výš v `03-firestore-data-nakupni-pozadavky.md` a
