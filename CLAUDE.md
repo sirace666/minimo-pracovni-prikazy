@@ -1416,7 +1416,9 @@ protože:
 - **Hledání ve všem + označení nalezeného textu (2026-10-09, v0.18.4)** — Martin: hlavní hledání má najít naprosto vše
   v příkazech a nalezený text se má označit jako Ctrl+F v dokumentu. `matchesSearch()` hledá v čísle, WO, poruše, **popisu**,
   lince, stroji, oboru, jménech přiřazených, autorovi, stavu, prioritě, typu (CM/EM, standardní/havarijní), stavu dílu,
-  prostoji, datu vytvoření i v **celé historii** (`o.hist`). Nezáleží na velikosti písmen ani **diakritice** (`fold()`: „dveri"
+  prostoji, datu vytvoření i v **historii** (`o.hist`) — ale jen v jejích DATECH: datum, jméno a hodnoty (stavy, jména přiřazených). Šablonová
+  slova řádků („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) se nehledají ani neoznačují (`histParts()`,
+  `HIST_BOILER`, v0.18.8; datové části jsou v `<span class="hv">`). Přibude-li nový typ řádku historie (`hist.push(...)`), přidej jeho šablonu do `HIST_BOILER`/`histParts()`. Nezáleží na velikosti písmen ani **diakritice** (`fold()`: „dveri"
   najde „dveří"); víc slov oddělených mezerou = příkaz musí obsahovat VŠECHNA (`searchWords()`). Nalezený text se po každém
   `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
   (jen v pohledu, ne ve formuláři). Shoda jen v tom, co v řádku není vidět (popis, historie), ukáže pod názvem poruchy

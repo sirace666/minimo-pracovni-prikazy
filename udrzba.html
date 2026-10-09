@@ -1016,7 +1016,23 @@ function visibleSearchText(o){
     o.authorName&&pn(o.authorName),statusLabel(o.status),PRIORITA_LABEL[o.priorita]||o.priorita,typOf(o),typOf(o)==='EM'?'havarijní':'standardní',
     o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
 }
-const hiddenSearchText=o=>({popis:fold(o.popis||''),hist:fold((o.hist||[]).join(' '))});
+/* Řádek historie je „datum · kdo · co se stalo". Hledá se a označuje jen datum, jméno a skutečné hodnoty (stavy, jména
+   přiřazených); šablonová slova („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) ne. */
+const HIST_BOILER=/^(upravil příkaz|založil příkaz|nahlásil chybějící díl|díl objednán|díl dorazil|pokračuje se v opravě|nikdo)$/;
+function histParts(h){
+  const out=[];
+  String(h).split(' · ').forEach((seg,i)=>{
+    if(i) out.push({t:' · ',d:false});
+    let m;
+    if(HIST_BOILER.test(seg)) out.push({t:seg,d:false});
+    else if((m=/^přiřazeno: (.*)$/.exec(seg))) out.push({t:'přiřazeno: ',d:false},{t:m[1],d:!HIST_BOILER.test(m[1])});
+    else if((m=/^stav (.+) → (.+)$/.exec(seg))) out.push({t:'stav ',d:false},{t:m[1],d:true},{t:' → ',d:false},{t:m[2],d:true});
+    else out.push({t:seg,d:true});
+  });
+  return out;
+}
+const histHtmlLine=h=>histParts(h).map(x=>x.d?`<span class="hv">${esc(x.t)}</span>`:esc(x.t)).join('');
+const hiddenSearchText=o=>({popis:fold(o.popis||''),hist:fold((o.hist||[]).map(h=>histParts(h).filter(x=>x.d).map(x=>x.t).join(' ')).join(' '))});
 function matchesSearch(o){
   if(!filters.q) return true;
   const words=searchWords(); if(!words.length) return true;
@@ -1034,7 +1050,7 @@ function searchHiddenHint(o){
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
 const HL_OK='.r2-st b,.r2-typ,.r2-pri,.r2-wo,.r2-pp,.tt,.r2-part,.r2-mono,.r2-ob,.r2-wn,.r2-pj,.r2-rel,.hv,'
-  +'.hero h2,.hero-desc,.meta dd,.hist div,.hero-top .badge,.oi-title,.oi-top .badge,.oi-top .muted';
+  +'.hero h2,.hero-desc,.meta dd,.hero-top .badge,.oi-title,.oi-top .badge,.oi-top .muted';
 const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
@@ -1822,7 +1838,7 @@ function modalView(){
   const o=editing, isNew=!o._id;
   const showEdit = isNew || editMode;
   const canEdit = isNew || canEditDoc(o);
-  const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${esc(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
+  const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${histHtmlLine(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
   const next = NEXT_STATUS[o.status];
   const tabs = showEdit ? `<div class="modal-tabs">
     <button type="button" class="modal-tab ${typOf(o)==='EM'?'on typ-em':''}" data-a="set-typ" data-v="EM">Havarijní (EM)</button>
