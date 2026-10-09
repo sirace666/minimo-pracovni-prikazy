@@ -1376,20 +1376,43 @@ protože:
     tučný text, typ = mono štítek (EM červený), priorita = tónovaný štítek s 4 proužky, WO mono + číslo PP pod ním
     („bez WO"), stroj mono štítek + „Linka X" pod ním, obor jako obrysové štítky, přiřazení = avatary s iniciálami
     (max 3, barva podle `hueOf(jméno)`) + jména / „+ Přiřadit", prostoj fialový štítek s hodinami (`--pj`; u hotového šedý),
-    vytvořeno „dnes/včera/před N dny" (`relDays`) + autor. **Menu filtrů a štítky dál používají staré pomocníky**
+    vytvořeno = datum „5. 10. 2026" + autor (od 0.18.3; dřív „před N dny", funkce `relDays` je pryč). **Menu filtrů a štítky dál používají staré pomocníky**
     (`stavHtml/typHtml/prioHtml/ndInlineHtml/prostojHtml`) — nemíchat. Řádek je samostatná karta (border, radius 10,
     mezera 5 px); hotové `opacity:.6`; EM má růžové pozadí a červený okraj VŽDY (ne jen s kritickou).
   - **Záhlaví** `.thd` = šedý `#e9e7e1` pruh radius 9 (sticky; `box-shadow` v barvě pozadí zakrývá mezeru, ať v ní řádky při
     posunu neprosvítají), zapnutý filtr = text `#b8480f`. Akcentová barva v `.board2` a `.colmenu` je přepsaná na
     `#b8480f` (oranžovohnědá z návrhu); pozadí stránky `#f3f2ee`; písmo Figtree + JetBrains Mono (Google Fonts) jen v
     `.pagehead/.board2/.colmenu/.favpanel`, okna příkazu zůstala Nunito. Karta `.listcard2` je průhledná.
-  - **Dlaždice nahoře** mají markup `.vt-icon` (SVG) + `.vt-body`; Náhradní díl ukazuje „N požadováno / N objednáno / N přišlo"
+  - **Dlaždice nahoře** (od 0.18.3 bez červeného vykřičníku u Nepřiřazených — zůstává jen červené číslo) mají markup `.vt-icon` (SVG) + `.vt-body`; Náhradní díl ukazuje „N požadováno / N objednáno / N přišlo"
     (`.vt-nds`, popisky `.vt-sub` jen na počítači). Logika pohledů, `filters.view` i rozbalovací panel beze změny.
   - **Hledání je na počítači vždy vidět** (`.search-wrap.d-only`, lupa `.m-only` na mobilu); klik mimo ho na počítači
     NEzavírá ani nemaže (listener kontroluje `matchMedia('(min-width:861px)')`).
   - **Zkoušení bez přihlášení:** kopie stránky s falešným `stub.js` místo Firebase leží v `%TEMP%\minimo-test2` (server na
     8092, skript Playwright přes Chrome). Pole přiřazených jmen se jmenuje `assignedToNames` (množné číslo!).
   - Návrh obsahuje i stav „Pozastaveno" a typ PM — v datech Údržby NEJSOU, nepřidáno.
+- **Okna ve vzhledu 1d + šest úprav (2026-10-09, v0.18.3)** — Martin chtěl sjednotit i okna s hlavní stránkou a po
+  prohlédnutí dal šest požadavků. **Okna** (`.overlay`: příkaz, Přiřadit pracovníky, Vybrat linku/stroj, Nový/Upravit oblíbený
+  filtr), toast a prázdný stav jsou ODVOZENÉ z palety hlavní stránky (návrh 1d je neřešil): bílá hlavička s tučným názvem a
+  kulatým ✕, radius 18, `--accent` přepsaný v `.overlay` na `#b8480f`, hlavní tlačítka oranžové pilulky `#e8590c`, vedlejší
+  bílé pilulky, pole radius 10, Figtree. Barevný pruh `.hero` podle stavu zůstal. Jen na počítači (`@media(min-width:861px)`).
+  Šest úprav:
+  1. **Oblíbený filtr (okno) nemá ve Stavu „Čeká na díl"** (`STAV_FILTER_OPTS.filter(s=>s.k!=='ceka-dil')` v `filterModalView`) —
+     stav dílu patří do filtru Díl. Levý panel na mobilu ji má dál.
+  2. **Vykřičník u Nepřiřazených pryč** (`unassignedHasEmCrit()` se v dlaždici už nepoužívá).
+  3. **Vytvořeno = datum** (`dateCz(o.created)` bez koncové tečky), ne „před N dny".
+  4. **„+ Přiřadit" v řádku tabulky** (`.r2-unas`, `data-a="assign-quick"`) otevře rovnou okno Přiřadit pracovníky a po „Přiřadit"
+     **uloží přímo do databáze** (`assignPicker.direct` = id příkazu; `updateDoc` s `assignedTo/assignedToNames` + řádek historie).
+     Smí jen `canEditDoc(o)` (správce / zadavatel / přiřazený); jinak toast. Okno otevřené z formuláře příkazu se chová jako dřív
+     (zapíše do `editing`, ukládá se až „Uložit změny"). Je to `<span>` uvnitř `<button class="trow">` — `[data-a]` handler má
+     `stopPropagation`, takže řádek se neotevře.
+  5. **Posun v seznamech se po zaškrtnutí nevrací nahoru** — `renderShell()` si pamatuje `scrollTop` i u `.ap-rows`,
+     `.cm-list` a `.linka-list` (dřív jen okna a tabulky).
+  6. **„Jen vybrané" a „Zrušit vše" všude, kde se zaškrtává víc věcí:** okno Přiřadit pracovníky (`assignPicker.only`, akce
+     `assign-only`/`assign-clear`), menu sloupce (Zrušit vše je tlačítko vedle Jen vybrané, dolní odkaz „Vymazat výběr" je pryč;
+     u textových filtrů zůstalo „Vymazat"), panel Náhradní díl (`nd-clear`), panel Linka v levém panelu i v okně oblíbeného
+     (`linka-clear`/`fav-linka-clear`), okno oblíbeného filtru (`fav-clear-all`). Tlačítka mají třídu `.cm-onlybtn`.
+  - **Zkoušení:** stub Firebase (`%TEMP%\minimo-test3\stub.js`) zapisuje volání `updateDoc` do `window.__upd`, takže jde
+    ověřit i uložení bez databáze.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

@@ -692,6 +692,7 @@
     .r2-av{width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:oklch(0.9 0.06 var(--h));color:oklch(0.36 0.1 var(--h));
       font:800 9.5px 'Figtree',sans-serif;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
     .r2-wn{font-size:13.5px;font-weight:600;line-height:1.3}
+    .r2-unas:hover{border-color:#b8480f;color:#b8480f;background:#fbf1ea;cursor:pointer}
     .r2-unas{display:inline-flex;align-items:center;border:1.5px dashed #cfcabd;color:#6f6b60;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:600}
     .r2-pj{display:inline-flex;align-items:center;gap:5px;color:var(--pj);background:color-mix(in srgb,var(--pj) 11%,transparent);
       padding:4px 8px;border-radius:8px;font:700 12.5px 'Figtree',sans-serif;white-space:nowrap}
@@ -704,6 +705,44 @@
     .cm-sort:hover{background:#f4f3ef}
     .cm-sort.on,.cm-list .filter-check:has(input:checked){background:#fbf1ea;color:#b8480f}
     .cm-list .filter-check:has(input:checked) .count{background:#f3e3d6;color:#8f3a0c}
+  }
+
+  /* ===== VZHLED 1d — okna (příkaz, přiřazení, linka/stroj, oblíbený filtr), upozornění, prázdný stav (v0.18.3) =====
+     Návrh 1d řešil jen hlavní stránku, takže tohle je ODVOZENO ze stejné palety (teplá béžová, akcent #b8480f,
+     oranžová pilulka pro hlavní tlačítko, Figtree). Mění se jen barvy, tvary a písmo, ne funkce. Jen na počítači. */
+  @media(min-width:861px){
+    .overlay{--accent:#b8480f;--accent-dark:#8f3a0c;--text:#1c1b17;--border:#e3e0d8;--muted:#6f6b60;
+      background:rgba(28,27,23,.45);font-family:'Figtree','Segoe UI',sans-serif;color:#1c1b17}
+    .overlay input,.overlay select,.overlay textarea{font-family:inherit;border-radius:10px;border:1px solid #e3e0d8}
+    .overlay input:focus,.overlay select:focus,.overlay textarea:focus{outline:none;border-color:#b8480f;box-shadow:0 0 0 3px rgba(184,72,15,.14)}
+    .overlay input[type=checkbox]{border-radius:4px}
+    .overlay input[type=checkbox],.overlay input[type=range]{box-shadow:none}
+    .overlay label{color:#58554b}
+    .modal{border-radius:18px;border:1px solid #e8e5de;box-shadow:0 18px 44px rgba(30,28,20,.22)}
+    .modal-head{background:#fff;color:#1c1b17;border-bottom:1px solid #e8e5de;padding:.95rem 1.1rem;font-size:1.05rem;font-weight:800;letter-spacing:-.01em}
+    .modal-head .x{background:#f1efe9;border:0;color:#58554b;border-radius:50%;width:32px;height:32px}
+    .modal-head .x:hover{background:#e7e4db}
+    .modal-foot{background:#faf9f6;border-top:1px solid #e8e5de}
+    .modal-tabs{border-bottom-color:#e8e5de}
+    .modal-tab{font-size:14px}
+    .hero{background:color-mix(in srgb,var(--accent) 8%,#fff);border-bottom-color:#e8e5de}
+    .sec{border-top-color:#e8e5de}
+    .overlay .btn-primary,.overlay .btn-ghost,.overlay .btn-danger{border-radius:999px;font-weight:700;padding:.55rem 1.15rem}
+    .overlay .btn-primary{background:#e8590c;color:#fff}
+    .overlay .btn-primary:hover{background:#d04c05}
+    .overlay .btn-ghost{background:#fff;border:1px solid #e3e0d8;color:#1c1b17}
+    .overlay .btn-ghost:hover{background:#faf9f6}
+    .overlay .btn-danger{background:#fff;border:1px solid #f0c2bb}
+    .overlay .btn-danger:hover{background:#fdf1ef}
+    .assign-trigger{border-radius:10px;border-color:#e3e0d8}
+    .ap-row{border-top-color:#eeebe3}
+    .ap-row:hover{background:#faf9f6}
+    .ap-badge.ap-cm{background:#f1efe9;color:#58554b}
+    .ap-drill{background:#faf9f6}
+    .hist div{border-top-color:#e3e0d8}
+    .toast{background:#1c1b17;border-radius:999px;font-family:'Figtree','Segoe UI',sans-serif;padding:.65rem 1.25rem}
+    .toast.err{background:#c0392b}.toast.ok{background:#1d7a44}
+    .listcard2 .empty2{background:#fff;border:1px dashed #dcd8ce;border-radius:14px;font-family:'Figtree','Segoe UI',sans-serif}
   }
 </style>
 </head>
@@ -942,8 +981,12 @@ function renderShell(inner){
   // tabulka: posun (vodorovný i svislý) se při překreslení (třeba po zaškrtnutí filtru nebo zavření okna
   // příkazu) jinak vracel na začátek
   const tsOld=document.querySelector('.tscroller'), tsLeft=tsOld?tsOld.scrollLeft:0, tsTop=tsOld?tsOld.scrollTop:0;
+  // vnitřní seznamy (okno Přiřadit/Vybrat, menu sloupce, panel Linka) — jinak by se po zaškrtnutí vracely nahoru
+  const LISTS=['.ap-rows','.cm-list','.linka-list'];
+  const listScroll=LISTS.map(sel=>[...document.querySelectorAll(sel)].map(e=>e.scrollTop));
   mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (pickPicker?pickPickerView():'') + (filterModal?filterModalView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   if(scrollTop!=null){ const nbs=document.querySelectorAll('.overlay .modal-body'); const nb=nbs[nbs.length-1]; if(nb) nb.scrollTop=scrollTop; }
+  LISTS.forEach((sel,k)=>{ document.querySelectorAll(sel).forEach((e,i)=>{ if(listScroll[k][i]) e.scrollTop=listScroll[k][i]; }); });
   if(tsLeft||tsTop){ const tsNew=document.querySelector('.tscroller'); if(tsNew){ tsNew.scrollLeft=tsLeft; tsNew.scrollTop=tsTop; } }
 }
 function loginView(){
@@ -1078,6 +1121,7 @@ function linkaPickerCore(mode){
       <span class="linka-trigger-label">${label}</span><span class="car">${open?'▴':'▾'}</span>
     </button>
     ${open?`<div class="linka-panel">
+      <div class="cm-only" style="display:flex;justify-content:flex-end"><button type="button" class="cm-onlybtn" data-a="${isFav?'fav-linka-clear':'linka-clear'}"${selCount?'':' disabled'}>Zrušit vše</button></div>
       ${all.length>6?`<input type="text" class="linka-search" id="${searchId}" placeholder="Hledat linku…" value="${esc(query)}">`:''}
       <div class="checklist linka-list">
         ${shown.length?shown.map(name=>`<label class="filter-check"><input type="checkbox" ${dataAttr} value="${esc(name)}" ${sel.includes(name)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(name)}</span>${isFav?'':`<span class="count">${countLinka(name)}</span>`}</label>`).join(''):'<div class="muted" style="padding:6px 8px;font-size:12px">Nic nenalezeno.</div>'}
@@ -1109,6 +1153,7 @@ function ndTileWrap(){
       </span>
     </button>
     ${ndOpen?`<div class="linka-panel" style="min-width:210px">
+      <div class="cm-only" style="display:flex;justify-content:flex-end"><button type="button" class="cm-onlybtn" data-a="nd-clear"${filters.nd.length?'':' disabled'}>Zrušit vše</button></div>
       <div class="checklist">
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="potreba" ${filters.nd.includes('potreba')?'checked':''}><span class="fc-box"></span><span class="fc-label">Potřeba objednat</span><span class="count${potreba?' count-danger':''}">${potreba}</span></label>
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="objednano" ${filters.nd.includes('objednano')?'checked':''}><span class="fc-box"></span><span class="fc-label">Čeká (objednáno)</span><span class="count">${objednano}</span></label>
@@ -1162,7 +1207,9 @@ function assignPickerView(){
   const q=(assignPicker.query||'').trim().toLowerCase();
   const list=users.slice()
     .sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','cs'))
-    .filter(u=>!q || (u.name||u.email||'').toLowerCase().includes(q));
+    .filter(u=>!q || (u.name||u.email||'').toLowerCase().includes(q))
+    .filter(u=>!assignPicker.only || assignPicker.selected.includes(u._id));
+  const selN=assignPicker.selected.length;
   const rowsHtml = list.length ? list.map(u=>{
     const w=userWorkload(u._id), sel=assignPicker.selected.includes(u._id);
     const badges = (w.em===0 && w.cm===0)
@@ -1180,12 +1227,16 @@ function assignPickerView(){
       </span>
       <span class="ap-badges">${badges}</span>
     </div>${drill}`;
-  }).join('') : '<div class="muted" style="padding:16px 1rem">Nikdo nenalezen.</div>';
+  }).join('') : '<div class="muted" style="padding:16px 1rem">'+(assignPicker.only&&!selN?'Nikdo není vybrán.':'Nikdo nenalezen.')+'</div>';
   return `<div class="overlay" data-a="assign-close-bg"><div class="modal" style="max-width:560px">
     <div class="modal-head">Přiřadit pracovníky<button class="x" data-a="assign-close">✕</button></div>
     <div class="modal-body" style="padding:0">
       <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
         <input type="text" id="ap-q" placeholder="Hledat jméno…" value="${esc(assignPicker.query||'')}">
+        <div class="cm-only" style="display:flex;gap:6px;padding:.6rem 0 0">
+          <button type="button" class="cm-onlybtn${assignPicker.only?' on':''}" data-a="assign-only" aria-pressed="${!!assignPicker.only}"${(selN||assignPicker.only)?'':' disabled'}>Jen vybrané${selN?` · ${selN}`:''}</button>
+          <button type="button" class="cm-onlybtn" data-a="assign-clear"${selN?'':' disabled'}>Zrušit vše</button>
+        </div>
       </div>
       <div class="ap-cols"><span></span><span>Jméno</span><span>Rozpracováno</span></div>
       <div class="ap-rows">${rowsHtml}</div>
@@ -1279,8 +1330,9 @@ function filterModalView(){
             <label class="color-custom ${FAV_COLORS.includes(f.color)?'':'on'}" title="Vlastní barva" ${FAV_COLORS.includes(f.color)?'':`style="background:${esc(f.color)}"`}><input type="color" id="fv-color" value="${esc(f.color)}" aria-label="Vlastní barva"></label>
           </div>
         </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:-.2rem"><button type="button" class="cm-onlybtn" data-a="fav-clear-all">Zrušit vše</button></div>
         ${favCheckGroup('typ','Typ',[{k:'CM',label:'Standardní (CM)',color:'#41506b'},{k:'EM',label:'Havarijní (EM)',color:'#c0392b'}])}
-        ${favCheckGroup('stav','Stav',STAV_FILTER_OPTS)}
+        ${favCheckGroup('stav','Stav',STAV_FILTER_OPTS.filter(s=>s.k!=='ceka-dil'))}
         ${favCheckGroup('priorita','Priorita',PRIORITA.map(p=>({k:p,label:PRIORITA_LABEL[p]||p,color:PRIORITA_COLOR[p]})))}
         ${favCheckGroup('obor','Obor',OBOR)}
         ${favLinkaGroup()}
@@ -1417,12 +1469,6 @@ const prostojHtml=(o,text)=>`<span class="pj ${o&&o.status==='hotovo'?'off':'on'
    Jen pro řádky tabulky; menu filtrů dál používá stavHtml/typHtml/prioHtml výš, ať se jim nic nemění. */
 const initials=n=>String(n||'').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
 const hueOf=n=>[...String(n)].reduce((a,c)=>a+c.charCodeAt(0)*7,0)%360;
-// „dnes / včera / před N dny" podle data vytvoření (o.created = RRRR-MM-DD…)
-function relDays(s){
-  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); if(!m) return '';
-  const n=Math.round((Date.UTC(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())-Date.UTC(+m[1],+m[2]-1,+m[3]))/864e5);
-  return n<=0?'dnes':n===1?'včera':`před ${n} dny`;
-}
 const r2Stav=o=>`<span class="r2-st"><i class="${o.status==='nový'?'hollow':''}" style="--c:${STAV_BARVA[o.status]||'#94a3b8'}"></i><b>${esc(statusLabel(o.status))}</b></span>`;
 const r2Typ=t=>`<span class="r2-typ${t==='EM'?' em':''}">${esc(t)}</span>`;
 const r2Prio=p=>{
@@ -1430,8 +1476,8 @@ const r2Prio=p=>{
   return `<span class="r2-pri${low?' low':''}" style="--c:${PRIORITA_TEXT[p]||'#4a5170'}"><span class="r2-bars">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}" style="height:${[4,6,9,12][i-1]}px"></i>`).join('')}</span>${esc(PRIORITA_LABEL[p]||p||'')}</span>`;
 };
 const r2Part=k=>`<span class="r2-part" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;
-function r2Who(names){
-  if(!names.length) return '<span class="r2-unas">+ Přiřadit</span>';
+function r2Who(names,id){
+  if(!names.length) return `<span class="r2-unas" role="button" tabindex="0" data-a="assign-quick" data-v="${esc(id)}" title="Přiřadit pracovníky">+ Přiřadit</span>`;
   const av=names.slice(0,3).map((n,i)=>`<span class="r2-av" title="${esc(n)}" style="${i?'margin-left:-9px;':''}--h:${hueOf(n)}">${esc(initials(n))}</span>`).join('');
   return `<span class="r2-who"><span class="r2-avs">${av}</span><span class="r2-wn">${esc(names.slice(0,3).join(', '))}${names.length>3?` +${names.length-3}`:''}</span></span>`;
 }
@@ -1447,9 +1493,9 @@ function trHTML(o){
     <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?r2Part(o.nd):''}</span>
     <span class="tc">${stroj}</span>
     <span class="tc"><span class="r2-obs">${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
-    <span class="tc" title="${esc(names.join(', '))}">${r2Who(names)}</span>
+    <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id)}</span>
     <span class="tc" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${esc(prostojCz(o.prostojOd))}</span>`:'<span class="dash">—</span>'}</span>
-    <span class="tc" title="${esc(dateCz(o.created))}"><span class="r2-rel">${esc(relDays(o.created)||dateCz(o.created))}</span>${o.authorName?`<span class="r2-sub" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
+    <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
 }
 function colMenuHTML(){
@@ -1469,12 +1515,12 @@ function colMenuHTML(){
     let shown=colOnly?all.filter(o=>sel.includes(o.k)):all;
     if(q) shown=shown.filter(o=>o.label.toLowerCase().includes(q));
     // hledání i „Jen vybrané" jsou ve VŠECH filtrech se zaškrtávátky, ať je každé menu stejné (Martin)
-    const onlyBtn=`<div class="cm-only"><button type="button" class="cm-onlybtn${colOnly?' on':''}" data-a="col-only" aria-pressed="${colOnly}"${(sel.length||colOnly)?'':' disabled'}>Jen vybrané${sel.length?` · ${sel.length}`:''}</button></div>`;
+    const onlyBtn=`<div class="cm-only" style="display:flex;gap:6px"><button type="button" class="cm-onlybtn${colOnly?' on':''}" data-a="col-only" aria-pressed="${colOnly}"${(sel.length||colOnly)?'':' disabled'}>Jen vybrané${sel.length?` · ${sel.length}`:''}</button><button type="button" class="cm-onlybtn" data-a="col-clear" data-v="${dim}"${sel.length?'':' disabled'}>Zrušit vše</button></div>`;
     body=`<div class="cm-sep"></div>${tabs}
       <div class="cm-search"><input type="text" id="cm-q" placeholder="Hledat…" autocomplete="off" value="${esc(colQuery)}"></div>
       ${onlyBtn}
       <div class="checklist cm-list">${shown.length?shown.map(o=>`<label class="filter-check"><input type="checkbox" data-flt="${dim}" value="${esc(o.k)}" ${filters[dim].includes(o.k)?'checked':''}><span class="fc-box"></span>${(o.color&&!o.html)?`<span class="fc-dot" style="background:${o.color}"></span>`:''}<span class="fc-label">${o.html||esc(o.label)}</span><span class="count">${COUNT_FN[dim](o.k)}</span></label>`).join(''):`<div class="muted" style="padding:6px 8px;font-size:12px">${colOnly&&!sel.length?'Nic není vybráno.':'Nic nenalezeno.'}</div>`}</div>
-      <div class="cm-foot"><button type="button" class="cm-link" data-a="col-clear" data-v="${dim}">Vymazat výběr</button><button type="button" class="cm-done" data-a="col-close">Hotovo</button></div>`;
+      <div class="cm-foot"><button type="button" class="cm-done" data-a="col-close" style="margin-left:auto">Hotovo</button></div>`;
   }
   return `<div class="colmenu" id="colmenu" tabindex="-1" role="dialog" aria-label="Filtr a řazení: ${esc(c.label)}">${sorts}${body}</div>`;
 }
@@ -1550,7 +1596,7 @@ function listView(){
         </button>
         <span class="vt-sep"></span>
         <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
-          <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}${unassignedHasEmCrit()?'<span class="vt-warn">!</span>':''}</span></span>
+          <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span></span>
         </button>
         <span class="vt-sep"></span>
         ${ndTileWrap()}
@@ -1868,6 +1914,10 @@ async function act(a,v,el,ev){
       filters.view=(filters.view===v?'':v); break;
     case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[];filters.who=[];filters.prostoj=[];filters.autor=[];filters.stroj=[];filters.wo='';filters.nazev=''; break;
     case 'search-open': searchOpen=true; break;
+    case 'nd-clear': filters.nd=[]; break;
+    case 'linka-clear': filters.linka=[]; break;
+    case 'fav-linka-clear': if(filterModal) filterModal.linka=[]; break;
+    case 'fav-clear-all': if(filterModal){ filterModal.typ=[]; filterModal.stav=[]; filterModal.priorita=[]; filterModal.obor=[]; filterModal.linka=[]; } break;
     case 'linka-toggle': linkaOpen=!linkaOpen; if(!linkaOpen) linkaQuery=''; break;
     case 'fav-linka-toggle': favLinkaOpen=!favLinkaOpen; if(!favLinkaOpen) favLinkaQuery=''; break;
     case 'nd-tile-toggle':
@@ -1954,15 +2004,36 @@ async function act(a,v,el,ev){
       if(pickPicker.kind==='linka'){ if(editing.linka!==pickPicker.sel) editing.stroj=''; editing.linka=pickPicker.sel; }   // jiná linka = jiné stroje
       else editing.stroj=pickPicker.sel;
       pickPicker=null; break; }
-    case 'assign-open': collect(); assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null}; break;
+    case 'assign-open': collect(); assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null, only:false}; break;
+    case 'assign-quick':{ // „+ Přiřadit" přímo v řádku tabulky: okno se otevře rovnou a uloží se rovnou
+      const o=rows.find(r=>r._id===v); if(!o) break;
+      if(!canEditDoc(o)){ toast('Přiřadit pracovníky může jen zadavatel příkazu nebo správce.','err'); break; }
+      assignPicker={selected:[...assignedUids(o)], query:'', drillUid:null, only:false, direct:o._id}; break; }
+    case 'assign-only': assignPicker.only=!assignPicker.only; break;
+    case 'assign-clear': assignPicker.selected=[]; assignPicker.only=false; break;
     case 'assign-close': case 'assign-close-bg':
       if(a==='assign-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
       downOnOverlay=false; assignPicker=null; break;
     case 'assign-toggle':{ const i=assignPicker.selected.indexOf(v); if(i<0) assignPicker.selected.push(v); else assignPicker.selected.splice(i,1); break; }
     case 'assign-drill': assignPicker.drillUid=(assignPicker.drillUid===v?null:v); break;
     case 'assign-confirm':{
-      editing.assignedTo=[...assignPicker.selected];
-      editing.assignedToNames=assignPicker.selected.map(uid=>{ const u=users.find(x=>x._id===uid); return u?(u.name||u.email):uid; });
+      const uids=[...assignPicker.selected];
+      const names=uids.map(uid=>{ const u=users.find(x=>x._id===uid); return u?(u.name||u.email):uid; });
+      if(assignPicker.direct){ // uložení rovnou do databáze (okno bylo otevřeno z řádku tabulky)
+        const o=rows.find(r=>r._id===assignPicker.direct); assignPicker=null;
+        if(o){
+          const oldU=assignedUids(o).slice().sort().join(','), newU=uids.slice().sort().join(',');
+          if(oldU!==newU){
+            try{
+              const hist=(o.hist||[]).slice(); hist.push(`${today()} · ${me.name} · přiřazeno: ${names.join(', ')||'nikdo'}`);
+              await updateDoc(doc(db,'udrzba',o._id),{assignedTo:uids,assignedToNames:names,hist});
+              toast('Přiřazení uloženo.','ok');
+            }catch(e){ toast(e.message,'err'); }
+          }
+        }
+        break;
+      }
+      editing.assignedTo=uids; editing.assignedToNames=names;
       assignPicker=null; break; }
   }
   render();
