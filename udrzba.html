@@ -1023,8 +1023,9 @@ function findWord(tl,w,firstOnly){          // tl = text jako pole malých znak�
 const textHas=(text,w)=>findWord(Array.from(String(text==null?'':text)).map(lcChar),w,true).length>0;
 // pole, která jsou v řádku tabulky vidět (zvýrazní se přímo tam)
 function visibleSearchText(o){
-  return ([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label),...assignedNames(o).map(pn),
-    o.authorName&&pn(o.authorName),statusLabel(o.status),PRIORITA_LABEL[o.priorita]||o.priorita,typOf(o),typOf(o)==='EM'?'havarijní':'standardní',
+  // Stav, Typ, Priorita a Obor se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
+  return ([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...assignedNames(o).map(pn),
+    o.authorName&&pn(o.authorName),
     o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
 }
 /* Řádek historie je „datum · kdo · co se stalo". Hledá se a označuje jen datum, jméno a skutečné hodnoty (stavy, jména
@@ -1037,7 +1038,7 @@ function histParts(h){
     let m;
     if(HIST_BOILER.test(seg)) out.push({t:seg,d:false});
     else if((m=/^přiřazeno: (.*)$/.exec(seg))) out.push({t:'přiřazeno: ',d:false},{t:m[1],d:!HIST_BOILER.test(m[1])});
-    else if((m=/^stav (.+) → (.+)$/.exec(seg))) out.push({t:'stav ',d:false},{t:m[1],d:true},{t:' → ',d:false},{t:m[2],d:true});
+    else if(/^stav (.+) → (.+)$/.test(seg)) out.push({t:seg,d:false});   // změna stavu = šablona, stav se nehledá
     else out.push({t:seg,d:true});
   });
   return out;
@@ -1060,8 +1061,8 @@ function searchHiddenHint(o){
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
-const HL_OK='.r2-st b,.r2-typ,.r2-pri,.r2-wo,.r2-pp,.tt,.r2-part,.r2-mono,.r2-ob,.r2-wn,.r2-pj,.r2-rel,.hv,'
-  +'.hero h2,.hero-desc,.meta dd,.hero-top .badge,.oi-title,.oi-top .badge,.oi-top .muted';
+const HL_OK='.r2-wo,.r2-pp,.tt,.r2-part,.r2-mono,.r2-wn,.r2-pj,.r2-rel,.hv,'
+  +'.hero h2,.hero-desc,.meta dd,.badge.nd-potreba,.badge.nd-objednano,.badge.nd-prisel,.oi-title,.oi-top .muted';
 const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
