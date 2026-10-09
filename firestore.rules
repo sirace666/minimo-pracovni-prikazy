@@ -25,6 +25,22 @@ service cloud.firestore {
     }
     // Kdo smí zakládat a upravovat problem solving, opatření a tasky.
     function canEng()         { return isAdmin() || isEngineer(); }
+    // Shopfloor walk: přístup se bere z users.modules.shopfloor (none/read/write),
+    // který David nastavuje v Nastavení. Když tam nic není, platí výchozí stav —
+    // správci podle e-mailu a PE koordinátoři zapisují, ostatní modul nevidí.
+    // Stejná logika je v index.html, header.js, nastaveni.html a shopfloor.html.
+    function sfwSet() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+             .get('modules', {}).get('shopfloor', '');
+    }
+    function sfwAccess() {
+      return !signedIn() ? 'none'
+           : sfwSet() in ['none','read','write'] ? sfwSet()
+           : (isEmailAdmin() || myPositions().hasAny(['PE coordinator'])) ? 'write'
+           : 'none';
+    }
+    function canSfwRead()  { return signedIn() && sfwAccess() != 'none'; }
+    function canSfwWrite() { return signedIn() && sfwAccess() == 'write'; }
     function isSklad()        { return signedIn() && myRole() == 'skladnik'; }
     function isSchvalovatel() { return signedIn() && myRole() == 'schvalovatel'; }
     function canEdit()        { return isAdmin() || isSklad(); }
@@ -133,6 +149,25 @@ service cloud.firestore {
     match /tasks/{id} {
       allow read:   if signedIn();
       allow create, update: if canEng();
+      allow delete: if isAdmin();
+    }
+
+    // --- Shopfloor walk: nálezy z obchůzky s plant manažerem ---
+    // Nálezy vidí jen ti, kdo do modulu smí (ne každý přihlášený jako u prostojů) —
+    // je to zápisník z obchůzky vedení, ne provozní data.
+    match /sfw/{id} {
+      allow read:   if canSfwRead();
+      allow create, update: if canSfwWrite();
+      allow delete: if isAdmin();
+    }
+    // Čítač čísel nálezů. Smí ho zvýšit každý, kdo smí zapisovat — jinak by
+    // nový nález nezaložil. Nic jiného se v dokumentu měnit nedá.
+    match /meta/sfwcfg {
+      allow read:   if canSfwRead();
+      allow create: if canSfwWrite();
+      allow update: if isAdmin()
+                    || (canSfwWrite()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seq']));
       allow delete: if isAdmin();
     }
 

@@ -1409,7 +1409,7 @@ async function loadProfile(user){
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   return {uid:user.uid, email:user.email, name:d.name||user.email, role,
-          positions: d.positions||[],
+          positions: d.positions||[], modules: d.modules||{},
           level: d.level || ROLE2LEVEL[role] || 'basic'};
 }
 
@@ -4079,7 +4079,8 @@ function render(){
 }
 function shell(inner){
   const uh = window.uheaderHTML ? window.uheaderHTML({module:'Engineering', cur:'engineering', positions:(me&&me.positions)||[],
-    user:esc(me.email), level:(LEVEL_LABEL[me.level]||''), logoutAttr:'id="btn-logout"',
+    user:esc(me.email), email:esc(me.email), level:(LEVEL_LABEL[me.level]||''), logoutAttr:'id="btn-logout"',
+    mods:(me&&me.modules)||{},
     modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering']}) : '';
   return uh + `<main>${inner}</main>`;
 }

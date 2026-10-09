@@ -45,6 +45,24 @@
       if(!ok) return '';
       return '<a class="'+(o.cur==='engineering'?'cur':'')+'" href="engineering.html">🏭 Engineering</a>';
     }
+    // Shopfloor walk: výchozí přístup mají správci a PE koordinátoři. Ruční nastavení
+    // u uživatele (o.mods.shopfloor = none/read/write) má vždy přednost.
+    // Stejná logika je v index.html, shopfloor.html, nastaveni.html a v pravidlech Firestore.
+    var SFW_POSITIONS = ['PE coordinator'];
+    function shopfloorLink(){
+      var set = (o.mods || {}).shopfloor;
+      var ok;
+      if(set==='none') return '';
+      else if(set==='read' || set==='write') ok = true;
+      else {
+        var who = String(o.email||o.user||'').trim().toLowerCase();
+        var pos = o.positions || [];
+        ok = OPRAVY_OWNERS.indexOf(who)>=0;
+        for(var i=0;i<pos.length && !ok;i++) if(SFW_POSITIONS.indexOf(String(pos[i]).trim())>=0) ok=true;
+      }
+      if(!ok) return '';
+      return '<a class="'+(o.cur==='shopfloor'?'cur':'')+'" href="shopfloor.html">🚶 Shopfloor walk</a>';
+    }
     return '<header class="uhdr">'
       + '<div class="uh-menuwrap">'
         + '<button class="uh-menu" id="mm-btn" aria-label="Menu modulů" title="Moduly">☰</button>'
@@ -55,6 +73,7 @@
           + link('dovolenky.html','🗓️','Plánování směn','dovolenky')
           + opravyLink()
           + engineeringLink()
+          + shopfloorLink()
           + link('nastaveni.html','⚙️','Nastavení','nastaveni')
           + '<div class="mm-sep"></div>'
           + '<button class="mm-view">🖥️ Zobrazit jako na počítači</button>'
