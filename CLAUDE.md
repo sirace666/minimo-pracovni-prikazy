@@ -1427,7 +1427,7 @@ protože:
   „—"). Smíšený text se označí jen v datové části: u „Linka <b>Slush</b>", „Vytvořil <b>Karel</b>" je jen jméno ve `<span class="hv">`.
   Přibude-li nové datové políčko, přidej jeho selektor do `HL_OK` (nebo dej datové části třídu `hv`).
   **Křížek v poli hledání** (v0.18.6): s textem se v poli ukáže kulatý ✕ (`search-close`, `data-a="search-close"`), vymaže hledání a vrátí
-  kurzor do pole; bez textu není vidět. Na mobilu zůstává původní chování (lupa → pole s křížkem na zavření).
+  kurzor do pole; bez textu není vidět. Kříž je **SVG**, ne znak ✕ (v0.18.7 — znak se ve Figtree kreslil nakřivo/mimo střed). Na mobilu zůstává původní chování (lupa → pole s křížkem na zavření).
   Když přidáš do příkazu nové pole, přidej ho do `visibleSearchText()` (je-li vidět v řádku) nebo `hiddenSearchText()`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
