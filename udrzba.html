@@ -1023,8 +1023,8 @@ function findWord(tl,w,firstOnly){          // tl = text jako pole malých znak�
 const textHas=(text,w)=>findWord(Array.from(String(text==null?'':text)).map(lcChar),w,true).length>0;
 // pole, která jsou v řádku tabulky vidět (zvýrazní se přímo tam)
 function visibleSearchText(o){
-  // Stav, Typ, Priorita a Obor se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
-  return ([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...assignedNames(o).map(pn),
+  // Stav, Typ, Priorita, Obor, Stroj a Linka se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
+  return ([o.cislo,o.wo,o.nazev,...assignedNames(o).map(pn),
     o.authorName&&pn(o.authorName),
     o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
 }
@@ -1061,9 +1061,9 @@ function searchHiddenHint(o){
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
-const HL_OK='.r2-wo,.r2-pp,.tt,.r2-part,.r2-mono,.r2-wn,.r2-pj,.r2-rel,.hv,'
+const HL_OK='.r2-wo,.r2-pp,.tt,.r2-part,.r2-wn,.r2-pj,.r2-rel,.hv,'
   +'.hero h2,.hero-desc,.meta dd,.badge.nd-potreba,.badge.nd-objednano,.badge.nd-prisel,.oi-title,.oi-top .muted';
-const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
+const UI_SKIP='.nohl,button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
   const roots=[...document.querySelectorAll('.trow, .order-item')];
@@ -1572,7 +1572,7 @@ function r2Who(names,id){
 function trHTML(o){
   const em=typOf(o)==='EM', crit=o.priorita==='kritická', names=assignedNames(o).map(pn);
   const obory=oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label).filter(Boolean);
-  const stroj=o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka <span class="hv">${esc(o.linka)}</span></span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>');
+  const stroj=o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka ${esc(o.linka)}</span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>');
   return `<button type="button" class="trow st-${o.status}${em?' em':''}${em&&crit?' crit':''}" role="row" data-a="open" data-v="${o._id}">
     <span class="tc">${r2Stav(o)}</span>
     <span class="tc">${r2Typ(typOf(o))}</span>
@@ -1765,7 +1765,7 @@ function listView(){
               <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
-            <div class="oi-meta">${o.linka?`<span class="hv">${esc(o.linka)}${o.stroj?' / '+esc(o.stroj):''}</span>`:'bez linky'} · → ${assignedNames(o).length?`<span class="hv">${esc(assignedNames(o).map(pn).join(', '))}</span>`:'nepřiřazeno'} · zadal <span class="hv">${esc(pn(o.authorName)||'')}</span></div>
+            <div class="oi-meta">${o.linka?`${esc(o.linka)}${o.stroj?' / '+esc(o.stroj):''}`:'bez linky'} · → ${assignedNames(o).length?`<span class="hv">${esc(assignedNames(o).map(pn).join(', '))}</span>`:'nepřiřazeno'} · zadal <span class="hv">${esc(pn(o.authorName)||'')}</span></div>
           </button>`).join('')}
       </div></div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
@@ -1888,7 +1888,7 @@ function modalView(){
       <dl class="meta">
         <dt>Přiřazeno</dt><dd>${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'<span class="muted">nepřiřazeno</span>'}</dd>
         ${o.wo?`<dt>Pracovní příkaz</dt><dd>WO ${esc(o.wo)}</dd>`:''}
-        <dt>Linka / stroj</dt><dd>${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
+        <dt>Linka / stroj</dt><dd class="nohl">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
         <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
       </dl>

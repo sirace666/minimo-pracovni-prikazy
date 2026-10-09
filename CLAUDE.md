@@ -1415,7 +1415,7 @@ protože:
     ověřit i uložení bez databáze.
 - **Hledání ve všem + označení nalezeného textu (2026-10-09, v0.18.4)** — Martin: hlavní hledání má najít naprosto vše
   v příkazech a nalezený text se má označit jako Ctrl+F v dokumentu. `matchesSearch()` hledá v čísle, WO, poruše, **popisu**,
-  lince, stroji, jménech přiřazených, autorovi, stavu dílu,
+  jménech přiřazených, autorovi, stavu dílu,
   prostoji, datu vytvoření i v **historii** (`o.hist`) — ale jen v jejích DATECH: datum, jméno a jména přiřazených. Šablonová
   slova řádků („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) se nehledají ani neoznačují (`histParts()`,
   `HIST_BOILER`, v0.18.8; datové části jsou v `<span class="hv">`). Přibude-li nový typ řádku historie (`hist.push(...)`), přidej jeho šablonu do `HIST_BOILER`/`histParts()`. Shoda je **PŘESNÁ včetně diakritiky** — nerozlišují se jen velká a malá písmena
@@ -1424,8 +1424,8 @@ protože:
   `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
   (jen v pohledu, ne ve formuláři). Shoda jen v tom, co v řádku není vidět (popis, historie), ukáže pod názvem poruchy
   nápovědu „🔎 shoda v popisu/historii" (`searchHiddenHint()`, třída `.r2-hit`). Popisek pole: „Hledat v příkazech…".
-  **Stav, Typ, Priorita a Obor se NEHLEDAJÍ ani neoznačují** (v0.18.10, Martin: na to jsou filtry) — není to ve `visibleSearchText()`
-  ani v `HL_OK`; změny stavu v historii („stav nový → rozpracováno") jsou taky jen šablona. Hledá se pořád stav DÍLU („objednáno" apod.).
+  **Stav, Typ, Priorita, Obor, Stroj a Linka se NEHLEDAJÍ ani neoznačují** (v0.18.10–0.18.11, Martin: na to jsou filtry) — není to ve `visibleSearchText()`
+  ani v `HL_OK` (řádek „Linka / stroj" v detailu má třídu `nohl`); změny stavu v historii („stav nový → rozpracováno") jsou taky jen šablona. Hledá se pořád stav DÍLU („objednáno" apod.).
   **Označují se jen DATA** (v0.18.5–0.18.6, Martin: „ne Přiřazeno, Přiřadit… ani další nepotřebné věci"): `applyHighlight()`
   označí text jen uvnitř bílého seznamu `HL_OK` (stav, typ, priorita, WO, číslo PP, název, stav dílu, stroj, obor, jména, prostoj,
   datum, popis, historie, odznaky, třída `.hv`) a mimo seznam `UI_SKIP` (tlačítka, popisky `dt`/`label`, „+ Přiřadit", „bez WO",
