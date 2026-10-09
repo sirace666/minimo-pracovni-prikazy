@@ -614,7 +614,8 @@
     .head-actions{gap:12px}
     .search-wrap{height:38px;width:270px;background:#fff;border:1px solid #e3e0d8;border-radius:999px;padding:0 16px;box-shadow:none;color:#6f6b60;gap:8px}
     .search-wrap .search{font:500 14.5px 'Figtree',sans-serif;color:#1c1b17}
-    .search-wrap .search-close{display:none}
+    .search-wrap .search-close{width:22px;height:22px;border-radius:50%;background:#f1efe9;color:#58554b;font-size:11px}
+    .search-wrap .search-close:hover{background:#e7e4db;color:#1c1b17}
     .head-actions .btn-newprikaz{background:#e8590c;border-radius:999px;height:38px;padding:0 18px 0 14px;font:700 15px 'Figtree',sans-serif;gap:8px}
     .head-actions .btn-newprikaz:hover{background:#d04c05}
     /* panel oblíbených */
@@ -1030,7 +1031,11 @@ function searchHiddenHint(o){
   return where.size?`<span class="r2-hit">🔎 shoda v ${[...where].join(' a v ')}</span>`:'';
 }
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
-const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot';
+/* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
+   texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
+const HL_OK='.r2-st b,.r2-typ,.r2-pri,.r2-wo,.r2-pp,.tt,.r2-part,.r2-mono,.r2-ob,.r2-wn,.r2-pj,.r2-rel,.hv,'
+  +'.hero h2,.hero-desc,.meta dd,.hist div,.hero-top .badge,.oi-title,.oi-top .badge,.oi-top .muted';
+const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
   const roots=[...document.querySelectorAll('.trow, .order-item')];
@@ -1040,6 +1045,7 @@ function applyHighlight(){
       const pe=t.parentElement; if(!pe||/^(SCRIPT|STYLE|TEXTAREA|OPTION|MARK)$/.test(pe.tagName)) return NodeFilter.FILTER_REJECT;
       // označují se jen hledaná DATA, ne popisky a ovládací prvky (dt „Přiřazeno", štítky sekcí, tlačítka, „+ Přiřadit", „bez WO"…)
       const ui=pe.closest(UI_SKIP); if(ui&&ui!==root&&root.contains(ui)) return NodeFilter.FILTER_REJECT;
+      if(!pe.closest(HL_OK)) return NodeFilter.FILTER_REJECT;
       return t.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT; }});
     while(tw.nextNode()) nodes.push(tw.currentNode);
     nodes.forEach(t=>{
@@ -1539,7 +1545,7 @@ function r2Who(names,id){
 function trHTML(o){
   const em=typOf(o)==='EM', crit=o.priorita==='kritická', names=assignedNames(o).map(pn);
   const obory=oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label).filter(Boolean);
-  const stroj=o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka ${esc(o.linka)}</span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>');
+  const stroj=o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka <span class="hv">${esc(o.linka)}</span></span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>');
   return `<button type="button" class="trow st-${o.status}${em?' em':''}${em&&crit?' crit':''}" role="row" data-a="open" data-v="${o._id}">
     <span class="tc">${r2Stav(o)}</span>
     <span class="tc">${r2Typ(typOf(o))}</span>
@@ -1550,7 +1556,7 @@ function trHTML(o){
     <span class="tc"><span class="r2-obs">${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
     <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id)}</span>
     <span class="tc" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${esc(prostojCz(o.prostojOd))}</span>`:'<span class="dash">—</span>'}</span>
-    <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
+    <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
 }
 function colMenuHTML(){
@@ -1665,7 +1671,7 @@ function listView(){
           <div class="search-wrap">
             <span class="search-icon">⌕</span>
             <input class="search" id="f-q" placeholder="Hledat v příkazech…" value="${esc(filters.q)}">
-            <button type="button" class="search-close" data-a="search-close">✕</button>
+            <button type="button" class="search-close" data-a="search-close" title="Vymazat hledání" aria-label="Vymazat hledání">✕</button>
           </div>
         `:`<button type="button" class="icon-btn m-only" data-a="search-open" title="Hledat">⌕</button>
           <div class="search-wrap d-only"><span class="search-icon">⌕</span><input class="search" id="f-q" placeholder="Hledat v příkazech…" value=""></div>`}
@@ -1732,7 +1738,7 @@ function listView(){
               <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
-            <div class="oi-meta">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'bez linky'} · → ${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'nepřiřazeno'} · zadal ${esc(pn(o.authorName)||'')}</div>
+            <div class="oi-meta">${o.linka?`<span class="hv">${esc(o.linka)}${o.stroj?' / '+esc(o.stroj):''}</span>`:'bez linky'} · → ${assignedNames(o).length?`<span class="hv">${esc(assignedNames(o).map(pn).join(', '))}</span>`:'nepřiřazeno'} · zadal <span class="hv">${esc(pn(o.authorName)||'')}</span></div>
           </button>`).join('')}
       </div></div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
@@ -1846,7 +1852,7 @@ function modalView(){
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
         ${extraBadges(o)}
         <span class="spacer"></span>
-        <span class="muted">Vytvořil ${esc(pn(o.authorName)||'')}</span></div>
+        <span class="muted">Vytvořil <span class="hv">${esc(pn(o.authorName)||'')}</span></span></div>
       <div class="row" style="align-items:flex-start;margin-top:.5rem">
         <h2 style="flex:1">${esc(o.nazev||'')}</h2>
         ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
@@ -2093,7 +2099,7 @@ async function act(a,v,el,ev){
   }
   render();
   if(a==='col-open' && colOpen){ const f=document.getElementById('cm-text')||document.getElementById('cm-q')||document.getElementById('colmenu'); if(f) f.focus(); }
-  if(a==='search-open'){ const inp=document.getElementById('f-q'); if(inp) inp.focus(); }
+  if(a==='search-open'||a==='search-close'){ const inp=document.getElementById('f-q'); if(inp&&(a==='search-open'||window.matchMedia('(min-width:861px)').matches)) inp.focus(); }
   // tlačítko Linka bývá poslední v seznamu/okně, takže se rozbalený panel
   // schová pod okraj — po otevření se sám doscrolluje do vidu.
   if(a==='linka-toggle' && linkaOpen){

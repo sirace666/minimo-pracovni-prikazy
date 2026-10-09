@@ -1421,9 +1421,13 @@ protože:
   `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
   (jen v pohledu, ne ve formuláři). Shoda jen v tom, co v řádku není vidět (popis, historie), ukáže pod názvem poruchy
   nápovědu „🔎 shoda v popisu/historii" (`searchHiddenHint()`, třída `.r2-hit`). Popisek pole: „Hledat v příkazech…".
-  **Označují se jen DATA, ne popisky a ovládací prvky** (v0.18.5, Martin: „ne Přiřazeno, Přiřadit"): `UI_SKIP` v `applyHighlight()`
-  vynechává `button, label, dt, .sec-label, .r2-unas, .r2-hit, .r2-wo.none, .dash, .ap-cols, .modal-tabs, .modal-foot`. Přibude-li nový
-  popisek nebo tlačítko, které se má při hledání ignorovat, přidej jeho selektor tam.
+  **Označují se jen DATA** (v0.18.5–0.18.6, Martin: „ne Přiřazeno, Přiřadit… ani další nepotřebné věci"): `applyHighlight()`
+  označí text jen uvnitř bílého seznamu `HL_OK` (stav, typ, priorita, WO, číslo PP, název, stav dílu, stroj, obor, jména, prostoj,
+  datum, popis, historie, odznaky, třída `.hv`) a mimo seznam `UI_SKIP` (tlačítka, popisky `dt`/`label`, „+ Přiřadit", „bez WO",
+  „—"). Smíšený text se označí jen v datové části: u „Linka <b>Slush</b>", „Vytvořil <b>Karel</b>" je jen jméno ve `<span class="hv">`.
+  Přibude-li nové datové políčko, přidej jeho selektor do `HL_OK` (nebo dej datové části třídu `hv`).
+  **Křížek v poli hledání** (v0.18.6): s textem se v poli ukáže kulatý ✕ (`search-close`, `data-a="search-close"`), vymaže hledání a vrátí
+  kurzor do pole; bez textu není vidět. Na mobilu zůstává původní chování (lupa → pole s křížkem na zavření).
   Když přidáš do příkazu nové pole, přidej ho do `visibleSearchText()` (je-li vidět v řádku) nebo `hiddenSearchText()`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
