@@ -177,6 +177,7 @@ const MODULES_LIST = [
   {key:'nakup',     label:'Nákupní požadavky'},
   {key:'plan',      label:'Plánování směn a přítomnosti'},
   {key:'nastaveni', label:'Nastavení'},
+  {key:'shopfloor', label:'Shopfloor walk'},
 ];
 const MODSTATES = [
   {key:'none',  label:'Skryté'},
@@ -184,8 +185,20 @@ const MODSTATES = [
   {key:'write', label:'Zapisovat'},
 ];
 const MODSTATE_BY = Object.fromEntries(MODSTATES.map(m=>[m.key,m]));
-const resolveModule = (mods, level, key) => { const p=mods&&mods[key];
+const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
+/* Shopfloor walk: výchozí přístup mají správci podle e-mailu a PE koordinátoři,
+   ostatní modul nevidí. Ruční nastavení níž má vždy přednost — jde tedy přidat
+   kohokoli dalšího, nebo naopak přístup koordinátorovi odebrat.
+   Stejná logika je v index.html, header.js, shopfloor.html a v pravidlech Firestore. */
+const SFW_POSITIONS = ['PE coordinator'];
+const sfwDefault = u => {
+  const mail=String((u&&u.email)||'').trim().toLowerCase();
+  if(OPRAVY_OWNERS.includes(mail)) return 'write';
+  return ((u&&u.positions)||[]).some(p=>SFW_POSITIONS.includes(String(p).trim())) ? 'write' : 'none';
+};
+const resolveModule = (mods, level, key, u) => { const p=mods&&mods[key];
   if(MODSTATE_BY[p]) return p;
+  if(key==='shopfloor') return sfwDefault(u);
   return key==='nastaveni' ? (rankOf(level)>=5?'write':'none') : 'write'; };   // výchozí podle levelu
 const allowedMods = (mods, level) => ['portal',
   resolveModule(mods,level,'nakup')!=='none'?'nakup':null,
@@ -343,7 +356,7 @@ function editUserView(){
   }).join('');
   // Přístup k modulům – Skryté / Jen číst / Zapisovat (+ výchozí podle levelu)
   const modRows = MODULES_LIST.map(m=>{
-    const dm = resolveModule(null, u.level, m.key);
+    const dm = resolveModule(null, u.level, m.key, u);
     const cur = u.modules[m.key] || '';
     const opts = `<option value="" ${cur===''?'selected':''}>Výchozí (${esc(MODSTATE_BY[dm].label)})</option>`
       + MODSTATES.map(s=>`<option value="${s.key}" ${cur===s.key?'selected':''}>${esc(s.label)}</option>`).join('');
@@ -381,7 +394,7 @@ function editUserView(){
 }
 function openEdit(uid){
   const u=users.find(x=>x.uid===uid); if(!u) return;
-  uedit={uid, name:u.name||uid, level:levelOf(u), team:u.team||'',
+  uedit={uid, name:u.name||uid, email:u.email||'', level:levelOf(u), team:u.team||'',
     positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{})};
   render();
 }
@@ -445,7 +458,7 @@ function view(){
   </div>`).join('');
 
   const lvlLabel=(LEVEL_BY[myLevel]||LEVEL_BY.basic).label;
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nastavení',cur:'nastaveni',user:esc(me.email),level:lvlLabel,photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel),positions:myPositions}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Nastavení',cur:'nastaveni',user:esc(me.email),level:lvlLabel,photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'', logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel),mods:myModules,email:esc(me.email),positions:myPositions}) : '';
   const roNote = rw ? '' : `<p style="margin:0 0 12px;font-size:12px;color:#b7791f;background:#fff6e6;border:1px solid #f0dfb8;border-radius:8px;padding:9px 11px">
         👁️ Máte modul Nastavení <b>jen pro čtení</b> – uživatele vidíte, ale nemůžete je upravovat ani mazat.</p>`;
   return `${uh}

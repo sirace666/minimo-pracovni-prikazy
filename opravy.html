@@ -198,7 +198,7 @@ async function loadProfile(user){
   const firstName=d.firstName||'', lastName=d.lastName||'';
   const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
   return {uid:user.uid, email:user.email, name, role, level, phone:d.phone||'', team:d.team||'—', photoURL:d.photoURL||'', firstName, lastName,
-          positions:d.positions||[]};
+          positions:d.positions||[], modules:d.modules||{}};
 }
 function teardown(){ if(unsubO)unsubO(); if(unsubR)unsubR(); if(unsubC)unsubC(); unsubO=unsubR=unsubC=null; rows=[]; reqRows=[]; dataReady=false; }
 function subscribe(){
@@ -247,7 +247,7 @@ function loginView(){
   </form></div>`;
 }
 function shell(inner){
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Externí opravy',cur:'opravy',user:esc(me.email),level:(P().label||''),photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering'],positions:(me&&me.positions)||[]}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Externí opravy',cur:'opravy',user:esc(me.email),level:(P().label||''),photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'', logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering'],mods:(me&&me.modules)||{},email:esc(me.email),positions:(me&&me.positions)||[]}) : '';
   return uh + `<main>${inner}</main>`;
 }
 function visibleRows(){

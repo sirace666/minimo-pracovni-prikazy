@@ -16,7 +16,9 @@ modul je vlastní stránka.
 - `dovolenky.html` — Plánování směn a přítomnosti
 - `opravy.html` — Externí opravy (zatím vidí jen správce podle e-mailu)
 - `engineering.html` — Engineering: prostoje, KPI, import ze Symesticu
-  (zatím vidí jen správce podle e-mailu)
+  (vidí správci a lidé s pozicí PE nebo PE coordinator)
+- `shopfloor.html` — Shopfloor walk: nálezy z obchůzky s plant manažerem
+  (vidí správci a PE koordinátoři; komukoli dalšímu přístup přidá David v Nastavení)
 - `nastaveni.html` — uživatelé, úrovně a přístupy k modulům
 - `header.js` + `header.css` — SPOLEČNÁ hlavička všech modulů.
   Nová stránka ji vykreslí přes `window.uheaderHTML({module, cur, user, level,
@@ -61,6 +63,8 @@ nim build proces. Bezpečnost řeší pravidla Firestore, ne skrývání klíč�
   ověření účinnosti) a opatření k nim (corrective / preventive, owner, termín)
 - kolekce `tasks` — akční plán managementu (tasky s posuny termínů a přílohami)
 - dokument `meta/engcfg` — nastavení standardu řízení výkonu a čítače čísel
+- kolekce `sfw` — nálezy ze shopfloor walku (jeden dokument = jeden nález)
+- dokument `meta/sfwcfg` — jediné pole `seq`, čítač čísel nálezů
 - Úrovně uživatelů: `basic`, `warehouse`, `approver`, `wadmin`, `superadmin`,
   s můstkem na staré role (`zadavatel`, `skladnik`, `schvalovatel`, `admin`).
   Práva jsou v kódu a SOUČASNĚ vynucená bezpečnostními pravidly Firestore
@@ -202,6 +206,57 @@ v konzoli Firebase → **Storage → Rules**, což je jiné místo než pravidla
 Cesty: `nabidky/{requestId}/…` (nákup), `tasky/{taskId}/…` (akční plán),
 `ps/{psId}/…` (problem solving). Když přidáš novou cestu, uprav soubor a napiš
 Davidovi, ať ji publikuje.
+
+## Modul Shopfloor walk (`shopfloor.html`)
+Akční plán na to, co se najde při obchůzce výroby s plant manažerem.
+Zapisuje se na telefonu přímo v provozu, čte se na počítači.
+
+### Kdo tam smí
+- **Výchozí stav:** správci podle e-mailu (`OWNERS`) a lidé s pozicí
+  **PE coordinator** smí zapisovat. Ostatní modul vůbec nevidí — ani dlaždici,
+  ani odkaz v menu.
+- **Ruční nastavení má VŽDY přednost.** David přidá kohokoli dalšího
+  v `nastaveni.html` → uživatel → Přístup k modulům → **Shopfloor walk**
+  (Skryté / Jen číst / Zapisovat). Stejnou cestou jde přístup i koordinátorovi
+  odebrat (Skryté).
+- **„Jen číst"** znamená: nálezy vidí, ale nemá tlačítko na založení, políčka
+  v okně jsou zamčená a v patičce zůstane jen Zavřít.
+- **Mazat** smí jen správce (role `admin` nebo e-mail v `OWNERS`).
+- **Tahle logika je na pěti místech a musí zůstat shodná:** `shopfloor.html`
+  (`sfwAccess`), `index.html` (dlaždice), `header.js` (`shopfloorLink`),
+  `nastaveni.html` (`sfwDefault` + `MODULES_LIST`) a `firestore.rules`
+  (`sfwAccess()`). Když ji měníš, uprav ji všude.
+- Na rozdíl od prostojů **nálezy NEvidí každý přihlášený** — je to zápisník
+  z obchůzky vedení. Pravidla to hlídají i na serveru (`canSfwRead()`).
+
+### Dvě záložky
+- **🚶 Obchůzka** — pro telefon: velké oranžové tlačítko „Nový nález", pod ním
+  karty nálezů s náhledem fotky. Filtr Dnes / 7 dní / 30 dní / Vše.
+- **📋 Akční plán** — pro počítač: tabulka ve stejném formátu jako akční plán
+  v Engineeringu (bílé vyplňuje uživatel, žluté jsou posuny, šedé se dopočítá),
+  filtry, export CSV.
+- Modul se sám otevře na té správné: pod 760 px na Obchůzce, jinak na Akčním plánu.
+  Nepřepisuj na pevnou záložku.
+
+### Formát nálezu
+Číslo, datum obchůzky, oblast (`AREAS`), konkrétní místo, **co jsme našli**,
+**co se s tím udělá**, owner (víc lidí, jména z kolekce `users`), termín, stav
+(OPEN / IN PROGRESS / DONE / CANCELLED), fotky, poznámka.
+- Číslo je PROSTÉ pořadové číslo z čítače `meta/sfwcfg.seq`, generuje se
+  TRANSAKCÍ — jinak by dva lidi na obchůzce naráz dostali stejné.
+- **Platný termín, počet posunů a „po termínu" se NIKDY neukládají**, počítají se
+  z `dueOrig` a pole `moves`. Stejně jako v Engineeringu.
+- Posun termínu jde uložit jen s důvodem; každý posun má datum, důvod, kdo a kdy.
+- Řazení v plánu: po termínu nahoru, hotové dospod.
+
+### Fotky
+Pole `files`, v úložišti pod `sfw/{idNálezu}/…`, limit 5 MB na soubor.
+- Tlačítko **„📷 Vyfotit"** je `<input capture="environment" multiple>` —
+  na telefonu otevře rovnou fotoaparát. Vedle je „🖼️ Vybrat z galerie".
+- Fotka se PŘED nahráním zmenší v prohlížeči (`shrink`, delší hrana 1600 px,
+  JPEG 0.72). Nepřeváděj na nahrávání originálu.
+- U nového nálezu se fotky drží ve frontě (`pending`) a nahrají se až po uložení,
+  když je známé id dokumentu.
 
 ## Řízení výkonu linek (záložka Hlavní stránka v modulu Engineering)
 Standard vyžádaný vedením: týdenní výkon linky pod prahem (výchozí 90 %) povinně

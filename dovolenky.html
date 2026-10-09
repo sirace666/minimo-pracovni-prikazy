@@ -853,7 +853,7 @@ function tabBar(){
 }
 
 function headerView(){
-  return window.uheaderHTML ? window.uheaderHTML({module:'Plánování směn a přítomnosti',cur:'dovolenky',user:esc(me.email),level:'',photoURL:(myDoc&&myDoc.photoURL)||'',firstName:(myDoc&&myDoc.firstName)||'',lastName:(myDoc&&myDoc.lastName)||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myDoc&&myDoc.modules, levelOf(myDoc)),positions:(myDoc&&myDoc.positions)||[]}) : '';
+  return window.uheaderHTML ? window.uheaderHTML({module:'Plánování směn a přítomnosti',cur:'dovolenky',user:esc(me.email),level:'',photoURL:(myDoc&&myDoc.photoURL)||'',firstName:(myDoc&&myDoc.firstName)||'',lastName:(myDoc&&myDoc.lastName)||'', logoutAttr:'id="btn-logout"',modules:allowedMods(myDoc&&myDoc.modules, levelOf(myDoc)),mods:(myDoc&&myDoc.modules)||{},email:esc(me.email),positions:(myDoc&&myDoc.positions)||[]}) : '';
 }
 
 function formPanel(){

@@ -99,6 +99,24 @@
       if(UDRZBA_OWNERS.indexOf(who)<0) return '';
       return '<a class="'+(o.cur==='udrzba'?'cur':'')+'" href="udrzba.html">🔧 Údržba</a>';
     }
+    // Shopfloor walk: výchozí přístup mají správci a PE koordinátoři. Ruční nastavení
+    // u uživatele (o.mods.shopfloor = none/read/write) má vždy přednost.
+    // Stejná logika je v index.html, shopfloor.html, nastaveni.html a v pravidlech Firestore.
+    var SFW_POSITIONS = ['PE coordinator'];
+    function shopfloorLink(){
+      var set = (o.mods || {}).shopfloor;
+      var ok;
+      if(set==='none') return '';
+      else if(set==='read' || set==='write') ok = true;
+      else {
+        var who = String(o.email||o.user||'').trim().toLowerCase();
+        var pos = o.positions || [];
+        ok = OPRAVY_OWNERS.indexOf(who)>=0;
+        for(var i=0;i<pos.length && !ok;i++) if(SFW_POSITIONS.indexOf(String(pos[i]).trim())>=0) ok=true;
+      }
+      if(!ok) return '';
+      return '<a class="'+(o.cur==='shopfloor'?'cur':'')+'" href="shopfloor.html">🚶 Shopfloor walk</a>';
+    }
     return '<header class="uhdr">'
       + '<div class="uh-brandgroup">'
         + '<div class="uh-menuwrap">'
@@ -110,6 +128,7 @@
             + link('dovolenky.html','🗓️','Plánování směn','dovolenky')
             + opravyLink()
             + engineeringLink()
+            + shopfloorLink()
             + udrzbaLink()
             + link('nastaveni.html','⚙️','Nastavení','nastaveni')
             + link('instalace.html','📲','Instalace','instalace')

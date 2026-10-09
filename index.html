@@ -144,6 +144,7 @@ const MODULES = [
   {ico:'🗓️', nm:'Plánování směn a přítomnosti', ds:'Dovolené, nepřítomnosti a plánování směn po sekcích.', href:'dovolenky.html', active:true, key:'plan'},
   {ico:'🛠️', nm:'Externí opravy',    ds:'Požadavky na opravu dílů externí firmou.', href:'opravy.html', active:true, key:'opravy', ownerOnly:true},
   {ico:'🏭', nm:'Engineering',       ds:'Prostoje na linkách, KPI a import reportu ze Symesticu.', href:'engineering.html', active:true, key:'engineering', engOnly:true},
+  {ico:'🚶', nm:'Shopfloor walk',    ds:'Nálezy z obchůzky po výrobě — vyfoť, přiřaď ownera, hlídej termín.', href:'shopfloor.html', active:true, key:'shopfloor', sfwOnly:true},
   {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů.', href:'udrzba.html', active:true, key:'udrzba', ownerOnly:true},
   {ico:'⚠️', nm:'Reklamace',         ds:'Evidence reklamací a neshod kvality. Připravujeme.', active:false},
   {ico:'⚙️', nm:'Nastavení',         ds:'Správa uživatelů, práv a modulů.', href:'nastaveni.html', active:true, key:'nastaveni'},
@@ -191,8 +192,19 @@ const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').tr
 const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
 const isEngPerson = () => isOpravyOwner()
   || (myPositions||[]).some(p=>ENG_POSITIONS.includes(String(p).trim()));
+/* Shopfloor walk: výchozí přístup mají správci a PE koordinátoři, ostatní ho nevidí.
+   Ruční nastavení u uživatele (Skryté/Jen číst/Zapisovat) má VŽDY přednost —
+   takže jde přístup i koordinátorovi odebrat, nebo přidat komukoli dalšímu.
+   Stejná logika je v shopfloor.html, header.js, nastaveni.html a v pravidlech Firestore. */
+const SFW_POSITIONS = ['PE coordinator'];
+const sfwAccess = () => { const set=(myModules||{}).shopfloor;
+  if(set==='none'||set==='read'||set==='write') return set;
+  if(isOpravyOwner()) return 'write';
+  if((myPositions||[]).some(p=>SFW_POSITIONS.includes(String(p).trim()))) return 'write';
+  return 'none'; };
 function appView(){
   const tiles = MODULES.filter(m=> m.engOnly ? isEngPerson()
+    : m.sfwOnly ? sfwAccess()!=='none'
     : m.ownerOnly ? isOpravyOwner()
     : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active
     ? `<a class="tile active" href="${m.href}">
@@ -208,7 +220,7 @@ function appView(){
          <span class="badge">Připravujeme</span>
        </div>`).join('');
   const LEVEL_LABEL={basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
-  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel),positions:myPositions}) : '';
+  const uh = window.uheaderHTML ? window.uheaderHTML({module:'Hlavní stránka',cur:'portal',user:esc(me.email),level:LEVEL_LABEL[myLevel]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'', logoutAttr:'id="btn-logout"',modules:allowedMods(myModules,myLevel),positions:myPositions,mods:myModules,email:esc(me.email)}) : '';
   return `${uh}
   <main>
     <div class="intro"><h2>Vyberte aplikaci</h2><p>Přihlášení platí pro všechny moduly současně.</p></div>

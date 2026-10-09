@@ -1415,7 +1415,7 @@ async function loadProfile(user){
   const firstName=d.firstName||'', lastName=d.lastName||'';
   const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||user.email);
   return {uid:user.uid, email:user.email, name, role,
-          positions: d.positions||[],
+          positions: d.positions||[], modules: d.modules||{},
           level: d.level || ROLE2LEVEL[role] || 'basic', photoURL: d.photoURL||'', firstName, lastName};
 }
 
@@ -4085,7 +4085,8 @@ function render(){
 }
 function shell(inner){
   const uh = window.uheaderHTML ? window.uheaderHTML({module:'Engineering', cur:'engineering', positions:(me&&me.positions)||[],
-    user:esc(me.email), level:(LEVEL_LABEL[me.level]||''), photoURL:me.photoURL||'', firstName:me.firstName||'', lastName:me.lastName||'', logoutAttr:'id="btn-logout"',
+    user:esc(me.email), email:esc(me.email), level:(LEVEL_LABEL[me.level]||''), photoURL:me.photoURL||'', firstName:me.firstName||'', lastName:me.lastName||'', logoutAttr:'id="btn-logout"',
+    mods:(me&&me.modules)||{},
     modules:['portal','nakup','dovolenky','nastaveni','opravy','engineering']}) : '';
   return uh + `<main>${inner}</main>`;
 }
