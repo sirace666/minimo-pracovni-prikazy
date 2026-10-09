@@ -1004,15 +1004,26 @@ function loginView(){
 }
 /* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
 /* ===== hledání ve všem, co příkaz obsahuje =====
-   Nezáleží na velikosti písmen ani na diakritice („udrzba" najde „Údržba"); víc slov = příkaz musí obsahovat všechna.
+   Shoda je PŘESNÁ (včetně diakritiky), nerozlišují se jen velká a malá písmena; víc slov = příkaz musí obsahovat všechna.
    Hledá se v čísle, WO, poruše, popisu, lince, stroji, oboru, jménech, autorovi, stavu, prioritě, typu, stavu dílu,
    datech a v celé historii. */
-const foldChar=c=>{ const r=c.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); return r.length===1?r:(c.toLowerCase().length===1?c.toLowerCase():c); };
-const fold=t=>Array.from(String(t==null?'':t)).map(foldChar).join('');
-const searchWords=()=>fold(filters.q||'').split(/\s+/).filter(Boolean);
+/* PŘESNÁ shoda s tím, co hledající napíše — včetně diakritiky („či" nenajde „cí", „dveri" nenajde „dveří").
+   Jediné, co se nerozlišuje, je velikost písmen (Martin, 2026-10-09). */
+const searchWords=()=>(filters.q||'').toLowerCase().split(/\s+/).filter(Boolean);
+const lcChar=c=>{ const l=c.toLowerCase(); return l.length===c.length?l:c; };
+function findWord(tl,w,firstOnly){          // tl = text jako pole malých znaků, w = hledané slovo (malými)
+  const wl=Array.from(w), out=[];
+  for(let i=0;i+wl.length<=tl.length;i++){
+    let ok=true;
+    for(let k=0;k<wl.length;k++){ if(tl[i+k]!==wl[k]){ ok=false; break; } }
+    if(ok){ out.push(i); if(firstOnly) return out; }
+  }
+  return out;
+}
+const textHas=(text,w)=>findWord(Array.from(String(text==null?'':text)).map(lcChar),w,true).length>0;
 // pole, která jsou v řádku tabulky vidět (zvýrazní se přímo tam)
 function visibleSearchText(o){
-  return fold([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label),...assignedNames(o).map(pn),
+  return ([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label),...assignedNames(o).map(pn),
     o.authorName&&pn(o.authorName),statusLabel(o.status),PRIORITA_LABEL[o.priorita]||o.priorita,typOf(o),typOf(o)==='EM'?'havarijní':'standardní',
     o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
 }
@@ -1032,18 +1043,18 @@ function histParts(h){
   return out;
 }
 const histHtmlLine=h=>histParts(h).map(x=>x.d?`<span class="hv">${esc(x.t)}</span>`:esc(x.t)).join('');
-const hiddenSearchText=o=>({popis:fold(o.popis||''),hist:fold((o.hist||[]).map(h=>histParts(h).filter(x=>x.d).map(x=>x.t).join(' ')).join(' '))});
+const hiddenSearchText=o=>({popis:String(o.popis||''),hist:(o.hist||[]).map(h=>histParts(h).filter(x=>x.d).map(x=>x.t).join(' ')).join(' ')});
 function matchesSearch(o){
   if(!filters.q) return true;
   const words=searchWords(); if(!words.length) return true;
   const hid=hiddenSearchText(o), all=visibleSearchText(o)+' '+hid.popis+' '+hid.hist;
-  return words.every(w=>all.includes(w));
+  return words.every(w=>textHas(all,w));
 }
 // shoda jen v tom, co v řádku není vidět (popis, historie) → v řádku se ukáže drobná nápověda
 function searchHiddenHint(o){
   if(!filters.q) return '';
   const vis=visibleSearchText(o), hid=hiddenSearchText(o), where=new Set();
-  searchWords().forEach(w=>{ if(vis.includes(w)) return; if(hid.popis.includes(w)) where.add('popisu'); else if(hid.hist.includes(w)) where.add('historii'); });
+  searchWords().forEach(w=>{ if(textHas(vis,w)) return; if(textHas(hid.popis,w)) where.add('popisu'); else if(textHas(hid.hist,w)) where.add('historii'); });
   return where.size?`<span class="r2-hit">🔎 shoda v ${[...where].join(' a v ')}</span>`:'';
 }
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
@@ -1065,14 +1076,13 @@ function applyHighlight(){
       return t.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT; }});
     while(tw.nextNode()) nodes.push(tw.currentNode);
     nodes.forEach(t=>{
-      const orig=t.nodeValue, f=Array.from(orig).map(foldChar), chars=Array.from(orig), fs=f.join('');
-      if(f.some((x,i)=>x.length!==chars[i].length)) return;   // znak, co se skládá jinak než 1:1 — nezvýrazňovat
-      const mark=new Array(fs.length).fill(false);
-      words.forEach(w=>{ let i=fs.indexOf(w); while(i>=0){ for(let k=i;k<i+w.length;k++) mark[k]=true; i=fs.indexOf(w,i+w.length); } });
+      const orig=t.nodeValue, chars=Array.from(orig), tl=chars.map(lcChar);
+      const mark=new Array(chars.length).fill(false);
+      words.forEach(w=>{ const wl=Array.from(w).length; findWord(tl,w).forEach(i=>{ for(let k=i;k<i+wl;k++) mark[k]=true; }); });
       if(!mark.some(Boolean)) return;
       const frag=document.createDocumentFragment(); let buf='', on=false;
       const flush=()=>{ if(!buf) return; if(on){ const m=document.createElement('mark'); m.className='hl'; m.textContent=buf; frag.appendChild(m); } else frag.appendChild(document.createTextNode(buf)); buf=''; };
-      let pos=0; chars.forEach(c=>{ const mk=mark[pos]; if(mk!==on){ flush(); on=mk; } buf+=c; pos+=c.length; }); flush();
+      chars.forEach((c,i)=>{ if(mark[i]!==on){ flush(); on=mark[i]; } buf+=c; }); flush();
       t.parentNode.replaceChild(frag,t);
     });
   });
