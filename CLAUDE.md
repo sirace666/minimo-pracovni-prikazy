@@ -1413,6 +1413,15 @@ protože:
      (`linka-clear`/`fav-linka-clear`), okno oblíbeného filtru (`fav-clear-all`). Tlačítka mají třídu `.cm-onlybtn`.
   - **Zkoušení:** stub Firebase (`%TEMP%\minimo-test3\stub.js`) zapisuje volání `updateDoc` do `window.__upd`, takže jde
     ověřit i uložení bez databáze.
+- **Hledání ve všem + označení nalezeného textu (2026-10-09, v0.18.4)** — Martin: hlavní hledání má najít naprosto vše
+  v příkazech a nalezený text se má označit jako Ctrl+F v dokumentu. `matchesSearch()` hledá v čísle, WO, poruše, **popisu**,
+  lince, stroji, oboru, jménech přiřazených, autorovi, stavu, prioritě, typu (CM/EM, standardní/havarijní), stavu dílu,
+  prostoji, datu vytvoření i v **celé historii** (`o.hist`). Nezáleží na velikosti písmen ani **diakritice** (`fold()`: „dveri"
+  najde „dveří"); víc slov oddělených mezerou = příkaz musí obsahovat VŠECHNA (`searchWords()`). Nalezený text se po každém
+  `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
+  (jen v pohledu, ne ve formuláři). Shoda jen v tom, co v řádku není vidět (popis, historie), ukáže pod názvem poruchy
+  nápovědu „🔎 shoda v popisu/historii" (`searchHiddenHint()`, třída `.r2-hit`). Popisek pole: „Hledat v příkazech…".
+  Když přidáš do příkazu nové pole, přidej ho do `visibleSearchText()` (je-li vidět v řádku) nebo `hiddenSearchText()`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

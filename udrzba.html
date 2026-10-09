@@ -692,6 +692,8 @@
     .r2-av{width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:oklch(0.9 0.06 var(--h));color:oklch(0.36 0.1 var(--h));
       font:800 9.5px 'Figtree',sans-serif;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
     .r2-wn{font-size:13.5px;font-weight:600;line-height:1.3}
+    mark.hl{background:#ffe27a;color:inherit;border-radius:3px;padding:0 1px;box-shadow:0 0 0 1px rgba(214,170,20,.35)}
+    .r2-hit{align-self:flex-start;font-size:12px;font-weight:600;color:#8a6a0a;background:#fff7d6;border-radius:999px;padding:0 8px}
     .r2-unas:hover{border-color:#b8480f;color:#b8480f;background:#fbf1ea;cursor:pointer}
     .r2-unas{display:inline-flex;align-items:center;border:1.5px dashed #cfcabd;color:#6f6b60;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:600}
     .r2-pj{display:inline-flex;align-items:center;gap:5px;color:var(--pj);background:color-mix(in srgb,var(--pj) 11%,transparent);
@@ -957,6 +959,7 @@ function render(){
   if(fatal){ renderShell(`<div class="empty">${esc(fatal)}</div>`); bind(); return; }
   renderShell(listView());
   bind();
+  applyHighlight();
 }
 function renderShell(inner){
   const app=document.getElementById('app');
@@ -999,7 +1002,56 @@ function loginView(){
   </form></div>`;
 }
 /* ===== filtrování — každá osa se dá vynechat (skip), pro výpočet počtů ===== */
-function matchesSearch(o){ if(!filters.q) return true; const q=filters.q.toLowerCase(); return [o.cislo,o.nazev,o.popis,o.linka,o.stroj,o.wo,...assignedNames(o)].join(' ').toLowerCase().includes(q); }
+/* ===== hledání ve všem, co příkaz obsahuje =====
+   Nezáleží na velikosti písmen ani na diakritice („udrzba" najde „Údržba"); víc slov = příkaz musí obsahovat všechna.
+   Hledá se v čísle, WO, poruše, popisu, lince, stroji, oboru, jménech, autorovi, stavu, prioritě, typu, stavu dílu,
+   datech a v celé historii. */
+const foldChar=c=>{ const r=c.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); return r.length===1?r:(c.toLowerCase().length===1?c.toLowerCase():c); };
+const fold=t=>Array.from(String(t==null?'':t)).map(foldChar).join('');
+const searchWords=()=>fold(filters.q||'').split(/\s+/).filter(Boolean);
+// pole, která jsou v řádku tabulky vidět (zvýrazní se přímo tam)
+function visibleSearchText(o){
+  return fold([o.cislo,o.wo,o.nazev,o.linka,o.stroj,...oborOf(o).map(k=>(OBOR.find(x=>x.k===k)||{}).label),...assignedNames(o).map(pn),
+    o.authorName&&pn(o.authorName),statusLabel(o.status),PRIORITA_LABEL[o.priorita]||o.priorita,typOf(o),typOf(o)==='EM'?'havarijní':'standardní',
+    o.nd&&NDLABEL[o.nd],o.prostojOd&&prostojFull(o.prostojOd),dateCz(o.created)].filter(Boolean).join(' '));
+}
+const hiddenSearchText=o=>({popis:fold(o.popis||''),hist:fold((o.hist||[]).join(' '))});
+function matchesSearch(o){
+  if(!filters.q) return true;
+  const words=searchWords(); if(!words.length) return true;
+  const hid=hiddenSearchText(o), all=visibleSearchText(o)+' '+hid.popis+' '+hid.hist;
+  return words.every(w=>all.includes(w));
+}
+// shoda jen v tom, co v řádku není vidět (popis, historie) → v řádku se ukáže drobná nápověda
+function searchHiddenHint(o){
+  if(!filters.q) return '';
+  const vis=visibleSearchText(o), hid=hiddenSearchText(o), where=new Set();
+  searchWords().forEach(w=>{ if(vis.includes(w)) return; if(hid.popis.includes(w)) where.add('popisu'); else if(hid.hist.includes(w)) where.add('historii'); });
+  return where.size?`<span class="r2-hit">🔎 shoda v ${[...where].join(' a v ')}</span>`:'';
+}
+// jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
+function applyHighlight(){
+  const words=searchWords(); if(!words.length) return;
+  const roots=[...document.querySelectorAll('.trow, .order-item')];
+  if(editing&&editing._id&&!editMode) roots.push(...document.querySelectorAll('.overlay .modal-body'));
+  roots.forEach(root=>{
+    const nodes=[], tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:t=>{
+      const pe=t.parentElement; if(!pe||/^(SCRIPT|STYLE|TEXTAREA|OPTION|MARK)$/.test(pe.tagName)) return NodeFilter.FILTER_REJECT;
+      return t.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT; }});
+    while(tw.nextNode()) nodes.push(tw.currentNode);
+    nodes.forEach(t=>{
+      const orig=t.nodeValue, f=Array.from(orig).map(foldChar), chars=Array.from(orig), fs=f.join('');
+      if(f.some((x,i)=>x.length!==chars[i].length)) return;   // znak, co se skládá jinak než 1:1 — nezvýrazňovat
+      const mark=new Array(fs.length).fill(false);
+      words.forEach(w=>{ let i=fs.indexOf(w); while(i>=0){ for(let k=i;k<i+w.length;k++) mark[k]=true; i=fs.indexOf(w,i+w.length); } });
+      if(!mark.some(Boolean)) return;
+      const frag=document.createDocumentFragment(); let buf='', on=false;
+      const flush=()=>{ if(!buf) return; if(on){ const m=document.createElement('mark'); m.className='hl'; m.textContent=buf; frag.appendChild(m); } else frag.appendChild(document.createTextNode(buf)); buf=''; };
+      let pos=0; chars.forEach(c=>{ const mk=mark[pos]; if(mk!==on){ flush(); on=mk; } buf+=c; pos+=c.length; }); flush();
+      t.parentNode.replaceChild(frag,t);
+    });
+  });
+}
 function matchesView(o){ if(!filters.view) return true; if(filters.view==='nd') return !!o.nd; const v=VIEWS.find(x=>x.k===filters.view); return v?v.test(o):true; }
 function matchesTyp(o){ return !filters.typ.length || filters.typ.includes(typOf(o)); }
 function matchesStav(o){ return !filters.stav.length || STAV_FILTER_OPTS.filter(s=>filters.stav.includes(s.k)).some(s=>s.test(o)); }
@@ -1490,7 +1542,7 @@ function trHTML(o){
     <span class="tc">${r2Typ(typOf(o))}</span>
     <span class="tc">${r2Prio(o.priorita)}</span>
     <span class="tc">${o.wo?`<span class="r2-wo">${esc(o.wo)}</span>`:'<span class="r2-wo none">bez WO</span>'}<span class="r2-pp">${esc(o.cislo||'')}</span></span>
-    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?r2Part(o.nd):''}</span>
+    <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?r2Part(o.nd):''}${searchHiddenHint(o)}</span>
     <span class="tc">${stroj}</span>
     <span class="tc"><span class="r2-obs">${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
     <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id)}</span>
@@ -1609,11 +1661,11 @@ function listView(){
         ${searchIsOpen?`
           <div class="search-wrap">
             <span class="search-icon">⌕</span>
-            <input class="search" id="f-q" placeholder="Hledat příkaz, stroj nebo osobu…" value="${esc(filters.q)}">
+            <input class="search" id="f-q" placeholder="Hledat v příkazech…" value="${esc(filters.q)}">
             <button type="button" class="search-close" data-a="search-close">✕</button>
           </div>
         `:`<button type="button" class="icon-btn m-only" data-a="search-open" title="Hledat">⌕</button>
-          <div class="search-wrap d-only"><span class="search-icon">⌕</span><input class="search" id="f-q" placeholder="Hledat příkaz, stroj nebo osobu…" value=""></div>`}
+          <div class="search-wrap d-only"><span class="search-icon">⌕</span><input class="search" id="f-q" placeholder="Hledat v příkazech…" value=""></div>`}
         <div class="sortbox old-only">
           <select id="f-sortkey">${SORT_OPTS.map(s=>`<option value="${s.k}" ${sortKey===s.k?'selected':''}>Řadit: ${esc(s.label)}</option>`).join('')}</select>
           <button type="button" class="sort-dir" id="f-sortdir" title="${sortDir==='asc'?'Vzestupně':'Sestupně'}">${sortDir==='asc'?'↑':'↓'}</button>
