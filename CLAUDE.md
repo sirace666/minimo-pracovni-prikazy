@@ -1421,6 +1421,9 @@ protože:
   `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
   (jen v pohledu, ne ve formuláři). Shoda jen v tom, co v řádku není vidět (popis, historie), ukáže pod názvem poruchy
   nápovědu „🔎 shoda v popisu/historii" (`searchHiddenHint()`, třída `.r2-hit`). Popisek pole: „Hledat v příkazech…".
+  **Označují se jen DATA, ne popisky a ovládací prvky** (v0.18.5, Martin: „ne Přiřazeno, Přiřadit"): `UI_SKIP` v `applyHighlight()`
+  vynechává `button, label, dt, .sec-label, .r2-unas, .r2-hit, .r2-wo.none, .dash, .ap-cols, .modal-tabs, .modal-foot`. Přibude-li nový
+  popisek nebo tlačítko, které se má při hledání ignorovat, přidej jeho selektor tam.
   Když přidáš do příkazu nové pole, přidej ho do `visibleSearchText()` (je-li vidět v řádku) nebo `hiddenSearchText()`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na

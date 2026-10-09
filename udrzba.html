@@ -1030,6 +1030,7 @@ function searchHiddenHint(o){
   return where.size?`<span class="r2-hit">🔎 shoda v ${[...where].join(' a v ')}</span>`:'';
 }
 // jako Ctrl+F v dokumentu: nalezený text se označí (po každém překreslení znovu)
+const UI_SKIP='button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
   const roots=[...document.querySelectorAll('.trow, .order-item')];
@@ -1037,6 +1038,8 @@ function applyHighlight(){
   roots.forEach(root=>{
     const nodes=[], tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:t=>{
       const pe=t.parentElement; if(!pe||/^(SCRIPT|STYLE|TEXTAREA|OPTION|MARK)$/.test(pe.tagName)) return NodeFilter.FILTER_REJECT;
+      // označují se jen hledaná DATA, ne popisky a ovládací prvky (dt „Přiřazeno", štítky sekcí, tlačítka, „+ Přiřadit", „bez WO"…)
+      const ui=pe.closest(UI_SKIP); if(ui&&ui!==root&&root.contains(ui)) return NodeFilter.FILTER_REJECT;
       return t.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT; }});
     while(tw.nextNode()) nodes.push(tw.currentNode);
     nodes.forEach(t=>{
