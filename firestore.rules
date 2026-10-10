@@ -93,6 +93,8 @@ service cloud.firestore {
             && newAs.toSet().difference(oldAs.toSet()).hasOnly([request.auth.uid].toSet())
             && oldAs.toSet().difference(newAs.toSet()).hasOnly([request.auth.uid].toSet()));
     }
+    // číslo WO smí zapsat jen ten, kdo má zvláštní právo „Zapsat WO" (users.udrzba.wo)
+    function udWoOk() { return isAdmin() || udCfg().get('wo', false) == true; }
     function udNdOk(v) {
       return isAdmin() || v == null || v == 'potreba'
         || (v == 'objednano' && udCfg().get('ordered', false) == true)
@@ -101,7 +103,8 @@ service cloud.firestore {
     function udUpdateOk() {
       let ch = request.resource.data.diff(resource.data).affectedKeys();
       return !ch.hasAny(['author', 'authorName', 'authorEmail', 'cislo', 'created', 'createdTs'])
-        && (!ch.hasAny(['nazev', 'popis', 'wo', 'priorita', 'typ', 'linka', 'stroj', 'obor', 'prostojOd'])
+        && (!ch.hasAny(['wo']) || udWoOk())
+        && (!ch.hasAny(['nazev', 'popis', 'priorita', 'typ', 'linka', 'stroj', 'obor', 'prostojOd'])
             || isAdmin() || udCfg().get('edit', 'none') == 'all'
             || (udCfg().get('edit', 'none') == 'own' && udMine(resource.data)))
         && (!ch.hasAny(['assignedTo', 'assignedToNames']) || udAssignOk(udAs(resource.data), udAs(request.resource.data)))
@@ -174,6 +177,7 @@ service cloud.firestore {
                     && request.resource.data.author == request.auth.uid
                     && request.resource.data.status == 'nový'
                     && udCanCreate()
+                    && (request.resource.data.get('wo', '') == '' || request.resource.data.get('wo', '') == null || udWoOk())
                     && (isAdmin() || request.resource.data.get('nd', null) == null)
                     && (udAs(request.resource.data).size() == 0
                         || udAssignOk([], udAs(request.resource.data)));

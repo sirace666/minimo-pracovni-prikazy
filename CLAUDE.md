@@ -1445,7 +1445,7 @@ protože:
 - **PRÁVA V ÚDRŽBĚ (2026-10-10, v0.18.18)** — Martin chtěl, aby David v Nastavení nastavoval, kdo co v Údržbě smí. Zadání probrané
   v konverzaci, hotové najednou (Nastavení + appka + pravidla) a otestované.
   - **Uložení:** `users/{uid}.modules.udrzba` = `'write'` (modul ZOBRAZIT; chybí = skrytý, výchozí) a `users/{uid}.udrzba` =
-    `{tiles:{all,unassigned,parts,mine}: none|read|self|all, assign: none|self|all, ordered: bool, arrived: bool, edit: none|own|all, del: none|own|all}`.
+    `{tiles:{all,unassigned,parts,mine}: none|read|self|all, assign: none|self|all, wo: bool, ordered: bool, arrived: bool, edit: none|own|all, del: none|own|all}` (`wo` přibylo v 0.18.24).
     **Správci (role admin) mají vždy vše.**
   - **Dlaždice = výřezy příkazů** (Vše = všechny, Nepřiřazené = bez přiřazených, Náhradní díl = s `nd`, Moje = přiřazené mně NEBO mnou založené).
     Příkaz vidí ten, kdo má aspoň u jedné dlaždice, do které příkaz patří, něco jiného než „skryté"; zapisovat smí, když má u některé `all`,
@@ -1493,6 +1493,13 @@ protože:
   `obor-save` zapíše `obor` + řádek historie „změnil obor: …" přímo do příkazu (`updateDoc`) a obnoví otevřený detail. Klik jinam v řádku otevře detail jako dřív.
   Řádek historie „změnil obor: …" je v `histParts()` šablona (obor se nehledá). Overlay se zavírá jako ostatní okna (`obor-close-bg` ve výjimce generického `[data-a]`
   handleru a vlastní mousedown/click listener v `bind()`).
+- **Zapsat WO + sbalitelné Zvláštní práva (2026-10-10, v0.18.24)** — nové zvláštní právo **Zapsat WO** (Ano/Ne, `users.udrzba.wo`) určuje, kdo smí vyplnit kolonku WO
+  (nový příkaz i úprava). Předvolby: Údržba ano, Process engineer ano, Tool setters ne, Jen číst ne (`UD_PRESETS` v `nastaveni.html`; správce vždy ano).
+  Appka: `udCanWo()`, v `editForm()` je `#e-wo` bez práva `disabled`. Pravidla Firestore: `udWoOk()`; **WO se při `update` hlídá SAMOSTATNĚ** (`wo` už není mezi poli, která vyžadují
+  právo Upravovat), při `create` smí být WO jen prázdné nebo s právem. V Nastavení je nadpis **„Zvláštní práva — platí jen u příkazů, ke kterým smí zapisovat" sbalený**
+  (`uedit.udSpecialOpen`, tlačítko `#ue-udspec`; ve výchozím stavu pod ním není nic, žádné shrnutí — Martin) a „Zapsat WO" je v něm nad „Přiřazovat práci".
+  ⚠️ **Past v pravidlech Firestore:** `x in ['', null]` (seznam s `null`) se choval špatně — pravidlo pustilo i neprázdné WO. Používej explicitní `x == '' || x == null`
+  (ověřeno testem: neprázdné WO bez práva → 403). Testy pravidel (`test-rules.js`, 43 kontrol) i prohlížeče měly být po každé změně práv pouštěny znovu.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

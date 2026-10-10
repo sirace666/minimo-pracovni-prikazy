@@ -950,7 +950,7 @@ const UD_TILE_KEYS=['all','unassigned','parts','mine'];
 function udCfg(){
   const d=(me&&me.udrzba)||{}, t=d.tiles||{}, ok=(v,a,def)=>a.includes(v)?v:def, st=['none','read','self','all'], sc=['none','own','all'];
   return {tiles:{all:ok(t.all,st,'none'),unassigned:ok(t.unassigned,st,'none'),parts:ok(t.parts,st,'none'),mine:ok(t.mine,st,'none')},
-    assign:ok(d.assign,['none','self','all'],'none'), ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')};
+    assign:ok(d.assign,['none','self','all'],'none'), wo:d.wo===true, ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')};
 }
 const udHasAccess=()=>!!me&&(isAdmin()||['write','read'].includes((me.modules||{}).udrzba));
 const udTile=t=>isAdmin()?'all':(udHasAccess()?udCfg().tiles[t]:'none');
@@ -964,6 +964,8 @@ const udCanDelete=o=>udCanWrite(o)&&(isAdmin()||udCfg().del==='all'||(udCfg().de
 const udAssignLevel=o=>udCanWrite(o)?(isAdmin()?'all':udCfg().assign):'none';
 const udCanOrder=o=>udCanWrite(o)&&(isAdmin()||udCfg().ordered);
 const udCanArrive=o=>udCanWrite(o)&&(isAdmin()||udCfg().arrived);
+// kolonku WO v příkazu smí vyplnit jen ten, kdo má zvláštní právo „Zapsat WO" (správce vždy)
+const udCanWo=()=>isAdmin()||udCfg().wo===true;
 // když člověk nevidí dlaždici Vše, otevře se Údržba rovnou na první dlaždici, kterou vidí (Moje, Nepřiřazené, Náhradní díl)
 function udDefaultView(){
   if(udTile('all')!=='none') return '';
@@ -1917,7 +1919,7 @@ function editForm(o){
   const assignedBtn = `<button type="button" class="assign-trigger" ${canAssignHere?'data-a="assign-open"':'disabled title="Přiřazovat práci nemáš povoleno"'}>${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
     <div><label>Pracovní příkaz</label>
-      <input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="WO" class="wo-input">
+      <input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="WO" class="wo-input"${udCanWo()?'':' disabled title="Zapisovat WO nemáš povoleno"'}>
     </div>
     <div ${errs.nazev?'style="color:#c0392b"':''}>
       <label>Porucha <span style="color:#c0392b">*</span></label>

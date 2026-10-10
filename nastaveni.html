@@ -94,6 +94,8 @@
   .dlg .fld select{width:100%}
   .dlg .hintx{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
   .perms{display:flex;flex-direction:column;gap:7px}
+  .ud-spec-toggle{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:#f4f5fa;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;color:#41506b;cursor:pointer}
+  .ud-spec-toggle:hover{background:#eceefb}
   .permrow{display:flex;align-items:center;gap:10px}
   .permrow .permlbl{flex:0 0 118px;font-size:12.5px;font-weight:700;color:#41506b}
   .permrow.wide .permlbl{flex-basis:200px}
@@ -197,13 +199,13 @@ const UD_YESNO = [{key:'no',label:'Ne'},{key:'yes',label:'Ano'}];
 const udNorm = d => { d=d||{}; const t=d.tiles||{}, ok=(v,a,def)=>a.includes(v)?v:def;
   const st=['none','read','self','all'], sc=['none','own','all'], as=['none','self','all'];
   return {tiles:{all:ok(t.all,st,'none'), unassigned:ok(t.unassigned,st,'none'), parts:ok(t.parts,st,'none'), mine:ok(t.mine,st,'none')},
-    assign:ok(d.assign,as,'none'), ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')}; };
+    assign:ok(d.assign,as,'none'), wo:d.wo===true, ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')}; };
 const ALLW = {all:'all',unassigned:'all',parts:'all',mine:'all'};
 const UD_PRESETS = [
-  {key:'udrzba',      label:'Údržba',           v:{tiles:ALLW, assign:'all',  ordered:true,  arrived:true,  edit:'all', del:'all'}},
-  {key:'pe',          label:'Process engineer', v:{tiles:ALLW, assign:'self', ordered:true,  arrived:true,  edit:'all', del:'all'}},
-  {key:'toolsetters', label:'Tool setters',     v:{tiles:{all:'none',unassigned:'none',parts:'read',mine:'self'}, assign:'none', ordered:false, arrived:false, edit:'own', del:'own'}},
-  {key:'readonly',    label:'Jen číst',         v:{tiles:{all:'read',unassigned:'read',parts:'read',mine:'read'}, assign:'none', ordered:false, arrived:false, edit:'none', del:'none'}},
+  {key:'udrzba',      label:'Údržba',           v:{tiles:ALLW, assign:'all',  wo:true,  ordered:true,  arrived:true,  edit:'all', del:'all'}},
+  {key:'pe',          label:'Process engineer', v:{tiles:ALLW, assign:'self', wo:true,  ordered:true,  arrived:true,  edit:'all', del:'all'}},
+  {key:'toolsetters', label:'Tool setters',     v:{tiles:{all:'none',unassigned:'none',parts:'read',mine:'self'}, assign:'none', wo:false, ordered:false, arrived:false, edit:'own', del:'own'}},
+  {key:'readonly',    label:'Jen číst',         v:{tiles:{all:'read',unassigned:'read',parts:'read',mine:'read'}, assign:'none', wo:false, ordered:false, arrived:false, edit:'none', del:'none'}},
 ];
 const udPresetOf = d => { const a=JSON.stringify(udNorm(d)); return (UD_PRESETS.find(p=>JSON.stringify(udNorm(p.v))===a)||{}).key || 'custom'; };
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
@@ -396,12 +398,15 @@ function editUserView(){
           + UD_PRESETS.map(p=>'<option value="'+p.key+'" '+(presetKey===p.key?'selected':'')+'>'+esc(p.label)+'</option>').join('')+'</select>')
         + '<div class="hintx" style="margin-top:8px"><b>Dlaždice</b> nahoře v Údržbě — co člověk v každé smí:</div>'
         + UD_TILES.map(t=>udRow(t.label, sel('', 'tiles.'+t.key, ud.tiles[t.key], UD_TILE_STATES))).join('')
-        + '<div class="hintx" style="margin-top:8px"><b>Zvláštní práva</b> — platí jen u příkazů, ke kterým smí zapisovat:</div>'
-        + udRow('Přiřazovat práci', sel('', 'assign', ud.assign, UD_ASSIGN))
-        + udRow('Označit díl „objednáno"', sel('', 'ordered', ud.ordered?'yes':'no', UD_YESNO))
-        + udRow('Označit díl „přišlo"', sel('', 'arrived', ud.arrived?'yes':'no', UD_YESNO))
-        + udRow('Upravovat příkazy', sel('', 'edit', ud.edit, UD_SCOPE))
-        + udRow('Mazat příkazy', sel('', 'del', ud.del, UD_SCOPE))
+        + '<button type="button" class="ud-spec-toggle" id="ue-udspec">' + (u.udSpecialOpen?'▾':'▸') + ' <b>Zvláštní práva</b> — platí jen u příkazů, ke kterým smí zapisovat</button>'
+        + (u.udSpecialOpen
+          ? udRow('Zapsat WO', sel('', 'wo', ud.wo?'yes':'no', UD_YESNO))
+            + udRow('Přiřazovat práci', sel('', 'assign', ud.assign, UD_ASSIGN))
+            + udRow('Označit díl „objednáno"', sel('', 'ordered', ud.ordered?'yes':'no', UD_YESNO))
+            + udRow('Označit díl „přišlo"', sel('', 'arrived', ud.arrived?'yes':'no', UD_YESNO))
+            + udRow('Upravovat příkazy', sel('', 'edit', ud.edit, UD_SCOPE))
+            + udRow('Mazat příkazy', sel('', 'del', ud.del, UD_SCOPE))
+          : '')
       : '')
     + '</div><div class="hintx"><b>Skrytý</b> = Údržbu v menu ani na hlavní stránce neuvidí. U <b>Zobrazit</b> vyber předvolbu nebo nastav práva ručně. '
     + '„Zapisovat jen sebe" = příkazy přiřazené jemu nebo jím založené. „Své" u úprav = přiřazené jemu nebo jím založené, u mazání jen jím založené. '
@@ -440,7 +445,7 @@ function openEdit(uid){
   const u=users.find(x=>x.uid===uid); if(!u) return;
   uedit={uid, name:u.name||uid, email:u.email||'', level:levelOf(u), team:u.team||'',
     positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{}),
-    udrzba:udNorm(u.udrzba), udAccess:(((u.modules||{}).udrzba==='write')||((u.modules||{}).udrzba==='read'))?'show':'hidden'};
+    udSpecialOpen:false, udrzba:udNorm(u.udrzba), udAccess:(((u.modules||{}).udrzba==='write')||((u.modules||{}).udrzba==='read'))?'show':'hidden'};
   render();
 }
 async function saveUser(){
@@ -559,10 +564,11 @@ function wire(){
       const k=sel.getAttribute('data-ud'), v=sel.value;
       if(k==='access') uedit.udAccess=v;
       else if(k.startsWith('tiles.')) uedit.udrzba.tiles[k.slice(6)]=v;
-      else if(k==='ordered'||k==='arrived') uedit.udrzba[k]=(v==='yes');
+      else if(k==='wo'||k==='ordered'||k==='arrived') uedit.udrzba[k]=(v==='yes');
       else uedit.udrzba[k]=v;
       render();
     }));
+    document.getElementById('ue-udspec')?.addEventListener('click',()=>{ uedit.udSpecialOpen=!uedit.udSpecialOpen; render(); });
     document.getElementById('ue-udpreset')?.addEventListener('change',e=>{
       const pr=UD_PRESETS.find(x=>x.key===e.target.value);
       if(pr){ uedit.udrzba=udNorm(pr.v); uedit.udAccess='show'; }
