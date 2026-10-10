@@ -1172,7 +1172,7 @@ function passes(o,skip,skip2){
   if(skip!=='mineSel'&&skip2!=='mineSel'&&skip!=='view'&&skip2!=='view' && !matchesMineSel(o)) return false;
   return true;
 }
-const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
+const countView=k=>tileRows().filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
 const countTyp=k=>rows.filter(o=>passes(o,'typ') && typOf(o)===k).length;
 const countStav=k=>rows.filter(o=>passes(o,'stav') && (STAV_FILTER_OPTS.find(s=>s.k===k)||{test:()=>false}).test(o)).length;
 const countPriorita=k=>rows.filter(o=>passes(o,'priorita') && o.priorita===k).length;
@@ -1183,17 +1183,17 @@ const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).len
 // nd čísla na dlaždici schválně ignorují i 'view' (skip2) — nemají se
 // měnit podle toho, která dlaždice nahoře je zrovna aktivní, jen podle
 // sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání).
-const countNd=k=>rows.filter(o=>passes(o,'nd','view') && o.nd===k).length;
+const countNd=k=>tileRows().filter(o=>passes(o,'nd','view') && o.nd===k).length;
 // čísla na dlaždici Moje (stejně jako u dílu: nezávislá na aktivní dlaždici, řídí se jen ostatními filtry)
-const countMine=k=>rows.filter(o=>passes(o,'mineSel','view') && (k==='assigned'?assignedUids(o).includes(me.uid):o.author===me.uid)).length;
+const countMine=k=>tileRows().filter(o=>passes(o,'mineSel','view') && (k==='assigned'?assignedUids(o).includes(me.uid):o.author===me.uid)).length;
 const countWho=k=>rows.filter(o=>passes(o,'who') && (k==='_none'?assignedUids(o).length===0:assignedUids(o).includes(k))).length;
 const countProstoj=k=>rows.filter(o=>passes(o,'prostoj') && (o.prostojOd?'ano':'ne')===k).length;
 const countStroj=k=>rows.filter(o=>passes(o,'stroj') && o.stroj===k).length;
 const countAutor=k=>rows.filter(o=>passes(o,'autor') && o.author===k).length;
 // počet aktivních filtrů (bez dlaždic nahoře a hledání) — pro štítek u "FILTRY" a tlačítko Zrušit
 const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.stroj.length+filters.nd.length+filters.mineSel.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
-const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
-const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM' && o.priorita==='kritická');
+const unassignedHasEm=()=>tileRows().some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
+const unassignedHasEmCrit=()=>tileRows().some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM' && o.priorita==='kritická');
 
 /* ===== řazení ===== */
 // Všechny klíče řazení: na mobilu je nabízí výběr "Řadit", na počítači menu
@@ -1602,6 +1602,9 @@ function chipHtml(dim,k){ const op=colOptions(dim).find(x=>x.k===k); return (op&
 // Skrýt hotové platí, dokud ve filtru Stav není zaškrtnuté Hotovo — to je výslovná žádost vidět hotové, přepínač ji nepřebije.
 const doneShown=()=>!hideDone || filters.stav.includes('hotovo');
 const tableRows=rr=>doneShown()?rr:rr.filter(o=>o.status!=='hotovo');
+// Čísla na dlaždicích (Vše, Nepřiřazené, Náhradní díl, Moje) odpovídají tomu, co tabulka na počítači právě ukáže: se zapnutým Skrýt hotové
+// se hotové nepočítají (Martin, 2026-10-10; dřív byla čísla na přepínači nezávislá). Na mobilu přepínač není, tam se počítá všechno.
+const tileRows=()=>(doneShown()||!window.matchMedia('(min-width:861px)').matches)?rows:rows.filter(o=>o.status!=='hotovo');
 function sbarHTML(n){
   const chips=[];
   ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd','mineSel'].forEach(d=>filters[d].forEach(k=>

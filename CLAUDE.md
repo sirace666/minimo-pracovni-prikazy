@@ -1263,7 +1263,8 @@ protože:
        Zbudou-li po skrytí jen hotové (třeba hledání trefí jen hotový), místo
        prázdné tabulky se ukáže hláška „Zbývají jen hotové příkazy" s tlačítkem
        Zobrazit hotové (`.empty2` větev v `listView()`).
-       Čísla na dlaždicích nahoře a počty v menu filtrů se přepínačem NEMĚNÍ.
+       **Čísla na dlaždicích nahoře se přepínačem MĚNÍ (od 0.18.21)** — viz „Čísla na dlaždicích" níž; počty v menu filtrů se NEMĚNÍ (obsahují i hotové, ať jde
+       Hotovo ve filtru Stav vybrat).
   - **Pevný horní blok, rolují jen řádky (Martin):** od 861 px šířky a 560 px
     výšky se stránka sama nescrolluje. `#app` je flex sloupec o výšce okna
     (`100dvh`, `overflow:hidden`), `#main-host` → `main` → `.board2` → `.listcard2`
@@ -1479,8 +1480,13 @@ protože:
   nad nimi stojí „Moje" (Martin).
   **Oprava 0.18.20 (Martin: „buď špatná čísla, nebo špatné filtry"):** `passes()` přeskakuje `mineSel` i když se přeskakuje `view` — a přesně takhle
   se počítají čísla na dlaždicích (`countView`, `countNd`, `countMine`, `unassignedHasEm`). Výběr v panelu Moje tak mění jen seznam, ne čísla ostatních dlaždic.
-  (Stejně se NEchová `filters.nd` — ten je sdílený se sloupcovým filtrem Díl, takže tam čísla záměrně zužuje.) **Čísla na dlaždicích počítají i HOTOVÉ příkazy**,
-  které tabulka kvůli přepínači Skrýt hotové schová — „4 přiřazené" tedy znamená 4 včetně hotových; po zobrazení hotových sedí s počtem řádků. Práva v Údržbě (`udTile('mine')`) dlaždici dál skrývají / omezují jako dřív.
+  (Stejně se NEchová `filters.nd` — ten je sdílený se sloupcovým filtrem Díl, takže tam čísla záměrně zužuje.) (HISTORICKÉ: od 0.18.21 už čísla dlaždic hotové při zapnutém Skrýt hotové NEpočítají, viz níž.) Práva v Údržbě (`udTile('mine')`) dlaždici dál skrývají / omezují jako dřív.
+- **Čísla na dlaždicích sledují Skrýt hotové (2026-10-10, v0.18.21)** — Martin: číslo na dlaždici má odpovídat tomu, co se zrovna zobrazí na stránce
+  (příklad: Vše 30 s vypnutým Skrýt hotové, Vše 25 se zapnutým při 25 aktivních + 5 hotových). `tileRows()` = `rows` bez hotových, když je zapnuté Skrýt hotové
+  (`doneShown()` false) a jde o počítač (≥861 px; na mobilu přepínač není, tam se počítá všechno). Používají ho `countView`, `countNd`, `countMine`,
+  `unassignedHasEm`/`unassignedHasEmCrit`. Když je ve filtru Stav zaškrtnuté Hotovo, hotové se počítají (jako `doneShown()`). Počty v MENU filtrů (`countStav` apod.)
+  hotové počítají vždy — jinak by u Hotovo ve filtru Stav stála 0, i když se po zaškrtnutí hotové ukážou. Tohle NAHRAZUJE dřívější rozhodnutí (0.17.2), že čísla dlaždic
+  přepínač nemění.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
