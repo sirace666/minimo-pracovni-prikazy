@@ -1487,6 +1487,12 @@ protože:
   `unassignedHasEm`/`unassignedHasEmCrit`. Když je ve filtru Stav zaškrtnuté Hotovo, hotové se počítají (jako `doneShown()`). Počty v MENU filtrů (`countStav` apod.)
   hotové počítají vždy — jinak by u Hotovo ve filtru Stav stála 0, i když se po zaškrtnutí hotové ukážou. Tohle NAHRAZUJE dřívější rozhodnutí (0.17.2), že čísla dlaždic
   přepínač nemění.
+- **Rychlá změna oboru z řádku tabulky (2026-10-10, v0.18.22)** — Martin: kliknutí na štítek oboru (třeba Nástrojárna) otevře okno, kde se obor rovnou upraví.
+  `.r2-obs.editable` (`data-a="obor-open"`) je klikací JEN když `udCanEdit(o)` (obor je obsah příkazu; pravidla Firestore ho mají mezi poli, která vyžadují právo
+  Upravovat). Otevře `oborPickerView()` (stav `oborPicker={id,sel}`): tři zaškrtávátka z `OBOR`, aspoň jeden musí zůstat (jinak hláška a zakázané Uložit),
+  `obor-save` zapíše `obor` + řádek historie „změnil obor: …" přímo do příkazu (`updateDoc`) a obnoví otevřený detail. Klik jinam v řádku otevře detail jako dřív.
+  Řádek historie „změnil obor: …" je v `histParts()` šablona (obor se nehledá). Overlay se zavírá jako ostatní okna (`obor-close-bg` ve výjimce generického `[data-a]`
+  handleru a vlastní mousedown/click listener v `bind()`).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
