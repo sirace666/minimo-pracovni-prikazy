@@ -1470,6 +1470,13 @@ protože:
     **bez omezení polí** — kdokoli přihlášený, kdo ještě nemá profil, si může při založení zapsat `role:'admin'` / `level:'superadmin'` nebo libovolná
     práva v Údržbě a stát se správcem. Oprava: při `create` povolit jen `level:'basic'`, `role:'zadavatel'` a prázdná práva. Řekni to Martinovi / Davidovi.
   - **Účty:** Mistr a Udrzbar po 0.18.18 přišli o Údržbu (výchozí skryté) — Martin jim v Nastavení vybírá předvolbu.
+- **Dlaždice Moje má panel Přiřazené / Vytvořené (2026-10-10, v0.18.19)** — Martin chtěl u Moje stejné filtry jako u Náhradního dílu a popisky na dlaždici.
+  `mineTileWrap()` (po vzoru `ndTileWrap()`): na dlaždici „N přiřazené" a „M vytvořené" (`countMine()`, nezávislé na aktivní dlaždici; příkaz, který je
+  zároveň přiřazený mně i mnou vytvořený, se počítá v obou), klik otevře panel se dvěma zaškrtávátky (`filters.mineSel`: `assigned` = přiřazené mně,
+  `created` = mnou vytvořené; nic nebo obojí = sjednocení) a tlačítkem Zrušit vše (`mine-clear`). Panel se zavírá klikem mimo (`.mine-tile-wrap`), výběr
+  zůstane; zruší se přechodem na jinou dlaždici (`flt-view`, `nd-tile-toggle`, `mine-tile-toggle` se hlídají navzájem). `mineSel` je v `passes()`,
+  `activeFilterCount()`, `clear-filters` a ve štítcích nad tabulkou („Moje: Přiřazené"); do oblíbených sad NEPATŘÍ. Popisky jsou schválně krátké, protože
+  nad nimi stojí „Moje" (Martin). Práva v Údržbě (`udTile('mine')`) dlaždici dál skrývají / omezují jako dřív.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

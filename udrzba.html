@@ -70,7 +70,7 @@
   /* nepřiřazená havarijka: červené číslo; nepřiřazená havarijka +
      kritická navíc: červený vykřičník vedle čísla */
   .viewtile .vt-warn{color:var(--danger);font-weight:900;font-size:13px;margin-left:1px}
-  .nd-tile-wrap{position:relative}
+  .nd-tile-wrap,.mine-tile-wrap{position:relative}
 
   /* --- pravá skupina: hledání (ikona → rozbalí se) + řazení + nový --- */
   .head-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
@@ -610,6 +610,7 @@
     .vt-nd{align-items:baseline;gap:5px}
     .vt-sub{display:inline;font-size:12.5px;font-weight:500}
     .nd-tile-wrap .viewtile{min-width:240px;padding-right:14px}
+    .mine-tile-wrap .viewtile{min-width:200px;padding-right:14px}
     /* hledání (pořád vidět), nový příkaz */
     .head-actions{gap:12px}
     .search-wrap{height:38px;width:270px;background:#fff;border:1px solid #e3e0d8;border-radius:999px;padding:0 16px;box-shadow:none;color:#6f6b60;gap:8px}
@@ -864,7 +865,7 @@ let modalTab='info';
 // zobrazí se sama, jak jde bump verze při releasu, bez ručního psaní do kódu.
 let appVersion='';
 fetch('VERSION').then(r=>r.text()).then(t=>{ appVersion=t.trim(); render(); }).catch(()=>{});
-let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],stroj:[],nd:[],who:[],prostoj:[],autor:[],wo:'',nazev:''}, toastMsg=null, toastKind='';
+let filters={q:'',view:'',typ:[],stav:[],priorita:[],obor:[],linka:[],stroj:[],nd:[],mineSel:[],who:[],prostoj:[],autor:[],wo:'',nazev:''}, toastMsg=null, toastKind='';
 let sortKey='created', sortDir='desc', searchOpen=false;
 // Tabulka na počítači: otevřené menu sloupce (+ hledání v něm) a "oko" levého panelu
 // oblíbených (zapnuté = panel po najetí myší vyjede přes tabulku, vypnuté = zůstává úzký pruh).
@@ -876,7 +877,7 @@ let panelEye=(()=>{ try{ return localStorage.getItem(PANEL_KEY)!=='0'; }catch(e)
 const HIDE_KEY='udrzbaHideDone';
 let hideDone=(()=>{ try{ return localStorage.getItem(HIDE_KEY)!=='0'; }catch(e){ return true; } })();
 let linkaOpen=false, linkaQuery='';
-let ndOpen=false;
+let ndOpen=false, mineOpen=false;
 let favLinkaOpen=false, favLinkaQuery='';
 let loginBusy=false, loginErr='', dataReady=false, fatal='', viewInit=false;
 let cfg={sections:[]};
@@ -1146,6 +1147,7 @@ function matchesObor(o){ return !filters.obor.length || oborOf(o).some(x=>filter
 function matchesLinka(o){ return !filters.linka.length || filters.linka.includes(o.linka); }
 function matchesStroj(o){ return !filters.stroj.length || filters.stroj.includes(o.stroj); }
 function matchesNd(o){ return !filters.nd.length || filters.nd.includes(o.nd); }
+function matchesMineSel(o){ return !filters.mineSel.length || (filters.mineSel.includes('assigned')&&assignedUids(o).includes(me.uid)) || (filters.mineSel.includes('created')&&o.author===me.uid); }
 function matchesWho(o){ if(!filters.who.length) return true; const u=assignedUids(o); return u.length ? u.some(x=>filters.who.includes(x)) : filters.who.includes('_none'); }
 function matchesProstoj(o){ return !filters.prostoj.length || filters.prostoj.includes(o.prostojOd?'ano':'ne'); }
 function matchesWo(o){ return !filters.wo || String(o.wo||'').includes(filters.wo); }
@@ -1166,6 +1168,7 @@ function passes(o,skip,skip2){
   if(skip!=='obor'&&skip2!=='obor' && !matchesObor(o)) return false;
   if(skip!=='linka'&&skip2!=='linka' && !matchesLinka(o)) return false;
   if(skip!=='nd'&&skip2!=='nd' && !matchesNd(o)) return false;
+  if(skip!=='mineSel'&&skip2!=='mineSel' && !matchesMineSel(o)) return false;
   return true;
 }
 const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
@@ -1180,12 +1183,14 @@ const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).len
 // měnit podle toho, která dlaždice nahoře je zrovna aktivní, jen podle
 // sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání).
 const countNd=k=>rows.filter(o=>passes(o,'nd','view') && o.nd===k).length;
+// čísla na dlaždici Moje (stejně jako u dílu: nezávislá na aktivní dlaždici, řídí se jen ostatními filtry)
+const countMine=k=>rows.filter(o=>passes(o,'mineSel','view') && (k==='assigned'?assignedUids(o).includes(me.uid):o.author===me.uid)).length;
 const countWho=k=>rows.filter(o=>passes(o,'who') && (k==='_none'?assignedUids(o).length===0:assignedUids(o).includes(k))).length;
 const countProstoj=k=>rows.filter(o=>passes(o,'prostoj') && (o.prostojOd?'ano':'ne')===k).length;
 const countStroj=k=>rows.filter(o=>passes(o,'stroj') && o.stroj===k).length;
 const countAutor=k=>rows.filter(o=>passes(o,'autor') && o.author===k).length;
 // počet aktivních filtrů (bez dlaždic nahoře a hledání) — pro štítek u "FILTRY" a tlačítko Zrušit
-const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.stroj.length+filters.nd.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
+const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.stroj.length+filters.nd.length+filters.mineSel.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
 const unassignedHasEm=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
 const unassignedHasEmCrit=()=>rows.some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM' && o.priorita==='kritická');
 
@@ -1296,6 +1301,30 @@ function ndTileWrap(){
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="potreba" ${filters.nd.includes('potreba')?'checked':''}><span class="fc-box"></span><span class="fc-label">Potřeba objednat</span><span class="count${potreba?' count-danger':''}">${potreba}</span></label>
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="objednano" ${filters.nd.includes('objednano')?'checked':''}><span class="fc-box"></span><span class="fc-label">Čeká (objednáno)</span><span class="count">${objednano}</span></label>
         <label class="filter-check"><input type="checkbox" data-flt="nd" value="prisel" ${filters.nd.includes('prisel')?'checked':''}><span class="fc-box"></span><span class="fc-label">Díl přišel</span><span class="count${prisel?' count-ok':''}">${prisel}</span></label>
+      </div>
+    </div>`:''}
+  </div>`;
+}
+// Dlaždice „Moje" má stejný rozbalovací panel jako Náhradní díl: výběr „Přiřazené mně" a „Mnou vytvořené" (filters.mineSel).
+// Nic nezaškrtnuto = obojí dohromady (přiřazené mně NEBO mnou vytvořené). Příkaz, který je zároveň přiřazený mně i mnou vytvořený, se počítá v obou číslech.
+function mineTileWrap(){
+  const assigned=countMine('assigned'), created=countMine('created');
+  const chk=k=>filters.mineSel.includes(k)?'checked':'';
+  return `<div class="mine-tile-wrap">
+    <button type="button" class="viewtile ${filters.view==='mine'?'on':''}" data-a="mine-tile-toggle">
+      <span class="vt-icon">${VT_IC_MINE}</span>
+      <span class="vt-body"><span class="vt-label">Moje</span>
+        <span class="vt-nds">
+          <span class="vt-nd" title="Příkazy přiřazené mně"><span class="vt-count">${assigned}</span><span class="vt-sub">přiřazené</span></span>
+          <span class="vt-nd" title="Příkazy, které jsem založil(a) já"><span class="vt-count">${created}</span><span class="vt-sub">vytvořené</span></span>
+        </span>
+      </span>
+    </button>
+    ${mineOpen?`<div class="linka-panel" style="min-width:230px">
+      <div class="cm-only" style="display:flex;justify-content:flex-end"><button type="button" class="cm-onlybtn" data-a="mine-clear"${filters.mineSel.length?'':' disabled'}>Zrušit vše</button></div>
+      <div class="checklist">
+        <label class="filter-check"><input type="checkbox" data-flt="mineSel" value="assigned" ${chk('assigned')}><span class="fc-box"></span><span class="fc-label">Přiřazené</span><span class="count">${assigned}</span></label>
+        <label class="filter-check"><input type="checkbox" data-flt="mineSel" value="created" ${chk('created')}><span class="fc-box"></span><span class="fc-label">Vytvořené</span><span class="count">${created}</span></label>
       </div>
     </div>`:''}
   </div>`;
@@ -1510,7 +1539,7 @@ const COLS=[
   {k:'created', label:'Vytvořeno',     dim:'autor',    sort:'created',  s:['Nejstarší první','Nejnovější první']}
 ];
 const PROSTOJ_OPTS=[{k:'ano',label:'S prostojem'},{k:'ne',label:'Bez prostoje'}];
-const DIM_LABEL={typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
+const DIM_LABEL={mineSel:'Moje',typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
 const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,nd:k=>rows.filter(o=>passes(o,'nd') && o.nd===k).length,who:countWho,prostoj:countProstoj,autor:countAutor};
 // textové filtry sloupců (hledání místo zaškrtávátek): wo = jen číslice, nazev = volný text
 const TEXT_FILTERS={wo:{ph:'Hledat číslo WO',digits:true},nazev:{ph:'Hledat v poruchách',digits:false}};
@@ -1564,6 +1593,7 @@ function chipLabel(dim,k){
   if(dim==='autor') return (autorOptions().find(x=>x.k===k)||{}).label||k;
   if(dim==='prostoj') return (PROSTOJ_OPTS.find(x=>x.k===k)||{}).label||k;
   if(dim==='nd') return NDLABEL[k]||k;
+  if(dim==='mineSel') return k==='assigned'?'Přiřazené':'Vytvořené';
   return k;
 }
 // štítek zapnutého filtru nad tabulkou: stejný vzhled jako položka ve filtru (barva, ikona), jinak tučný text
@@ -1573,7 +1603,7 @@ const doneShown=()=>!hideDone || filters.stav.includes('hotovo');
 const tableRows=rr=>doneShown()?rr:rr.filter(o=>o.status!=='hotovo');
 function sbarHTML(n){
   const chips=[];
-  ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd'].forEach(d=>filters[d].forEach(k=>
+  ['typ','stav','priorita','obor','stroj','linka','who','prostoj','autor','nd','mineSel'].forEach(d=>filters[d].forEach(k=>
     chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: ${chipHtml(d,k)}<span aria-hidden="true">✕</span></button>`)));
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
   const overridden=hideDone && filters.stav.includes('hotovo');   // přepínač je zapnutý, ale filtr Stav hotové výslovně chce
@@ -1737,9 +1767,7 @@ function listView(){
           <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span></span>
         </button>` : '',
     udTile('parts')!=='none' ? ndTileWrap() : '',
-    udTile('mine')!=='none' ? `        <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
-          <span class="vt-icon">${VT_IC_MINE}</span><span class="vt-body"><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span></span>
-        </button>` : '',
+    udTile('mine')!=='none' ? mineTileWrap() : '',
   ].filter(Boolean);
   return `
   <div class="pagehead">
@@ -2063,10 +2091,12 @@ async function act(a,v,el,ev){
       // odchod z pohledu Náhradní díl na jinou dlaždici zavře i její panel
       // a zruší rozepsaný užší výběr (potřeba/čeká/přišel) — čistý přechod.
       if(filters.view==='nd'){ ndOpen=false; filters.nd=[]; }
+      if(filters.view==='mine'){ mineOpen=false; filters.mineSel=[]; }
       filters.view=(filters.view===v?'':v); break;
-    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[];filters.who=[];filters.prostoj=[];filters.autor=[];filters.stroj=[];filters.wo='';filters.nazev=''; break;
+    case 'clear-filters': filters.typ=[];filters.stav=[];filters.priorita=[];filters.obor=[];filters.linka=[];filters.nd=[];filters.mineSel=[];filters.who=[];filters.prostoj=[];filters.autor=[];filters.stroj=[];filters.wo='';filters.nazev=''; break;
     case 'search-open': searchOpen=true; break;
     case 'nd-clear': filters.nd=[]; break;
+    case 'mine-clear': filters.mineSel=[]; break;
     case 'linka-clear': filters.linka=[]; break;
     case 'fav-linka-clear': if(filterModal) filterModal.linka=[]; break;
     case 'fav-clear-all': if(filterModal){ filterModal.typ=[]; filterModal.stav=[]; filterModal.priorita=[]; filterModal.obor=[]; filterModal.linka=[]; } break;
@@ -2078,8 +2108,15 @@ async function act(a,v,el,ev){
       // dlaždici panel opakovaně znovu otevřít, i když ho předtím zavřel
       // klik mimo. Pohled (filters.view='nd') se vypne jen přechodem na
       // jinou dlaždici (viz 'flt-view' výš).
+      if(filters.view==='mine'){ mineOpen=false; filters.mineSel=[]; }
       ndOpen=!ndOpen;
       if(ndOpen) filters.view='nd';
+      break;
+    case 'mine-tile-toggle':
+      // stejně jako u dílu: klik jen otevírá/zavírá panel, pohled Moje se vypne až přechodem na jinou dlaždici
+      if(filters.view==='nd'){ ndOpen=false; filters.nd=[]; }
+      mineOpen=!mineOpen;
+      if(mineOpen) filters.view='mine';
       break;
     case 'search-close': searchOpen=false; filters.q=''; break;
     case 'new': if(!udCanCreate()){ toast('Zakládat příkazy nemáš povoleno.','err'); break; } editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
@@ -2289,6 +2326,7 @@ document.addEventListener('click', e=>{
   if(linkaOpen && !e.target.closest('.linka-wrap')){ linkaOpen=false; linkaQuery=''; render(); }
   if(favLinkaOpen && !e.target.closest('.fav-linka-wrap')){ favLinkaOpen=false; favLinkaQuery=''; render(); }
   if(ndOpen && !e.target.closest('.nd-tile-wrap')){ ndOpen=false; render(); }
+  if(mineOpen && !e.target.closest('.mine-tile-wrap')){ mineOpen=false; render(); }
   if(favOpen && !e.target.closest('.fav-wrap')){ favOpen=false; render(); }
   // na počítači je hledání vidět pořád (vzhled 1d), takže ho klik mimo nezavírá ani nemaže
   if((searchOpen||filters.q) && !e.target.closest('.search-wrap') && !window.matchMedia('(min-width:861px)').matches){ searchOpen=false; filters.q=''; render(); }
