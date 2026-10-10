@@ -145,7 +145,7 @@ const MODULES = [
   {ico:'🛠️', nm:'Externí opravy',    ds:'Požadavky na opravu dílů externí firmou.', href:'opravy.html', active:true, key:'opravy', ownerOnly:true},
   {ico:'🏭', nm:'Engineering',       ds:'Prostoje na linkách, KPI a import reportu ze Symesticu.', href:'engineering.html', active:true, key:'engineering', engOnly:true},
   {ico:'🚶', nm:'Shopfloor walk',    ds:'Nálezy z obchůzky po výrobě — vyfoť, přiřaď ownera, hlídej termín.', href:'shopfloor.html', active:true, key:'shopfloor', sfwOnly:true},
-  {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů.', href:'udrzba.html', active:true, key:'udrzba', ownerOnly:true},
+  {ico:'🔧', nm:'Údržba',            ds:'Hlášení a evidence oprav a údržby strojů.', href:'udrzba.html', active:true, key:'udrzba', udrzbaOnly:true},
   {ico:'⚠️', nm:'Reklamace',         ds:'Evidence reklamací a neshod kvality. Připravujeme.', active:false},
   {ico:'⚙️', nm:'Nastavení',         ds:'Správa uživatelů, práv a modulů.', href:'nastaveni.html', active:true, key:'nastaveni'},
 ];
@@ -187,6 +187,10 @@ function loginView(){
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
   'admin.test@minimo.local','technik.test@minimo.local'];
 const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
+// Údržba — pilotní seznam (stejný jako UDRZBA_OWNERS v header.js a OWNERS v udrzba.html); TODO před PR: jen Davidovy e-maily
+const UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
+  'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
+const isUdrzbaOwner = () => UDRZBA_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
 /* Engineering vidí správci a lidé s pozicí PE nebo PE coordinator.
    Stejný seznam je v header.js, engineering.html i v pravidlech Firestore. */
 const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
@@ -205,6 +209,7 @@ const sfwAccess = () => { const set=(myModules||{}).shopfloor;
 function appView(){
   const tiles = MODULES.filter(m=> m.engOnly ? isEngPerson()
     : m.sfwOnly ? sfwAccess()!=='none'
+    : m.udrzbaOnly ? isUdrzbaOwner()
     : m.ownerOnly ? isOpravyOwner()
     : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active
     ? `<a class="tile active" href="${m.href}">

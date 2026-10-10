@@ -1626,8 +1626,8 @@ protože:
   hutném tabulkovém stylu (`opravy.html`). Tohle byla výslovná žádost
   Martina, drž se toho i u dalších obrazovek.
 - **Přístup do Údržby (i zatím do Profilu?) = pilotní whitelist e-mailů**
-  (`OWNERS`/`ADMIN_EMAILS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js`,
-  `OPRAVY_OWNERS` v `index.html`) — stejný vzor, jaký David použil pro
+  (`OWNERS`/`ADMIN_EMAILS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js`
+  a v `index.html`; `OPRAVY_OWNERS` v `index.html` je jen pro Externí opravy) — stejný vzor, jaký David použil pro
   rozjezd Opravy/Engineering. Až appku schválí, přechod na obecný systém
   `users.modules.udrzba` (read/write/none) je otevřená otázka, ne hotová věc.
 
@@ -1714,7 +1714,9 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
 - Zdrojový kód (HTML/JS) si návštěvník stejně může zobrazit v prohlížeči — to nejde zakázat; chráněna jsou DATA přihlášením a pravidly
   Firestore. Přístup se řídí **účtem**: ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local` (level basic) jsou v testovacím
   projektu; hesla zná jen Martin (NEPIŠ je do repa). Přístup „zhasne" vypnutím účtu ve Firebase konzoli (Authentication → Users).
-- Údržba je pořád jen pro e-maily z pilotního seznamu (`OWNERS`/`UDRZBA_OWNERS`/`OPRAVY_OWNERS`) — ukázkové účty tam zatím NEJSOU.
+- Údržba je pořád jen pro e-maily z pilotního seznamu (`OWNERS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js` a v `index.html`) — od 0.18.16
+  jsou v něm i ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local`. Dlaždice Údržba v `index.html` má `udrzbaOnly:true` (vlastní seznam
+  `UDRZBA_OWNERS`), NE `ownerOnly` — ten sdílí seznam s Externími opravami a ukázkové účty by dostaly i jejich dlaždici.
 
 ## Testovací Firebase projekt — NENÍ Davidův
 

@@ -794,7 +794,7 @@ const db = getFirestore(fbApp);
 /* ===== Kdo modul zatím vidí — pilot (stejný vzor jako Opravy/Engineering) =====
    TODO před PR: odebrat testovací e-maily, ponechat jen ty Davidovy. */
 const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-  'admin.test@minimo.local','technik.test@minimo.local'];
+  'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
 const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
 const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com',
   'admin.test@minimo.local'];

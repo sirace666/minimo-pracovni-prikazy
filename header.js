@@ -93,7 +93,7 @@
     // Údržba — pilotní modul, zatím jen pro vybrané e-maily (TODO: rozšířit
     // seznam / přejít na obecný systém modules, až bude appka hotová).
     var UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-      'admin.test@minimo.local','technik.test@minimo.local'];
+      'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
     function udrzbaLink(){
       var who = String(o.email||o.user||'').trim().toLowerCase();
       if(UDRZBA_OWNERS.indexOf(who)<0) return '';
