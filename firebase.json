@@ -4,5 +4,34 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "hosting": {
+    "site": "minimo-pracovni-prikazy",
+    "public": ".",
+    "cleanUrls": true,
+    "ignore": [
+      ".git/**",
+      ".claude/**",
+      "docs/**",
+      "**/node_modules/**",
+      "**/*.md",
+      "firebase.json",
+      ".firebaserc",
+      "firestore.rules",
+      "storage.rules",
+      "firestore-pravidla-pridat.txt",
+      "Spustit-localhost.bat",
+      "**/.*"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(html|js|css)",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
+      {
+        "source": "VERSION",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
   }
 }

@@ -459,7 +459,10 @@ až se zeptá. Zkušební větev NENÍ důvod nic z toho vynechat.
    zápisu si ho znovu přečíst — viz sekce „Dokumentace pro Davida" níž.
 6. **Tenhle `CLAUDE.md` aktualizovat** — nejen přidat, ale OPRAVIT
    zastaralé body, které se změnou přestaly platit.
-7. **Napsat Martinovi nové číslo verze** a že je vydaná (Ctrl+F5).
+7. **Nasadit na Firebase Hosting** (ukázkový web pro Martinovy nadřízené, viz sekce „Firebase Hosting" níž):
+   `firebase deploy --only hosting --project minimo-pracovni-prikazy` a ověřit `curl https://minimo-pracovni-prikazy.web.app/VERSION`
+   (musí vrátit nové číslo). Firebase i GitHub tak mají vždy stejnou verzi.
+8. **Napsat Martinovi nové číslo verze** a že je vydaná (Ctrl+F5) a že je i na Firebase.
 
 Než napíšeš „hotovo", projdi tyhle body. Když chybí byť jeden, hotovo není.
 
@@ -1696,6 +1699,22 @@ ověřit jde bez nasazení `--dry-run`. **Pravidla verze 0.18.1 jsou na testovac
 je nutné je nasadit znovu. Do Davidova ostrého projektu se nesahá.
 Naše stránky `udrzba/profil/instalace` mají omezené menu (`modules:[…]`), takže
 `positions` hlavičce nepředávají a nic se tím nerozbíjí.
+
+## Firebase Hosting — ukázkový web pro nadřízené (2026-10-10, v0.18.15)
+
+Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen odkaz **https://minimo-pracovni-prikazy.web.app**
+(stálá adresa, nevyprší) a ukázkový účet. Je to **1:1 kopie větve `vzhled-zkouska-1`** — po každé vydané verzi se nahraje
+`firebase deploy --only hosting --project minimo-pracovni-prikazy` (povinný krok 7 výš). Hosting je v TESTOVACÍM projektu
+`minimo-pracovni-prikazy`, ne v Davidově.
+- Nastavení je v `firebase.json` (blok `hosting`): `public:"."`, `cleanUrls:true` (funguje `/udrzba` i bez .html), hlavičky
+  `Cache-Control: no-cache` pro html/js/css/VERSION (jinak by Firebase držel starou verzi až hodinu).
+- **Nenahrává se** (seznam `ignore`): `CLAUDE.md`, `README.md`, `docs/`, `firebase.json`, `.firebaserc`, `firestore.rules`, `storage.rules`,
+  `firestore-pravidla-pridat.txt`, `Spustit-localhost.bat`, `.git`, `.claude`, všechny soubory začínající tečkou. Po přidání nového
+  neveřejného souboru ho dej do `ignore` a po nasazení ověř, že na webu dává 404.
+- Zdrojový kód (HTML/JS) si návštěvník stejně může zobrazit v prohlížeči — to nejde zakázat; chráněna jsou DATA přihlášením a pravidly
+  Firestore. Přístup se řídí **účtem**: ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local` (level basic) jsou v testovacím
+  projektu; hesla zná jen Martin (NEPIŠ je do repa). Přístup „zhasne" vypnutím účtu ve Firebase konzoli (Authentication → Users).
+- Údržba je pořád jen pro e-maily z pilotního seznamu (`OWNERS`/`UDRZBA_OWNERS`/`OPRAVY_OWNERS`) — ukázkové účty tam zatím NEJSOU.
 
 ## Testovací Firebase projekt — NENÍ Davidův
 
