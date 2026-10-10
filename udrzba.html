@@ -657,10 +657,23 @@
     .trow:hover{background:#fff;box-shadow:0 6px 18px rgba(30,28,20,.10)}
     .trow.em,.trow.em.crit:not(.st-hotovo){background:oklch(0.975 0.02 25);border-color:oklch(0.82 0.09 25)}
     .trow.em:hover{background:oklch(0.975 0.02 25)}
-    .trow.st-hotovo{opacity:.6}
-    .trow.st-hotovo:not(:hover){background:#fff;box-shadow:0 1px 2px rgba(30,28,20,.04)}
-    .trow.em.st-hotovo:not(:hover){background:oklch(0.975 0.02 25)}
-    .trow.st-hotovo:not(:hover) .tt{font-weight:700;color:inherit}
+    /* Hotové příkazy ustoupí do pozadí BARVOU, ne průhledností (opacity .6 srážela drobný text na kontrast ~2:1):
+       jemně šedé pozadí a text o stupeň světlejší, ale s kontrastem aspoň 4,5:1. Po najetí myší plné barvy (v0.18.13). */
+    .trow.st-hotovo:not(:hover){background:#f6f5f1;border-color:#ebe8e0;box-shadow:none}
+    .trow.em.st-hotovo:not(:hover){background:#faf0ee;border-color:#ecd0cb}
+    .trow.st-hotovo:not(:hover) .tt{font-weight:600;color:#55514a}
+    .trow.st-hotovo:not(:hover) .r2-st i{opacity:.55}
+    .trow.st-hotovo:not(:hover) .r2-st b,.trow.st-hotovo:not(:hover) .r2-wn,.trow.st-hotovo:not(:hover) .r2-rel{color:#5f5b50;font-weight:600}
+    .trow.st-hotovo:not(:hover) .r2-wo,.trow.st-hotovo:not(:hover) .r2-pp,.trow.st-hotovo:not(:hover) .r2-sub{color:#66625a}
+    .trow.st-hotovo:not(:hover) .r2-wo.none{color:#6f6b62}
+    .trow.st-hotovo:not(:hover) .r2-typ,.trow.st-hotovo:not(:hover) .r2-mono,.trow.st-hotovo:not(:hover) .r2-pri,
+    .trow.st-hotovo:not(:hover) .r2-part,.trow.st-hotovo:not(:hover) .r2-pj{background:#ebe8e0;color:#5f5b50}
+    .trow.st-hotovo:not(:hover) .r2-pri .r2-bars i{background:#d3cfc4}
+    .trow.st-hotovo:not(:hover) .r2-pri .r2-bars i.on{background:#7a766b}
+    .trow.st-hotovo:not(:hover) .r2-typ.em{background:#e7b8b2;color:#7a2c24}
+    .trow.st-hotovo:not(:hover) .r2-ob{border-color:#d9d5ca;color:#5f5b50}
+    .trow.st-hotovo:not(:hover) .r2-av{filter:grayscale(.55)}
+    .trow.st-hotovo:not(:hover) .r2-unas{border-color:#c9c5ba;color:#66625a}
     .tc{padding-left:0;gap:3px;line-height:normal;font-size:13px}
     .tc .tt{padding-left:0;font-weight:700;font-size:14.5px;line-height:1.3;letter-spacing:-.01em;white-space:normal;overflow:visible;text-overflow:clip}
     .dash{color:#c9c5ba}

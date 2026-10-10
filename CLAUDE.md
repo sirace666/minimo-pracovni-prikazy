@@ -1378,7 +1378,9 @@ protože:
     (max 3, barva podle `hueOf(jméno)`) + jména / „+ Přiřadit", prostoj fialový štítek s hodinami (`--pj`; u hotového šedý),
     vytvořeno = datum „5. 10. 2026" + autor (od 0.18.3; dřív „před N dny", funkce `relDays` je pryč). **Menu filtrů a štítky dál používají staré pomocníky**
     (`stavHtml/typHtml/prioHtml/ndInlineHtml/prostojHtml`) — nemíchat. Řádek je samostatná karta (border, radius 10,
-    mezera 5 px); hotové `opacity:.6`; EM má růžové pozadí a červený okraj VŽDY (ne jen s kritickou).
+    mezera 5 px); hotové jsou zešedlé BARVOU (od 0.18.13, dřív `opacity:.6`): pozadí `#f6f5f1`, text `#5f5b50`/`#66625a`, štítky šedé `#ebe8e0`,
+    kontrast aspoň 4,5:1 (změřeno 4,7–7,2), po najetí myší plné barvy (pravidla `.trow.st-hotovo:not(:hover) …`); EM má růžové pozadí a červený okraj
+    VŽDY (ne jen s kritickou; hotové EM jemnější `#faf0ee`). **Přidáš-li do řádku nový prvek, přidej mu i hotovou (šedou) variantu.**
   - **Záhlaví** `.thd` = šedý `#e9e7e1` pruh radius 9 (sticky; `box-shadow` v barvě pozadí zakrývá mezeru, ať v ní řádky při
     posunu neprosvítají), zapnutý filtr = text `#b8480f`. Akcentová barva v `.board2` a `.colmenu` je přepsaná na
     `#b8480f` (oranžovohnědá z návrhu); pozadí stránky `#f3f2ee`; písmo Figtree + JetBrains Mono (Google Fonts) jen v
