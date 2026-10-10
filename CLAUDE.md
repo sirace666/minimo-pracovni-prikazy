@@ -1716,7 +1716,11 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
   projektu; hesla zná jen Martin (NEPIŠ je do repa). Přístup „zhasne" vypnutím účtu ve Firebase konzoli (Authentication → Users).
 - Údržba je pořád jen pro e-maily z pilotního seznamu (`OWNERS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js` a v `index.html`) — od 0.18.16
   jsou v něm i ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local`. Dlaždice Údržba v `index.html` má `udrzbaOnly:true` (vlastní seznam
-  `UDRZBA_OWNERS`), NE `ownerOnly` — ten sdílí seznam s Externími opravami a ukázkové účty by dostaly i jejich dlaždici.
+  `UDRZBA_OWNERS`), NE `ownerOnly` — ten sdílí seznam s Externími opravami. Od 0.18.17 jsou ukázkové účty i v `OPRAVY_OWNERS` (`index.html`, `header.js`) a `OWNERS` v
+  `opravy.html`, takže mají **Externí opravy**. **Engineering a Shopfloor walk** se řídí DATY u uživatele, ne e-mailem: Engineering pozicí
+  (`PE coordinator` apod.), Shopfloor pozicí `PE coordinator` nebo `users.modules.shopfloor`; zapsat to může jen správce v Nastavení (pravidla
+  Firestore kontrolují pozice na serveru). **Nastavení** ukázkové účty nemají: odkaz v menu Údržby se ukazuje jen tomu, kdo do Nastavení smí
+  (`canSeeNastaveni()`: výchozí Super Admin, přednost má `users.modules.nastaveni`).
 
 ## Testovací Firebase projekt — NENÍ Davidův
 

@@ -801,6 +801,9 @@ const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@y
 const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
 const ROLE2LEVEL = {zadavatel:'basic',skladnik:'warehouse',schvalovatel:'approver',admin:'superadmin'};
 const LEVEL_LABEL = {basic:'Basic',warehouse:'Warehouse',approver:'Approver',wadmin:'Warehouse Admin',superadmin:'Super Admin'};
+// Nastavení vidí v menu jen ten, kdo do něj smí: ruční nastavení (users.modules.nastaveni = none/read/write) má přednost,
+// jinak výchozí = Super Admin. Stejné pravidlo jako v nastaveni.html.
+const canSeeNastaveni = u => { const m=u&&u.modules&&u.modules.nastaveni; if(m==='none') return false; if(m==='read'||m==='write') return true; return !!u&&u.level==='superadmin'; };
 
 /* ===== Stavy a priorita ===== */
 const STATUSES = [
@@ -931,7 +934,7 @@ async function loadProfile(user){
   const level = d.level || ROLE2LEVEL[role] || 'basic';
   const firstName=d.firstName||'', lastName=d.lastName||'';
   const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||(user.email||'').split('@')[0]);
-  return {uid:user.uid, email:user.email, name, role, level, photoURL:d.photoURL||'', firstName, lastName};
+  return {uid:user.uid, email:user.email, name, role, level, photoURL:d.photoURL||'', firstName, lastName, modules:d.modules||{}};
 }
 const isAdmin = () => me && me.role==='admin';
 
@@ -985,9 +988,9 @@ function renderShell(inner){
     app.innerHTML='<div id="uh-host"></div><div id="main-host"></div>';
     uhHost=document.getElementById('uh-host'); mainHost=document.getElementById('main-host');
   }
-  const sig=JSON.stringify([me.email,me.level,me.photoURL,me.firstName,me.lastName]);
+  const sig=JSON.stringify([me.email,me.level,me.photoURL,me.firstName,me.lastName,canSeeNastaveni(me)]);
   if(headerSig!==sig){
-    uhHost.innerHTML = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky','nastaveni']}) : '';
+    uhHost.innerHTML = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky',...(canSeeNastaveni(me)?['nastaveni']:[])]}) : '';
     headerSig=sig;
   }
   // scroll v otevřeném okně se jinak při každém překreslení ztrácel (nový

@@ -185,7 +185,7 @@ function loginView(){
 
 // TODO před PR Davidovi: odebrat testovací e-maily (admin.test/technik.test), zůstanou jen jeho.
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-  'admin.test@minimo.local','technik.test@minimo.local'];
+  'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
 const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
 // Údržba — pilotní seznam (stejný jako UDRZBA_OWNERS v header.js a OWNERS v udrzba.html); TODO před PR: jen Davidovy e-maily
 const UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
