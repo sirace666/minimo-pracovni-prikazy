@@ -756,6 +756,8 @@
     .assign-trigger{border-radius:10px;border-color:#e3e0d8}
     .ap-row{border-top-color:#eeebe3}
     .ap-row:hover{background:#faf9f6}
+    .ap-row.locked{opacity:.5}
+    .ap-row.locked .ap-person{cursor:default}
     .ap-badge.ap-cm{background:#f1efe9;color:#58554b}
     .ap-drill{background:#faf9f6}
     .hist div{border-top-color:#e3e0d8}
@@ -791,11 +793,9 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
-/* ===== Kdo modul zatím vidí — pilot (stejný vzor jako Opravy/Engineering) =====
-   TODO před PR: odebrat testovací e-maily, ponechat jen ty Davidovy. */
-const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-  'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
-const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
+/* ===== Kdo modul vidí =====
+   Řídí to Nastavení (práva v Údržbě, viz udHasAccess níž), ne seznam e-mailů. Správci podle e-mailu níž mají vždy plný přístup.
+   TODO před PR: odebrat testovací e-mail admin.test, ponechat jen Davidovy. */
 const ADMIN_EMAILS = ['varhan@minimo.yfai','norkova@minimo.yfai','david.varhan@yanfeng.com',
   'admin.test@minimo.local'];
 const isForcedAdmin = e => ADMIN_EMAILS.includes(String(e||'').trim().toLowerCase());
@@ -878,7 +878,7 @@ let hideDone=(()=>{ try{ return localStorage.getItem(HIDE_KEY)!=='0'; }catch(e){
 let linkaOpen=false, linkaQuery='';
 let ndOpen=false;
 let favLinkaOpen=false, favLinkaQuery='';
-let loginBusy=false, loginErr='', dataReady=false, fatal='';
+let loginBusy=false, loginErr='', dataReady=false, fatal='', viewInit=false;
 let cfg={sections:[]};
 let downOnOverlay=false;
 let unsubO=null, unsubU=null, unsubC=null, unsubF=null;
@@ -921,7 +921,7 @@ onAuthStateChanged(auth, async user=>{
   loginBusy=false;
   if(!user){ me=null; teardown(); render(); return; }
   me = await loadProfile(user);
-  if(!isOwner(user.email)){ render(); return; }
+  if(!udHasAccess()){ render(); return; }
   subscribe();
   render();
 });
@@ -934,15 +934,46 @@ async function loadProfile(user){
   const level = d.level || ROLE2LEVEL[role] || 'basic';
   const firstName=d.firstName||'', lastName=d.lastName||'';
   const name = window.minimoDisplayName ? window.minimoDisplayName({firstName,lastName,email:user.email,name:d.name}) : (d.name||(user.email||'').split('@')[0]);
-  return {uid:user.uid, email:user.email, name, role, level, photoURL:d.photoURL||'', firstName, lastName, modules:d.modules||{}};
+  return {uid:user.uid, email:user.email, name, role, level, photoURL:d.photoURL||'', firstName, lastName, modules:d.modules||{}, udrzba:d.udrzba||{}};
 }
 const isAdmin = () => me && me.role==='admin';
+/* ===== Práva v Údržbě =====
+   Nastavuje se v Nastavení (nastaveni.html): přístup k modulu = users.modules.udrzba ('write' = zobrazit, jinak skrytý),
+   podrobnosti = users.udrzba {tiles:{all,unassigned,parts,mine}, assign, ordered, arrived, edit, del}. Výchozí = skryté.
+   Správci (role admin) mají vždy všechno. Stejná logika je v Nastavení (předvolby) a v pravidlech Firestore.
+   „Moje" = příkaz přiřazený mně NEBO mnou založený (udMine). Zvláštní práva platí jen u příkazů, na které smím zapisovat. */
+const UD_TILE_KEYS=['all','unassigned','parts','mine'];
+function udCfg(){
+  const d=(me&&me.udrzba)||{}, t=d.tiles||{}, ok=(v,a,def)=>a.includes(v)?v:def, st=['none','read','self','all'], sc=['none','own','all'];
+  return {tiles:{all:ok(t.all,st,'none'),unassigned:ok(t.unassigned,st,'none'),parts:ok(t.parts,st,'none'),mine:ok(t.mine,st,'none')},
+    assign:ok(d.assign,['none','self','all'],'none'), ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')};
+}
+const udHasAccess=()=>!!me&&(isAdmin()||['write','read'].includes((me.modules||{}).udrzba));
+const udTile=t=>isAdmin()?'all':(udHasAccess()?udCfg().tiles[t]:'none');
+const udMine=o=>!!o&&(o.author===me.uid||assignedUids(o).includes(me.uid));
+const udTilesOf=o=>{ const a=assignedUids(o); return ['all',...(a.length?[]:['unassigned']),...(o.nd?['parts']:[]),...(udMine(o)?['mine']:[])]; };   // „Moje“ = přiřazené mně NEBO mnou založené (jako dlaždice Moje v seznamu)
+const udCanSee=o=>isAdmin()||udTilesOf(o).some(t=>udTile(t)!=='none');
+const udCanWrite=o=>isAdmin()||udTilesOf(o).some(t=>{ const l=udTile(t); return l==='all'||(l==='self'&&udMine(o)); });
+const udCanCreate=()=>isAdmin()||UD_TILE_KEYS.some(t=>['self','all'].includes(udTile(t)));
+const udCanEdit=o=>udCanWrite(o)&&(isAdmin()||udCfg().edit==='all'||(udCfg().edit==='own'&&udMine(o)));
+const udCanDelete=o=>udCanWrite(o)&&(isAdmin()||udCfg().del==='all'||(udCfg().del==='own'&&o.author===me.uid));
+const udAssignLevel=o=>udCanWrite(o)?(isAdmin()?'all':udCfg().assign):'none';
+const udCanOrder=o=>udCanWrite(o)&&(isAdmin()||udCfg().ordered);
+const udCanArrive=o=>udCanWrite(o)&&(isAdmin()||udCfg().arrived);
+// když člověk nevidí dlaždici Vše, otevře se Údržba rovnou na první dlaždici, kterou vidí (Moje, Nepřiřazené, Náhradní díl)
+function udDefaultView(){
+  if(udTile('all')!=='none') return '';
+  return [['mine','mine'],['unassigned','unassigned'],['parts','nd']].find(([t])=>udTile(t)!=='none')?.[1]||'';
+}
 
-function teardown(){ if(unsubO)unsubO(); if(unsubU)unsubU(); if(unsubC)unsubC(); if(unsubF)unsubF(); unsubO=unsubU=unsubC=unsubF=null; rows=[]; users=[]; savedFilters=[]; dataReady=false; }
+
+function teardown(){ if(unsubO)unsubO(); if(unsubU)unsubU(); if(unsubC)unsubC(); if(unsubF)unsubF(); unsubO=unsubU=unsubC=unsubF=null; rows=[]; users=[]; savedFilters=[]; dataReady=false; viewInit=false; }
 function subscribe(){
   try{
     unsubO=onSnapshot(query(collection(db,'udrzba'),orderBy('createdTs','desc')), snap=>{
-      rows=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())); dataReady=true; if(!editing) render();
+      rows=snap.docs.map(d=>Object.assign({_id:d.id}, d.data())).filter(udCanSee);   // jen to, co člověk podle práv smí vidět
+      if(!viewInit){ viewInit=true; filters.view=udDefaultView(); }
+      dataReady=true; if(!editing) render();
     }, err=>{ fatal='Nemám přístup k datům: '+err.message; render(); });
     unsubU=onSnapshot(collection(db,'users'), snap=>{
       users=snap.docs.map(d=>{ const u=Object.assign({_id:d.id}, d.data());
@@ -975,7 +1006,7 @@ async function nextNumber(){
 let headerSig=null;
 function render(){
   if(!me){ headerSig=null; document.getElementById('app').innerHTML=loginView(); bind(); return; }
-  if(!isOwner(me.email)){ renderShell(`<div class="empty">Tento modul je zatím v přípravě a testuje ho jen správce. Nemáte sem přístup.</div>`); bind(); return; }
+  if(!udHasAccess()){ renderShell(`<div class="empty">Do Údržby zatím nemáte přístup. Požádejte správce, ať vám ji v Nastavení zobrazí.</div>`); bind(); return; }
   if(fatal){ renderShell(`<div class="empty">${esc(fatal)}</div>`); bind(); return; }
   renderShell(listView());
   bind();
@@ -990,7 +1021,7 @@ function renderShell(inner){
   }
   const sig=JSON.stringify([me.email,me.level,me.photoURL,me.firstName,me.lastName,canSeeNastaveni(me)]);
   if(headerSig!==sig){
-    uhHost.innerHTML = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',modules:['portal','nakup','dovolenky',...(canSeeNastaveni(me)?['nastaveni']:[])]}) : '';
+    uhHost.innerHTML = window.uheaderHTML ? window.uheaderHTML({module:'Údržba',cur:'udrzba',user:esc(me.email),level:LEVEL_LABEL[me.level]||'',photoURL:me.photoURL||'',firstName:me.firstName||'',lastName:me.lastName||'',logoutAttr:'id="btn-logout"',mods:me.modules||{},modules:['portal','nakup','dovolenky',...(canSeeNastaveni(me)?['nastaveni']:[])]}) : '';
     headerSig=sig;
   }
   // scroll v otevřeném okně se jinak při každém překreslení ztrácel (nový
@@ -1326,9 +1357,10 @@ function assignPickerView(){
     const drill = (assignPicker.drillUid===u._id && w.orders.length)
       ? `<div class="ap-drill">${w.orders.map(o=>`<div class="ap-drill-line"><span>${esc(o.cislo)} · ${esc(o.nazev)}</span><span class="ap-drill-typ ap-drill-${o.typ.toLowerCase()}">${o.typ}</span></div>`).join('')}</div>`
       : '';
-    return `<div class="ap-row">
-      <input type="checkbox" data-a="assign-toggle" data-v="${esc(u._id)}" ${sel?'checked':''}>
-      <span class="ap-person" data-a="assign-toggle" data-v="${esc(u._id)}">
+    const locked=assignPicker.limit==='self'&&u._id!==me.uid;
+    return `<div class="ap-row${locked?' locked':''}">
+      <input type="checkbox" ${locked?'disabled':`data-a="assign-toggle" data-v="${esc(u._id)}"`} ${sel?'checked':''}>
+      <span class="ap-person" ${locked?'':`data-a="assign-toggle" data-v="${esc(u._id)}"`}>
         <span class="ap-name">${esc(pn(u.name||u.email))}</span>
         <span class="ap-pos">${esc((u.positions||[]).join(', ')||'—')}</span>
       </span>
@@ -1340,6 +1372,7 @@ function assignPickerView(){
     <div class="modal-body" style="padding:0">
       <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
         <input type="text" id="ap-q" placeholder="Hledat jméno…" value="${esc(assignPicker.query||'')}">
+        ${assignPicker.limit==='self'?'<div class="muted" style="padding-top:.45rem">Můžeš přiřadit nebo odebrat jen sebe.</div>':''}
         <div class="cm-only" style="display:flex;gap:6px;padding:.6rem 0 0">
           <button type="button" class="cm-onlybtn${assignPicker.only?' on':''}" data-a="assign-only" aria-pressed="${!!assignPicker.only}"${(selN||assignPicker.only)?'':' disabled'}>Jen vybrané${selN?` · ${selN}`:''}</button>
           <button type="button" class="cm-onlybtn" data-a="assign-clear"${selN?'':' disabled'}>Zrušit vše</button>
@@ -1584,7 +1617,8 @@ const r2Prio=p=>{
   return `<span class="r2-pri${low?' low':''}" style="--c:${PRIORITA_TEXT[p]||'#4a5170'}"><span class="r2-bars">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}" style="height:${[4,6,9,12][i-1]}px"></i>`).join('')}</span>${esc(PRIORITA_LABEL[p]||p||'')}</span>`;
 };
 const r2Part=k=>`<span class="r2-part" style="--c:${ND_BARVA[k]||'#4a5170'}">${SVG_BOX}${esc(NDLABEL[k]||'')}</span>`;
-function r2Who(names,id){
+function r2Who(names,id,can){
+  if(!names.length&&!can) return '<span class="none">nepřiřazeno</span>';
   if(!names.length) return `<span class="r2-unas" role="button" tabindex="0" data-a="assign-quick" data-v="${esc(id)}" title="Přiřadit pracovníky">+ Přiřadit</span>`;
   const av=names.slice(0,3).map((n,i)=>`<span class="r2-av" title="${esc(n)}" style="${i?'margin-left:-9px;':''}--h:${hueOf(n)}">${esc(initials(n))}</span>`).join('');
   return `<span class="r2-who"><span class="r2-avs">${av}</span><span class="r2-wn">${esc(names.slice(0,3).join(', '))}${names.length>3?` +${names.length-3}`:''}</span></span>`;
@@ -1601,7 +1635,7 @@ function trHTML(o){
     <span class="tc"><span class="tt" title="${esc(o.nazev||'')}">${esc(o.nazev||'')}</span>${o.nd?r2Part(o.nd):''}${searchHiddenHint(o)}</span>
     <span class="tc">${stroj}</span>
     <span class="tc"><span class="r2-obs">${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
-    <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id)}</span>
+    <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id,udAssignLevel(o)!=='none')}</span>
     <span class="tc" title="${esc(prostojFull(o.prostojOd))}">${o.prostojOd?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${esc(prostojCz(o.prostojOd))}</span>`:'<span class="dash">—</span>'}</span>
     <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
@@ -1694,24 +1728,25 @@ function listView(){
   const sbar=sbarHTML(tr.length);
   const totalActive=activeFilterCount();
   const searchIsOpen=searchOpen||!!filters.q;
+  // dlaždice se ukážou podle práv v Údržbě (Nastavení); když člověk nevidí žádnou, ukáže se jen prázdný seznam
+  const tilesList=[
+    udTile('all')!=='none' ? `        <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
+          <span class="vt-icon">${VT_IC_ALL}</span><span class="vt-body"><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span></span>
+        </button>` : '',
+    udTile('unassigned')!=='none' ? `        <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
+          <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span></span>
+        </button>` : '',
+    udTile('parts')!=='none' ? ndTileWrap() : '',
+    udTile('mine')!=='none' ? `        <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
+          <span class="vt-icon">${VT_IC_MINE}</span><span class="vt-body"><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span></span>
+        </button>` : '',
+  ].filter(Boolean);
   return `
   <div class="pagehead">
     <h1><span>Údržba</span>${appVersion?`<span class="page-version">v${esc(appVersion)}</span>`:''}</h1>
     <div class="pagehead-row2">
       <div class="viewtiles">
-        <button class="viewtile ${!filters.view?'on':''}" data-a="flt-view" data-v="">
-          <span class="vt-icon">${VT_IC_ALL}</span><span class="vt-body"><span class="vt-label">Vše</span><span class="vt-count">${countView('')}</span></span>
-        </button>
-        <span class="vt-sep"></span>
-        <button class="viewtile ${filters.view==='unassigned'?'on':''}" data-a="flt-view" data-v="unassigned">
-          <span class="vt-icon">${VT_IC_UN}</span><span class="vt-body"><span class="vt-label">Nepřiřazené</span><span class="vt-count${unassignedHasEm()?' count-danger':''}">${countView('unassigned')}</span></span>
-        </button>
-        <span class="vt-sep"></span>
-        ${ndTileWrap()}
-        <span class="vt-sep"></span>
-        <button class="viewtile ${filters.view==='mine'?'on':''}" data-a="flt-view" data-v="mine">
-          <span class="vt-icon">${VT_IC_MINE}</span><span class="vt-body"><span class="vt-label">Moje</span><span class="vt-count">${countView('mine')}</span></span>
-        </button>
+        ${tilesList.join('<span class="vt-sep"></span>')}
       </div>
       <div class="head-actions">
         ${searchIsOpen?`
@@ -1726,7 +1761,7 @@ function listView(){
           <select id="f-sortkey">${SORT_OPTS.map(s=>`<option value="${s.k}" ${sortKey===s.k?'selected':''}>Řadit: ${esc(s.label)}</option>`).join('')}</select>
           <button type="button" class="sort-dir" id="f-sortdir" title="${sortDir==='asc'?'Vzestupně':'Sestupně'}">${sortDir==='asc'?'↑':'↓'}</button>
         </div>
-        <button class="btn-primary btn-newprikaz" data-a="new"><span class="plus">+</span> Nový pracovní příkaz</button>
+        ${udCanCreate()?`<button class="btn-primary btn-newprikaz" data-a="new"><span class="plus">+</span> Nový pracovní příkaz</button>`:''}
       </div>
     </div>
   </div>
@@ -1745,7 +1780,7 @@ function listView(){
         <p>Je zapnuté „Skrýt hotové". Vypni ho a hotové příkazy uvidíš.</p>
         <div class="actions">
           <button class="btn-ghost" data-a="hide-done">Zobrazit hotové</button>
-          <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
+          ${udCanCreate()?`<button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>`:''}
         </div>
       </div>`:`<div class="empty2">
         <div class="empty2-icon">📋</div>
@@ -1753,7 +1788,7 @@ function listView(){
         <p>Zkuste upravit filtry nebo vytvořte nový příkaz.</p>
         <div class="actions">
           ${totalActive?`<button class="btn-ghost" data-a="clear-filters">Zrušit filtry</button>`:''}
-          <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
+          ${udCanCreate()?`<button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>`:''}
         </div>
       </div>`)}
     </section>
@@ -1793,7 +1828,7 @@ function listView(){
         <p>Zkuste upravit filtry nebo vytvořte nový příkaz.</p>
         <div class="actions">
           ${totalActive?`<button class="btn-ghost" data-a="clear-filters">Zrušit filtry</button>`:''}
-          <button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>
+          ${udCanCreate()?`<button class="btn-primary btn-newprikaz" data-a="new">+ Nový pracovní příkaz</button>`:''}
         </div>
       </div>`}
     </section>
@@ -1814,14 +1849,14 @@ function collect(){
   // Přiřazení (víc lidí) se zapisuje přímo do editing.assignedTo/assignedToNames
   // z okna "Přiřadit pracovníky" (case 'assign-confirm') — není co sbírat tady.
 }
-function canEditDoc(o){ return isAdmin() || (o && o.author===me.uid) || (o && assignedUids(o).includes(me.uid)); }
 function editForm(o){
   const pIdx = PRIORITA.indexOf(o.priorita); const pIdxSafe = pIdx>=0?pIdx:PRIORITA.indexOf('běžná');
   const linkaSel = `<button type="button" class="assign-trigger" data-a="pick-open" data-v="linka">${o.linka?esc(o.linka):'— vyber linku —'}</button>`;
   const sec=sectionByName(o.linka), machs=sec?(sec.machines||[]):[];
   const strojRequired = !!(sec && machs.length);
   const strojSel = `<button type="button" class="assign-trigger" data-a="pick-open" data-v="stroj"${(sec&&machs.length)?'':' disabled'}>${o.stroj?esc(o.stroj):(sec?(machs.length?'— vyber stroj —':'linka nemá stroje'):'nejdřív vyber linku')}</button>`;
-  const assignedBtn = `<button type="button" class="assign-trigger" data-a="assign-open">${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
+  const canAssignHere = isAdmin() || ((o&&o._id)?udAssignLevel(o)!=='none':udCfg().assign!=='none');
+  const assignedBtn = `<button type="button" class="assign-trigger" ${canAssignHere?'data-a="assign-open"':'disabled title="Přiřazovat práci nemáš povoleno"'}>${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'— nepřiřazeno —'}</button>`;
   return `<div class="form-grid">
     <div><label>Pracovní příkaz</label>
       <input type="text" inputmode="numeric" id="e-wo" value="${esc(o.wo??'')}" placeholder="WO" class="wo-input">
@@ -1868,7 +1903,7 @@ function editForm(o){
 function modalView(){
   const o=editing, isNew=!o._id;
   const showEdit = isNew || editMode;
-  const canEdit = isNew || canEditDoc(o);
+  const canEdit = isNew || udCanEdit(o);
   const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${histHtmlLine(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
   const next = NEXT_STATUS[o.status];
   const tabs = showEdit ? `<div class="modal-tabs">
@@ -1887,7 +1922,7 @@ function modalView(){
         ${!isNew?`<span class="muted">${esc(o.cislo||'')}</span>`:''}</div>
     </div>
     <div class="sec">${editForm(o)}</div>
-    ${(!isNew && isAdmin())?`<div class="sec">${editing.confirmDel
+    ${(!isNew && udCanDelete(o))?`<div class="sec">${editing.confirmDel
       ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
          <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
       : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
@@ -1918,19 +1953,28 @@ function modalView(){
         <div class="hist">${histHtml}</div>
       </div>
     ` : `
-      ${(canEditDoc(o))?`<div class="sec">
+      ${(udAssignLevel(o)!=='none')?`<div class="sec">
+        <div class="sec-label">Přiřazení</div>
+        <div class="row"><button class="btn-ghost" data-a="assign-quick" data-v="${o._id}">Přiřadit pracovníky</button></div>
+      </div>`:''}
+      ${(!udCanEdit(o)&&udCanDelete(o))?`<div class="sec">${editing.confirmDel
+        ? `<div class="msg" style="margin-bottom:.4rem">Opravdu smazat příkaz ${esc(o.cislo)}? Nejde vrátit zpět.</div>
+           <div class="row"><button class="btn-danger" data-a="del" data-v="${o._id}">Ano, smazat natrvalo</button><button class="btn-ghost" data-a="cancel-del">Zrušit</button></div>`
+        : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
+      }</div>`:''}
+      ${(udCanWrite(o))?`<div class="sec">
         <div class="sec-label">Změnit stav</div>
         <div class="row">
           ${next?`<button class="btn-primary" data-a="status" data-v="${next}">Označit jako: ${esc(statusLabel(next))}</button>`:''}
           ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
         </div>
       </div>`:''}
-      ${(canEditDoc(o) && o.status==='rozpracováno')?`<div class="sec">
+      ${(udCanWrite(o) && o.status==='rozpracováno')?`<div class="sec">
         <div class="sec-label">Náhradní díl</div>
         <div class="row">
           ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
-          ${o.nd==='potreba'&&isAdmin()?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
-          ${o.nd==='objednano'?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
+          ${o.nd==='potreba'&&udCanOrder(o)?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
+          ${o.nd==='objednano'&&udCanArrive(o)?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
           ${o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}
           ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
         </div>
@@ -2038,7 +2082,7 @@ async function act(a,v,el,ev){
       if(ndOpen) filters.view='nd';
       break;
     case 'search-close': searchOpen=false; filters.q=''; break;
-    case 'new': editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
+    case 'new': if(!udCanCreate()){ toast('Zakládat příkazy nemáš povoleno.','err'); break; } editing={priorita:'běžná',typ:'CM',obor:[],status:'nový',hist:[]}; editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'set-typ': if(editing){ collect(); editing.typ=v; } break;
     case 'prostoj-toggle':{
       if(!editing) break;
@@ -2048,7 +2092,7 @@ async function act(a,v,el,ev){
       break; }
     case 'open': editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===v))); editMode=false; errs={};footMsg='';modalTab='info';break;
     case 'modal-tab': modalTab=v; break;
-    case 'edit': collect(); editMode=true; break;
+    case 'edit': if(!udCanEdit(editing)){ toast('Upravovat tento příkaz nemáš povoleno.','err'); break; } collect(); editMode=true; break;
     case 'cancel-edit': editMode=false; errs={}; footMsg=''; editing=JSON.parse(JSON.stringify(rows.find(r=>r._id===editing._id)||editing)); break;
     case 'close': case 'close-bg':
       if(a==='close-bg'){
@@ -2059,23 +2103,26 @@ async function act(a,v,el,ev){
       }
       downOnOverlay=false; editing=null;editMode=false;errs={};footMsg='';break;
     case 'save':{ collect();
+      if(editing._id?!udCanEdit(editing):!udCanCreate()){ toast('Uložit nemáš povoleno.','err'); break; }
       if(!validate()){footMsg='Doplň povinná pole.';render();return;}
       try{ if(!editing._id){ const c=await createPrikaz(); editing=null; toast('Příkaz '+c+' založen.','ok'); }
         else{ await updatePrikaz(); editMode=false; toast('Změny uloženy.','ok'); } }
       catch(e){ footMsg='Uložení selhalo: '+e.message; render(); return; } break; }
     case 'status':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
+      if(!udCanWrite(o)){ toast('Měnit tento příkaz nemáš povoleno.','err'); break; }
       try{ await changeStatus(o,v);
         editing.hist=(editing.hist||[]).concat(`${today()} · ${me.name} · stav ${editing.status} → ${v}`);
         editing.status=v;
         if(v==='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
         toast('Stav změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'nd-set':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
+      if(!udCanWrite(o)||(v==='objednano'&&!udCanOrder(o))||(v==='prisel'&&!udCanArrive(o))){ toast('Tuhle změnu dílu nemáš povolenou.','err'); break; }
       const ndLabelHist={potreba:'nahlásil chybějící díl',objednano:'díl objednán',prisel:'díl dorazil','':'pokračuje se v opravě'};
       const hist=(o.hist||[]).slice().concat(`${today()} · ${me.name} · ${ndLabelHist[v]||'změna stavu dílu'}`);
       try{ await updateDoc(doc(db,'udrzba',o._id),{nd:v||null,hist});
         editing.nd=v||null; editing.hist=hist;
         toast('Stav dílu změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
-    case 'del':{ if(!isAdmin())return;
+    case 'del':{ { const od=rows.find(x=>x._id===v); if(!od||!udCanDelete(od)) return; }
       if(!editing.confirmDel){ editing.confirmDel=true; break; }
       const o=rows.find(x=>x._id===v);
       try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Příkaz '+(o?o.cislo:'')+' smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
@@ -2112,29 +2159,43 @@ async function act(a,v,el,ev){
       if(pickPicker.kind==='linka'){ if(editing.linka!==pickPicker.sel) editing.stroj=''; editing.linka=pickPicker.sel; }   // jiná linka = jiné stroje
       else editing.stroj=pickPicker.sel;
       pickPicker=null; break; }
-    case 'assign-open': collect(); assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null, only:false}; break;
-    case 'assign-quick':{ // „+ Přiřadit" přímo v řádku tabulky: okno se otevře rovnou a uloží se rovnou
+    case 'assign-open':{ collect();
+      // u nového příkazu rozhoduje jen právo přiřazovat, u existujícího musí člověk smět i zapisovat
+      const lim=isAdmin()?'all':((editing&&editing._id)?udAssignLevel(editing):udCfg().assign);
+      if(lim==='none'){ toast('Přiřazovat práci nemáš povoleno.','err'); break; }
+      assignPicker={selected:[...assignedUids(editing)], query:'', drillUid:null, only:false, limit:lim}; break; }
+    case 'assign-quick':{ // „+ Přiřadit" v řádku tabulky nebo v detailu: okno se otevře rovnou a uloží se rovnou
       const o=rows.find(r=>r._id===v); if(!o) break;
-      if(!canEditDoc(o)){ toast('Přiřadit pracovníky může jen zadavatel příkazu nebo správce.','err'); break; }
-      assignPicker={selected:[...assignedUids(o)], query:'', drillUid:null, only:false, direct:o._id}; break; }
+      const lim=udAssignLevel(o);
+      if(lim==='none'){ toast('Přiřazovat práci u tohoto příkazu nemáš povoleno.','err'); break; }
+      assignPicker={selected:[...assignedUids(o)], query:'', drillUid:null, only:false, direct:o._id, limit:lim}; break; }
     case 'assign-only': assignPicker.only=!assignPicker.only; break;
-    case 'assign-clear': assignPicker.selected=[]; assignPicker.only=false; break;
+    case 'assign-clear': assignPicker.selected=(assignPicker.limit==='self')?assignPicker.selected.filter(x=>x!==me.uid):[]; assignPicker.only=false; break;
     case 'assign-close': case 'assign-close-bg':
       if(a==='assign-close-bg'){ if(!downOnOverlay||(ev&&ev.target!==el)){ downOnOverlay=false; return; } }
       downOnOverlay=false; assignPicker=null; break;
-    case 'assign-toggle':{ const i=assignPicker.selected.indexOf(v); if(i<0) assignPicker.selected.push(v); else assignPicker.selected.splice(i,1); break; }
+    case 'assign-toggle':{
+      if(assignPicker.limit==='self' && v!==me.uid) break;   // s právem „jen sobě" jde přepnout jen vlastní řádek
+      const i=assignPicker.selected.indexOf(v); if(i<0) assignPicker.selected.push(v); else assignPicker.selected.splice(i,1); break; }
     case 'assign-drill': assignPicker.drillUid=(assignPicker.drillUid===v?null:v); break;
     case 'assign-confirm':{
       const uids=[...assignPicker.selected];
       const names=uids.map(uid=>{ const u=users.find(x=>x._id===uid); return u?(u.name||u.email):uid; });
-      if(assignPicker.direct){ // uložení rovnou do databáze (okno bylo otevřeno z řádku tabulky)
-        const o=rows.find(r=>r._id===assignPicker.direct); assignPicker=null;
+      const base=assignPicker.direct?rows.find(r=>r._id===assignPicker.direct):editing;
+      if(assignPicker.limit==='self'){   // hlídání i tady: s právem „jen sobě" se smí změnit jen vlastní přiřazení
+        const oldS=new Set(assignedUids(base||{})), newS=new Set(uids);
+        const changed=[...new Set([...oldS,...newS])].filter(x=>oldS.has(x)!==newS.has(x));
+        if(changed.some(x=>x!==me.uid)){ toast('Můžeš přiřadit nebo odebrat jen sebe.','err'); break; }
+      }
+      if(assignPicker.direct){ // uložení rovnou do databáze (okno bylo otevřeno z řádku tabulky nebo z detailu)
+        const o=base; assignPicker=null;
         if(o){
           const oldU=assignedUids(o).slice().sort().join(','), newU=uids.slice().sort().join(',');
           if(oldU!==newU){
             try{
               const hist=(o.hist||[]).slice(); hist.push(`${today()} · ${me.name} · přiřazeno: ${names.join(', ')||'nikdo'}`);
               await updateDoc(doc(db,'udrzba',o._id),{assignedTo:uids,assignedToNames:names,hist});
+              if(editing&&editing._id===o._id){ editing.assignedTo=uids; editing.assignedToNames=names; editing.hist=hist; }   // otevřený detail se musí obnovit taky
               toast('Přiřazení uloženo.','ok');
             }catch(e){ toast(e.message,'err'); }
           }

@@ -90,13 +90,14 @@
       if(!ok) return '';
       return '<a class="'+(o.cur==='engineering'?'cur':'')+'" href="engineering.html">🏭 Engineering</a>';
     }
-    // Údržba — pilotní modul, zatím jen pro vybrané e-maily (TODO: rozšířit
-    // seznam / přejít na obecný systém modules, až bude appka hotová).
+    // Údržba — vidí ji správci podle e-mailu a každý, komu ji správce v Nastavení zobrazil
+    // (u uživatele „Práva v Údržbě → Přístup k modulu: Zobrazit" = users.modules.udrzba). Stejná logika je v index.html a udrzba.html.
     var UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-      'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
+      'admin.test@minimo.local'];
     function udrzbaLink(){
       var who = String(o.email||o.user||'').trim().toLowerCase();
-      if(UDRZBA_OWNERS.indexOf(who)<0) return '';
+      var set = (o.mods||{}).udrzba;
+      if(UDRZBA_OWNERS.indexOf(who)<0 && set!=='write' && set!=='read') return '';
       return '<a class="'+(o.cur==='udrzba'?'cur':'')+'" href="udrzba.html">🔧 Údržba</a>';
     }
     // Shopfloor walk: výchozí přístup mají správci a PE koordinátoři. Ruční nastavení

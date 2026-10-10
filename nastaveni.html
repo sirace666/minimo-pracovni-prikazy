@@ -85,7 +85,8 @@
   /* dialog úpravy uživatele */
   .dlg-wrap{position:fixed;inset:0;background:rgba(12,26,48,.55);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px}
   .dlg{background:#fff;border-radius:12px;max-width:440px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden}
-  .dlg.dlg-lg{max-width:560px}
+  .dlg.dlg-lg{max-width:560px;max-height:94vh;display:flex;flex-direction:column}
+  .dlg.dlg-lg .c{overflow-y:auto}
   .dlg .t{background:linear-gradient(90deg,var(--navy-1),var(--navy-2));color:#fff;padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
   .dlg .t .x{margin-left:auto;background:transparent;border:0;color:#fff;font-size:18px;padding:0 4px;cursor:pointer}
   .dlg .c{padding:16px}
@@ -185,6 +186,26 @@ const MODSTATES = [
   {key:'write', label:'Zapisovat'},
 ];
 const MODSTATE_BY = Object.fromEntries(MODSTATES.map(m=>[m.key,m]));
+/* ===== Práva v Údržbě (modul Údržba) — Martin, 2026-10 =====
+   Uložení: users/{uid}.modules.udrzba = 'write' (modul zobrazit) / chybí (skrytý) a users/{uid}.udrzba = objekt níž.
+   Správci (role admin) mají v Údržbě vždy všechno. Výchozí stav = skryté. Stejná logika je v udrzba.html a v pravidlech Firestore. */
+const UD_TILES = [{key:'all',label:'Vše'},{key:'unassigned',label:'Nepřiřazené'},{key:'parts',label:'Náhradní díl'},{key:'mine',label:'Moje'}];
+const UD_TILE_STATES = [{key:'none',label:'Skryté'},{key:'read',label:'Jen číst'},{key:'self',label:'Zapisovat jen sebe'},{key:'all',label:'Zapisovat všechny'}];
+const UD_ASSIGN = [{key:'none',label:'Nikomu'},{key:'self',label:'Jen sobě'},{key:'all',label:'Komukoli'}];
+const UD_SCOPE = [{key:'none',label:'Žádné'},{key:'own',label:'Jen své'},{key:'all',label:'Všechny'}];
+const UD_YESNO = [{key:'no',label:'Ne'},{key:'yes',label:'Ano'}];
+const udNorm = d => { d=d||{}; const t=d.tiles||{}, ok=(v,a,def)=>a.includes(v)?v:def;
+  const st=['none','read','self','all'], sc=['none','own','all'], as=['none','self','all'];
+  return {tiles:{all:ok(t.all,st,'none'), unassigned:ok(t.unassigned,st,'none'), parts:ok(t.parts,st,'none'), mine:ok(t.mine,st,'none')},
+    assign:ok(d.assign,as,'none'), ordered:d.ordered===true, arrived:d.arrived===true, edit:ok(d.edit,sc,'none'), del:ok(d.del,sc,'none')}; };
+const ALLW = {all:'all',unassigned:'all',parts:'all',mine:'all'};
+const UD_PRESETS = [
+  {key:'udrzba',      label:'Údržba',           v:{tiles:ALLW, assign:'all',  ordered:true,  arrived:true,  edit:'all', del:'all'}},
+  {key:'pe',          label:'Process engineer', v:{tiles:ALLW, assign:'self', ordered:true,  arrived:true,  edit:'all', del:'all'}},
+  {key:'toolsetters', label:'Tool setters',     v:{tiles:{all:'none',unassigned:'none',parts:'read',mine:'self'}, assign:'none', ordered:false, arrived:false, edit:'own', del:'own'}},
+  {key:'readonly',    label:'Jen číst',         v:{tiles:{all:'read',unassigned:'read',parts:'read',mine:'read'}, assign:'none', ordered:false, arrived:false, edit:'none', del:'none'}},
+];
+const udPresetOf = d => { const a=JSON.stringify(udNorm(d)); return (UD_PRESETS.find(p=>JSON.stringify(udNorm(p.v))===a)||{}).key || 'custom'; };
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com'];
 /* Shopfloor walk: výchozí přístup mají správci podle e-mailu a PE koordinátoři,
    ostatní modul nevidí. Ruční nastavení níž má vždy přednost — jde tedy přidat
@@ -363,6 +384,28 @@ function editUserView(){
     return `<div class="permrow wide"><span class="permlbl">${esc(m.label)}</span>
       <select class="ue-mod" data-mod="${m.key}">${opts}</select></div>`;
   }).join('');
+  // Práva v Údržbě: přístup k modulu + předvolba (vysouvací seznam) + dlaždice + zvláštní práva
+  const ud=u.udrzba, udShow=u.udAccess==='show';
+  const sel=(cls,data,cur,opts)=>'<select class="ue-ud" data-ud="'+data+'">'+opts.map(o=>'<option value="'+o.key+'" '+(cur===o.key?'selected':'')+'>'+esc(o.label)+'</option>').join('')+'</select>';
+  const udRow=(label,html)=>'<div class="permrow wide"><span class="permlbl">'+esc(label)+'</span>'+html+'</div>';
+  const presetKey=udPresetOf(ud);
+  const udHtml = '<div class="fld" style="margin-top:14px"><label>Práva v Údržbě</label><div class="perms">'
+    + udRow('Přístup k modulu', sel('', 'access', u.udAccess, [{key:'hidden',label:'Skrytý'},{key:'show',label:'Zobrazit'}]))
+    + (udShow
+      ? udRow('Předvolba', '<select id="ue-udpreset"><option value="custom" '+(presetKey==='custom'?'selected':'')+'>Vlastní nastavení</option>'
+          + UD_PRESETS.map(p=>'<option value="'+p.key+'" '+(presetKey===p.key?'selected':'')+'>'+esc(p.label)+'</option>').join('')+'</select>')
+        + '<div class="hintx" style="margin-top:8px"><b>Dlaždice</b> nahoře v Údržbě — co člověk v každé smí:</div>'
+        + UD_TILES.map(t=>udRow(t.label, sel('', 'tiles.'+t.key, ud.tiles[t.key], UD_TILE_STATES))).join('')
+        + '<div class="hintx" style="margin-top:8px"><b>Zvláštní práva</b> — platí jen u příkazů, ke kterým smí zapisovat:</div>'
+        + udRow('Přiřazovat práci', sel('', 'assign', ud.assign, UD_ASSIGN))
+        + udRow('Označit díl „objednáno"', sel('', 'ordered', ud.ordered?'yes':'no', UD_YESNO))
+        + udRow('Označit díl „přišlo"', sel('', 'arrived', ud.arrived?'yes':'no', UD_YESNO))
+        + udRow('Upravovat příkazy', sel('', 'edit', ud.edit, UD_SCOPE))
+        + udRow('Mazat příkazy', sel('', 'del', ud.del, UD_SCOPE))
+      : '')
+    + '</div><div class="hintx"><b>Skrytý</b> = Údržbu v menu ani na hlavní stránce neuvidí. U <b>Zobrazit</b> vyber předvolbu nebo nastav práva ručně. '
+    + '„Zapisovat jen sebe" = příkazy přiřazené jemu nebo jím založené. „Své" u úprav = přiřazené jemu nebo jím založené, u mazání jen jím založené. '
+    + 'Zakládat nové příkazy smí ten, kdo má kdekoli „zapisovat". Správci mají v Údržbě vždy vše.</div></div>';
   return `<div class="dlg-wrap" id="ue-wrap"><div class="dlg dlg-lg">
     <div class="t">✏️ ${esc(u.name)}<button class="x" id="ue-x">✕</button></div>
     <div class="c">
@@ -385,6 +428,7 @@ function editUserView(){
           „Výchozí" se řídí levelem (Approver a výše = zapisovat všechny, ostatní = jen sebe).
           Když je modul výše „Skryté" nebo „Jen číst", má to přednost před sekcemi.</div>
       </div>
+      ${udHtml}
     </div>
     <div class="b">
       <button class="btn-ghost" id="ue-cancel">Zrušit</button>
@@ -395,7 +439,8 @@ function editUserView(){
 function openEdit(uid){
   const u=users.find(x=>x.uid===uid); if(!u) return;
   uedit={uid, name:u.name||uid, email:u.email||'', level:levelOf(u), team:u.team||'',
-    positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{})};
+    positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{}),
+    udrzba:udNorm(u.udrzba), udAccess:(((u.modules||{}).udrzba==='write')||((u.modules||{}).udrzba==='read'))?'show':'hidden'};
   render();
 }
 async function saveUser(){
@@ -403,7 +448,8 @@ async function saveUser(){
   const u=uedit;
   const sel=document.getElementById('ue-level'); if(sel) u.level=sel.value;
   try{
-    await updateDoc(doc(db,'users',u.uid), {level:u.level, role:LEVEL2ROLE[u.level], positions:u.positions, perms:u.perms, modules:u.modules});
+    if(u.udAccess==='show') u.modules.udrzba='write'; else delete u.modules.udrzba;   // přístup k Údržbě = users.modules.udrzba (čte ho i hlavička a rozcestník)
+    await updateDoc(doc(db,'users',u.uid), {level:u.level, role:LEVEL2ROLE[u.level], positions:u.positions, perms:u.perms, modules:u.modules, udrzba:udNorm(u.udrzba)});
     uedit=null; toast('Uloženo.','ok'); render();
   }catch(e){ toast('Nepodařilo se uložit: '+e.message,'err'); }
 }
@@ -420,7 +466,9 @@ async function removeUser(uid, name){
 function render(){
   if(!ready){ return; }
   if(myAccess()==='none'){ appEl.innerHTML=denyView(); return; }
+  const cOld=document.querySelector('#ue-wrap .c'), cTop=cOld?cOld.scrollTop:0;   // okno uživatele se při změně volby nesmí vracet nahoru
   appEl.innerHTML = view(); wire(); renderToast();
+  if(cTop){ const cNew=document.querySelector('#ue-wrap .c'); if(cNew) cNew.scrollTop=cTop; }
 }
 
 function denyView(){
@@ -507,6 +555,19 @@ function wire(){
       const k=sel.getAttribute('data-mod');
       if(sel.value) uedit.modules[k]=sel.value; else delete uedit.modules[k];
     }));
+    document.querySelectorAll('.ue-ud').forEach(sel=>sel.addEventListener('change',()=>{
+      const k=sel.getAttribute('data-ud'), v=sel.value;
+      if(k==='access') uedit.udAccess=v;
+      else if(k.startsWith('tiles.')) uedit.udrzba.tiles[k.slice(6)]=v;
+      else if(k==='ordered'||k==='arrived') uedit.udrzba[k]=(v==='yes');
+      else uedit.udrzba[k]=v;
+      render();
+    }));
+    document.getElementById('ue-udpreset')?.addEventListener('change',e=>{
+      const pr=UD_PRESETS.find(x=>x.key===e.target.value);
+      if(pr){ uedit.udrzba=udNorm(pr.v); uedit.udAccess='show'; }
+      render();
+    });
     const psel=document.getElementById('ue-pos');
     psel?.addEventListener('change',()=>{
       const v=psel.value;

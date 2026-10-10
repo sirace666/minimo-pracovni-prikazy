@@ -187,10 +187,12 @@ function loginView(){
 const OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
   'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
 const isOpravyOwner = () => OPRAVY_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
-// Údržba — pilotní seznam (stejný jako UDRZBA_OWNERS v header.js a OWNERS v udrzba.html); TODO před PR: jen Davidovy e-maily
+// Údržba — vidí ji správci (podle e-mailu nebo levelu) a každý, komu ji správce v Nastavení zobrazil (users.modules.udrzba).
+// Stejná logika je v header.js a udrzba.html. TODO před PR: v seznamu e-mailů jen Davidovy.
 const UDRZBA_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-  'admin.test@minimo.local','technik.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
-const isUdrzbaOwner = () => UDRZBA_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase());
+  'admin.test@minimo.local'];
+const isUdrzbaOwner = () => UDRZBA_OWNERS.includes(String((me&&me.email)||'').trim().toLowerCase())
+  || ['wadmin','superadmin'].includes(myLevel) || ['write','read'].includes((myModules||{}).udrzba);
 /* Engineering vidí správci a lidé s pozicí PE nebo PE coordinator.
    Stejný seznam je v header.js, engineering.html i v pravidlech Firestore. */
 const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];

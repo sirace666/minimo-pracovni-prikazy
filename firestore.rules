@@ -58,6 +58,56 @@ service cloud.firestore {
     function isSchvalovatel() { return signedIn() && myRole() == 'schvalovatel'; }
     function canEdit()        { return isAdmin() || isSklad(); }
 
+    // ===== Údržba: práva z Nastavení =====
+    // Přístup k modulu = users.modules.udrzba ('write'/'read' = zobrazit, jinak skrytý). Podrobnosti = users.udrzba:
+    //   tiles {all, unassigned, parts, mine}: none / read / self / all, assign: none / self / all, ordered, arrived: bool,
+    //   edit, del: none / own / all. Správci mají vždy vše. Stejná logika je v udrzba.html (udCan…) a v nastaveni.html (předvolby).
+    // „Mé" příkazy = přiřazené mně NEBO mnou založené. Čtení zůstává pro všechny přihlášené (skrytí dlaždic řeší aplikace):
+    // dotaz na celou kolekci by při omezení čtení podle dokumentu server celý zamítl.
+    function udUser() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function udShow() { return isAdmin() || udUser().get('modules', {}).get('udrzba', 'none') in ['write', 'read']; }
+    function udCfg() { return udUser().get('udrzba', {}); }
+    function udTile(t) { return udCfg().get('tiles', {}).get(t, 'none'); }
+    function udAs(d) {
+      return d.get('assignedTo', []) is list ? d.get('assignedTo', [])
+           : (d.get('assignedTo', '') == '' ? [] : [d.get('assignedTo', '')]);
+    }
+    function udMine(d) { return d.get('author', '') == request.auth.uid || request.auth.uid in udAs(d); }
+    function udTileOk(lvl, d) { return lvl == 'all' || (lvl == 'self' && udMine(d)); }
+    function udCanWrite(d) {
+      return isAdmin() || (udShow() && (
+           udTileOk(udTile('all'), d)
+        || (udAs(d).size() == 0 && udTileOk(udTile('unassigned'), d))
+        || (d.get('nd', null) != null && udTileOk(udTile('parts'), d))
+        || (udMine(d) && udTileOk(udTile('mine'), d))));
+    }
+    function udCanCreate() {
+      return isAdmin() || (udShow() && (udTile('all') in ['self', 'all'] || udTile('unassigned') in ['self', 'all']
+                                     || udTile('parts') in ['self', 'all'] || udTile('mine') in ['self', 'all']));
+    }
+    // přiřazení: all = kdokoli, self = smí přidat nebo odebrat jen sebe, none = nikdo
+    function udAssignOk(oldAs, newAs) {
+      let lvl = udCfg().get('assign', 'none');
+      return isAdmin() || lvl == 'all'
+        || (lvl == 'self'
+            && newAs.toSet().difference(oldAs.toSet()).hasOnly([request.auth.uid].toSet())
+            && oldAs.toSet().difference(newAs.toSet()).hasOnly([request.auth.uid].toSet()));
+    }
+    function udNdOk(v) {
+      return isAdmin() || v == null || v == 'potreba'
+        || (v == 'objednano' && udCfg().get('ordered', false) == true)
+        || (v == 'prisel' && udCfg().get('arrived', false) == true);
+    }
+    function udUpdateOk() {
+      let ch = request.resource.data.diff(resource.data).affectedKeys();
+      return !ch.hasAny(['author', 'authorName', 'authorEmail', 'cislo', 'created', 'createdTs'])
+        && (!ch.hasAny(['nazev', 'popis', 'wo', 'priorita', 'typ', 'linka', 'stroj', 'obor', 'prostojOd'])
+            || isAdmin() || udCfg().get('edit', 'none') == 'all'
+            || (udCfg().get('edit', 'none') == 'own' && udMine(resource.data)))
+        && (!ch.hasAny(['assignedTo', 'assignedToNames']) || udAssignOk(udAs(resource.data), udAs(request.resource.data)))
+        && (!ch.hasAny(['nd']) || udNdOk(request.resource.data.get('nd', null)));
+    }
+
     match /users/{uid} {
       allow read: if signedIn();
       allow create: if signedIn() && request.auth.uid == uid;
@@ -122,11 +172,16 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if signedIn()
                     && request.resource.data.author == request.auth.uid
-                    && request.resource.data.status == 'nový';
-      allow update: if isAdmin()
-                    || resource.data.author == request.auth.uid
-                    || resource.data.assignedTo == request.auth.uid;
-      allow delete: if isAdmin();
+                    && request.resource.data.status == 'nový'
+                    && udCanCreate()
+                    && (isAdmin() || request.resource.data.get('nd', null) == null)
+                    && (udAs(request.resource.data).size() == 0
+                        || udAssignOk([], udAs(request.resource.data)));
+      allow update: if isAdmin() || (udShow() && udCanWrite(resource.data) && udUpdateOk());
+      allow delete: if isAdmin()
+                    || (udShow() && udCanWrite(resource.data)
+                        && (udCfg().get('del', 'none') == 'all'
+                            || (udCfg().get('del', 'none') == 'own' && resource.data.get('author', '') == request.auth.uid)));
     }
 
     // --- Údržba: oblíbené (uložené) sady filtrů — jeden dokument na

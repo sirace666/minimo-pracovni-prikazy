@@ -1441,6 +1441,35 @@ protože:
   **Křížek v poli hledání** (v0.18.6): s textem se v poli ukáže kulatý ✕ (`search-close`, `data-a="search-close"`), vymaže hledání a vrátí
   kurzor do pole; bez textu není vidět. Kříž je **SVG**, ne znak ✕ (v0.18.7 — znak se ve Figtree kreslil nakřivo/mimo střed). Na mobilu zůstává původní chování (lupa → pole s křížkem na zavření).
   Když přidáš do příkazu nové pole, přidej ho do `visibleSearchText()` (je-li vidět v řádku) nebo `hiddenSearchText()`.
+- **PRÁVA V ÚDRŽBĚ (2026-10-10, v0.18.18)** — Martin chtěl, aby David v Nastavení nastavoval, kdo co v Údržbě smí. Zadání probrané
+  v konverzaci, hotové najednou (Nastavení + appka + pravidla) a otestované.
+  - **Uložení:** `users/{uid}.modules.udrzba` = `'write'` (modul ZOBRAZIT; chybí = skrytý, výchozí) a `users/{uid}.udrzba` =
+    `{tiles:{all,unassigned,parts,mine}: none|read|self|all, assign: none|self|all, ordered: bool, arrived: bool, edit: none|own|all, del: none|own|all}`.
+    **Správci (role admin) mají vždy vše.**
+  - **Dlaždice = výřezy příkazů** (Vše = všechny, Nepřiřazené = bez přiřazených, Náhradní díl = s `nd`, Moje = přiřazené mně NEBO mnou založené).
+    Příkaz vidí ten, kdo má aspoň u jedné dlaždice, do které příkaz patří, něco jiného než „skryté"; zapisovat smí, když má u některé `all`,
+    nebo `self` a příkaz je „můj". **„Zapisovat" = zakládat (kdo má kdekoli self/all), měnit stav, nahlásit chybějící díl.**
+    Nevidí-li člověk dlaždici Vše, otevře se na první viděné (Moje → Nepřiřazené → Náhradní díl; `udDefaultView()`).
+  - **Zvláštní práva platí jen u příkazů, na které smí zapisovat** (Martin zvolil „možnost 1"): Přiřazovat práci (nikomu / jen sobě = smí přidat nebo
+    odebrat jen sebe / komukoli), Označit „objednáno", Označit „přišlo", Upravovat (žádné / jen své = přiřazené mně nebo mnou založené / všechny),
+    Mazat (žádné / jen své = JEN mnou založené / všechny).
+  - **Nastavení (`nastaveni.html`)**: sekce „Práva v Údržbě" pod Právy v Plánování; přístup Skrytý/Zobrazit, **předvolba jako vysouvací seznam**
+    (Údržba, Process engineer, Tool setters, Jen číst + „Vlastní nastavení" — pozná se podle shody, `udPresetOf()`), 4 dlaždice, zvláštní práva.
+    Definice předvoleb je v `UD_PRESETS` (a musí odpovídat tabulce výš). Okno uživatele je teď vyšší s vlastním posuvníkem (`.dlg-lg .c`) a při
+    změně volby si drží posun (`render()`).
+  - **Appka (`udrzba.html`)**: funkce `udCfg/udTile/udMine/udCanSee/udCanWrite/udCanCreate/udCanEdit/udCanDelete/udAssignLevel/udCanOrder/udCanArrive`.
+    `rows` obsahuje JEN příkazy, které člověk smí vidět; dlaždice, „Nový příkaz", Upravit, stavová tlačítka, Chybí díl/Objednáno/Díl přišel,
+    Smazat a „Přiřadit" se ukazují podle práv. Okno Přiřadit u práva „jen sobě" zamkne cizí řádky (`assignPicker.limit`). „+ Přiřadit" v řádku
+    je bez práva jen text „nepřiřazeno". Smazat jde i z náhledu, když člověk smí mazat, ale ne upravovat. Hlavička/rozcestník: odkaz na Údržbu má správce
+    (e-mail/level) nebo kdo má `modules.udrzba`.
+  - **Pravidla Firestore** (`firestore.rules`, funkce `ud…`, blok `match /udrzba`): zápis (create/update/delete) se hlídá podle týchž práv včetně
+    polí (úpravy obsahu, přiřazení „jen sobě", přechody dílu na objednáno/přišlo, nelze měnit autora/číslo). **ČTENÍ zůstává pro všechny přihlášené** —
+    „skryté" je skrytí v appce, ne zámek (omezit čtení podle dokumentu by server při dotazu na celou kolekci zamítl). Nasazeno na testovací projekt a
+    ověřeno 35 skutečnými dotazy pod 5 účty (skripty byly v `%TEMP%`: `test-rules.js`; profil si testovací účet vytvoří sám, viz nález níž).
+  - ⚠️ **BEZPEČNOSTNÍ NÁLEZ v Davidových pravidlech (nezměněno, jen nahlásit):** `match /users/{uid}` má `allow create: if signedIn() && request.auth.uid == uid`
+    **bez omezení polí** — kdokoli přihlášený, kdo ještě nemá profil, si může při založení zapsat `role:'admin'` / `level:'superadmin'` nebo libovolná
+    práva v Údržbě a stát se správcem. Oprava: při `create` povolit jen `level:'basic'`, `role:'zadavatel'` a prázdná práva. Řekni to Martinovi / Davidovi.
+  - **Účty:** Mistr a Udrzbar po 0.18.18 přišli o Údržbu (výchozí skryté) — Martin jim v Nastavení vybírá předvolbu.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
@@ -1625,11 +1654,9 @@ protože:
   hlavička okna podle stavu, sekce Změnit stav/Historie) — NE v Davidově
   hutném tabulkovém stylu (`opravy.html`). Tohle byla výslovná žádost
   Martina, drž se toho i u dalších obrazovek.
-- **Přístup do Údržby (i zatím do Profilu?) = pilotní whitelist e-mailů**
-  (`OWNERS`/`ADMIN_EMAILS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js`
-  a v `index.html`; `OPRAVY_OWNERS` v `index.html` je jen pro Externí opravy) — stejný vzor, jaký David použil pro
-  rozjezd Opravy/Engineering. Až appku schválí, přechod na obecný systém
-  `users.modules.udrzba` (read/write/none) je otevřená otázka, ne hotová věc.
+- **Přístup do Údržby** (HISTORICKÉ: dřív pilotní seznam e-mailů `OWNERS`) řídí od **0.18.18** Nastavení: `users.modules.udrzba` +
+  `users.udrzba` (viz sekci „Práva v Údržbě" výš). V kódu zůstává jen krátký seznam SPRÁVCŮ podle e-mailu (`UDRZBA_OWNERS` v `header.js` a
+  `index.html`, `ADMIN_EMAILS` v `udrzba.html`) — ti vidí Údržbu vždy. `OPRAVY_OWNERS` v `index.html` je jen pro Externí opravy.
 
 ## Větve a zálohy vzhledu (stav 2026-10-07) — PŘEČTI, než něco upravíš
 
@@ -1714,9 +1741,9 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
 - Zdrojový kód (HTML/JS) si návštěvník stejně může zobrazit v prohlížeči — to nejde zakázat; chráněna jsou DATA přihlášením a pravidly
   Firestore. Přístup se řídí **účtem**: ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local` (level basic) jsou v testovacím
   projektu; hesla zná jen Martin (NEPIŠ je do repa). Přístup „zhasne" vypnutím účtu ve Firebase konzoli (Authentication → Users).
-- Údržba je pořád jen pro e-maily z pilotního seznamu (`OWNERS` v `udrzba.html`, `UDRZBA_OWNERS` v `header.js` a v `index.html`) — od 0.18.16
-  jsou v něm i ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local`. Dlaždice Údržba v `index.html` má `udrzbaOnly:true` (vlastní seznam
-  `UDRZBA_OWNERS`), NE `ownerOnly` — ten sdílí seznam s Externími opravami. Od 0.18.17 jsou ukázkové účty i v `OPRAVY_OWNERS` (`index.html`, `header.js`) a `OWNERS` v
+- Údržbu mají ukázkové účty jen tehdy, když jim ji správce v Nastavení zobrazí (od 0.18.18 se NEŘÍDÍ seznamem e-mailů, výchozí je skryté — po
+  nasazení 0.18.18 musel Martin oběma účtům v Nastavení vybrat předvolbu). Dlaždice Údržba v `index.html` má `udrzbaOnly:true`
+  (správce nebo `modules.udrzba`), NE `ownerOnly` — ten sdílí seznam s Externími opravami. Od 0.18.17 jsou ukázkové účty i v `OPRAVY_OWNERS` (`index.html`, `header.js`) a `OWNERS` v
   `opravy.html`, takže mají **Externí opravy**. **Engineering a Shopfloor walk** se řídí DATY u uživatele, ne e-mailem: Engineering pozicí
   (`PE coordinator` apod.), Shopfloor pozicí `PE coordinator` nebo `users.modules.shopfloor`; zapsat to může jen správce v Nastavení (pravidla
   Firestore kontrolují pozice na serveru). **Nastavení** ukázkové účty nemají: odkaz v menu Údržby se ukazuje jen tomu, kdo do Nastavení smí
@@ -1749,7 +1776,7 @@ pro sebe — „commituj rovnou do main" platí pro NĚJ v JEHO repu, ne pro ná
 tady). Před otevřením PR:
 
 1. Odebrat testovací e-maily — hledej `TODO před PR` v `udrzba.html`,
-   `header.js`, `index.html` (`OWNERS`/`ADMIN_EMAILS`/`UDRZBA_OWNERS`/
+   `header.js`, `index.html` (`ADMIN_EMAILS`/`UDRZBA_OWNERS`/
    `OPRAVY_OWNERS`) a nechat jen Davidovy skutečné e-maily.
 2. **Přepnout `firebaseConfig` zpátky na ostrý projekt `nakupni-pozadavky`
    — VE VŠECH 9 SOUBORECH**, ne jen v našich dvou novejch. Od
@@ -1769,9 +1796,9 @@ tady). Před otevřením PR:
    (viz jeho `firestore-pravidla-pridat.txt`), protože Storage rules v repu
    nedrží.
 4. PR obsahuje jen: `udrzba.html`, `profil.html`, `instalace.html`, diff v
-   `header.js` + `header.css` + `index.html` + `firestore.rules` — NIC z
-   nakup/dovolenky/opravy/engineering/nastaveni krom té jedné řádky
-   s `photoURL`.
+   `header.js` + `header.css` + `index.html` + `firestore.rules` + **`nastaveni.html` (sekce „Práva v Údržbě")** — NIC z
+   nakup/dovolenky/opravy/engineering krom té jedné řádky s `photoURL` (a v `opravy.html` NIC). **Davidovy ruční kroky:** publikovat nová
+   pravidla Firestore (funkce `ud…` a blok `match /udrzba`) a upozornit ho na bezpečnostní nález níž.
 
 ## Verzování (na Martinovo přání, stejně jako appka Pracovní příkazy)
 
