@@ -1168,7 +1168,8 @@ function passes(o,skip,skip2){
   if(skip!=='obor'&&skip2!=='obor' && !matchesObor(o)) return false;
   if(skip!=='linka'&&skip2!=='linka' && !matchesLinka(o)) return false;
   if(skip!=='nd'&&skip2!=='nd' && !matchesNd(o)) return false;
-  if(skip!=='mineSel'&&skip2!=='mineSel' && !matchesMineSel(o)) return false;
+  // výběr v panelu dlaždice Moje patří jen jí: čísla na dlaždicích (počítají se s přeskočením 'view') ho nesmí ovlivnit
+  if(skip!=='mineSel'&&skip2!=='mineSel'&&skip!=='view'&&skip2!=='view' && !matchesMineSel(o)) return false;
   return true;
 }
 const countView=k=>rows.filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;

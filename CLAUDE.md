@@ -1476,7 +1476,11 @@ protože:
   `created` = mnou vytvořené; nic nebo obojí = sjednocení) a tlačítkem Zrušit vše (`mine-clear`). Panel se zavírá klikem mimo (`.mine-tile-wrap`), výběr
   zůstane; zruší se přechodem na jinou dlaždici (`flt-view`, `nd-tile-toggle`, `mine-tile-toggle` se hlídají navzájem). `mineSel` je v `passes()`,
   `activeFilterCount()`, `clear-filters` a ve štítcích nad tabulkou („Moje: Přiřazené"); do oblíbených sad NEPATŘÍ. Popisky jsou schválně krátké, protože
-  nad nimi stojí „Moje" (Martin). Práva v Údržbě (`udTile('mine')`) dlaždici dál skrývají / omezují jako dřív.
+  nad nimi stojí „Moje" (Martin).
+  **Oprava 0.18.20 (Martin: „buď špatná čísla, nebo špatné filtry"):** `passes()` přeskakuje `mineSel` i když se přeskakuje `view` — a přesně takhle
+  se počítají čísla na dlaždicích (`countView`, `countNd`, `countMine`, `unassignedHasEm`). Výběr v panelu Moje tak mění jen seznam, ne čísla ostatních dlaždic.
+  (Stejně se NEchová `filters.nd` — ten je sdílený se sloupcovým filtrem Díl, takže tam čísla záměrně zužuje.) **Čísla na dlaždicích počítají i HOTOVÉ příkazy**,
+  které tabulka kvůli přepínači Skrýt hotové schová — „4 přiřazené" tedy znamená 4 včetně hotových; po zobrazení hotových sedí s počtem řádků. Práva v Údržbě (`udTile('mine')`) dlaždici dál skrývají / omezují jako dřív.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
