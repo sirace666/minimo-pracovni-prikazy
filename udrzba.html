@@ -1379,12 +1379,17 @@ function favCheckGroup(dim,title,opts){
 // Smí jen ten, kdo smí příkaz upravovat (udCanEdit) — obor je „obsah" příkazu, hlídají to i pravidla Firestore.
 function oborPickerView(){
   const o=rows.find(r=>r._id===oborPicker.id)||{}, sel=oborPicker.sel;
+  // stejný vzhled jako okno Přiřadit pracovníky: řádky .ap-row s obyčejným zaškrtávátkem a jemným podbarvením při najetí
+  const rowsHtml=OBOR.map(x=>`<div class="ap-row" style="grid-template-columns:26px 1fr">
+      <input type="checkbox" data-a="obor-toggle" data-v="${x.k}" ${sel.includes(x.k)?'checked':''}>
+      <span class="ap-person" data-a="obor-toggle" data-v="${x.k}"><span class="ap-name">${esc(x.label)}</span></span>
+    </div>`).join('');
   return `<div class="overlay" data-a="obor-close-bg"><div class="modal" style="max-width:380px">
     <div class="modal-head">Obor<button class="x" data-a="obor-close">✕</button></div>
-    <div class="modal-body">
-      <div class="muted" style="margin-bottom:.6rem">${esc(o.cislo||'')} · ${esc(o.nazev||'')}</div>
-      <div class="checklist">${OBOR.map(x=>`<label class="filter-check"><input type="checkbox" data-a="obor-toggle" data-v="${x.k}" ${sel.includes(x.k)?'checked':''}><span class="fc-box"></span><span class="fc-label">${esc(x.label)}</span></label>`).join('')}</div>
-      ${sel.length?'':'<div class="msg" style="margin-top:.5rem">Vyber aspoň jeden obor.</div>'}
+    <div class="modal-body" style="padding:0">
+      <div class="muted" style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">${esc(o.cislo||'')} · ${esc(o.nazev||'')}</div>
+      <div class="ap-rows" style="max-height:none">${rowsHtml}</div>
+      ${sel.length?'':'<div class="msg" style="padding:.6rem 1rem">Vyber aspoň jeden obor.</div>'}
     </div>
     <div class="modal-foot"><div class="r">
       <button class="btn-ghost" data-a="obor-close">Zrušit</button>

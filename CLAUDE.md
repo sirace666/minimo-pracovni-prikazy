@@ -1489,7 +1489,7 @@ protože:
   přepínač nemění.
 - **Rychlá změna oboru z řádku tabulky (2026-10-10, v0.18.22)** — Martin: kliknutí na štítek oboru (třeba Nástrojárna) otevře okno, kde se obor rovnou upraví.
   `.r2-obs.editable` (`data-a="obor-open"`) je klikací JEN když `udCanEdit(o)` (obor je obsah příkazu; pravidla Firestore ho mají mezi poli, která vyžadují právo
-  Upravovat). Otevře `oborPickerView()` (stav `oborPicker={id,sel}`): tři zaškrtávátka z `OBOR`, aspoň jeden musí zůstat (jinak hláška a zakázané Uložit),
+  Upravovat). Otevře `oborPickerView()` (stav `oborPicker={id,sel}`; od 0.18.23 má STEJNÝ vzhled jako okno Přiřadit pracovníky — řádky `.ap-row` s obyčejným zaškrtávátkem a jemným podbarvením při najetí, ne tmavě vyplněné `.filter-check`; štítky oboru v řádku mají při najetí stejné barvy jako „+ Přiřadit" `#b8480f`/`#fbf1ea`): tři zaškrtávátka z `OBOR`, aspoň jeden musí zůstat (jinak hláška a zakázané Uložit),
   `obor-save` zapíše `obor` + řádek historie „změnil obor: …" přímo do příkazu (`updateDoc`) a obnoví otevřený detail. Klik jinam v řádku otevře detail jako dřív.
   Řádek historie „změnil obor: …" je v `histParts()` šablona (obor se nehledá). Overlay se zavírá jako ostatní okna (`obor-close-bg` ve výjimce generického `[data-a]`
   handleru a vlastní mousedown/click listener v `bind()`).
