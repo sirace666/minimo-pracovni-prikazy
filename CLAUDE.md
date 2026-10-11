@@ -1516,6 +1516,7 @@ protože:
     `prostoj===true` NEBO starší `prostojOd`). Časy **od–do** (`prostojOd`/`prostojDo`, jednou za příkaz) se zapisují v záložce Práce (box „Prostoj stroje", jen u příkazu s prostojem;
     tlačítko `prostoj-save` posílá jen časy, ne `prostoj`). V pravidlech je teď mezi poli vyžadujícími právo Upravovat `prostoj` (ne `prostojOd`) — časy smí zapsat každý, kdo smí zapisovat.
     Tohle NAHRAZUJE dřívější popis pole „Prostoj od" (v0.14.0, s časem ve formuláři) i sloupce s datem.
+  - **Záložka Práce nezobrazuje barevný pruh příkazu (`.hero`: stav, název, popis, přiřazení)** — jen informace o práci (v0.18.26, Martin). Info a Historie ho mají dál.
   - Testy: `test-rules.js` má 49 kontrol (nová sekce „ZAPISOVÁNÍ PRÁCE"), prohlížečový test `t-prace.js` s falešným Firebase (`stub2.js` teď umí transakce nad příkazy).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na

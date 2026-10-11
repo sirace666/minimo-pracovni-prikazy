@@ -2129,7 +2129,7 @@ function modalView(){
       : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
     }</div>`:''}
   ` : `
-    <div class="hero st-${o.status} notop">
+    ${modalTab==='prace'?'':`<div class="hero st-${o.status} notop">
       <div class="hero-top"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
         <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
         <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
@@ -2148,7 +2148,7 @@ function modalView(){
         <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
         ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
       </dl>
-    </div>
+    </div>`}
     ${modalTab==='historie' ? `
       <div class="sec">
         <div class="hist">${histHtml}</div>
