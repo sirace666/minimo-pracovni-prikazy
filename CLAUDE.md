@@ -1500,6 +1500,23 @@ protože:
   (`uedit.udSpecialOpen`, tlačítko `#ue-udspec`; ve výchozím stavu pod ním není nic, žádné shrnutí — Martin) a „Zapsat WO" je v něm nad „Přiřazovat práci".
   ⚠️ **Past v pravidlech Firestore:** `x in ['', null]` (seznam s `null`) se choval špatně — pravidlo pustilo i neprázdné WO. Používej explicitní `x == '' || x == null`
   (ověřeno testem: neprázdné WO bez práva → 403). Testy pravidel (`test-rules.js`, 43 kontrol) i prohlížeče měly být po každé změně práv pouštěny znovu.
+- **Zapisování práce + nový Prostoj (2026-10-11, v0.18.25)** — okno příkazu má tři záložky **Info | Práce | Historie** a na počítači je široké
+  (`.modal{max-width:1120px}` od 861 px; mobil beze změny, ostatní okna mají vlastní inline šířku).
+  - **Záznamy práce** jsou pole `prace` přímo v dokumentu příkazu: `{id, author, authorName, workers:[{uid,name}], od, do, min, typ, popis, pricina, dily:[{n,q}], vyreseno, ts}`.
+    Zapisuje se TRANSAKCÍ (`saveWork`/`deleteWork`, `runTransaction` — dva technici naráz si záznamy nepřepíšou) a zároveň se přidá řádek do `hist`
+    („zapsal práci (1 h 15 min)", „upravil/smazal záznam práce" — šablony jsou v `HIST_BOILER`/`HIST_WORK`, aby je hledání nebralo jako data).
+    `ts` je `Date.now()`, ne `serverTimestamp()` (ten v poli Firestore nesmí). Kód je v `udrzba.html` v bloku „Záznamy práce" před „modal".
+    Zapisovat smí, kdo smí na příkaz zapisovat (`udCanWrite(o)`) — žádné nové právo v Nastavení. Upravit/smazat záznam smí jeho autor a správce; smazání má
+    dvoukrokové potvrzení (`workDel`). Formulář: Kdo pracoval (čipy + „přidat pracovníka"), Od/Do s tlačítky „Teď" a výpočtem doby, Typ činnosti (`WORK_TYPES`,
+    povinný), Co jsem dělal (povinné), Příčina (volný text), Použité díly (řádky název + množství, text — žádný číselník), Vyřešeno Ano/Ne.
+    `collectWork()` musí proběhnout před každou akcí, co překresluje okno (jako `collect()` u příkazu), jinak se rozepsaný text ztratí.
+  - **Vyřešeno = Ano → dotaz „Označit příkaz jako Hotovo?"** (`doneAsk`). **Hotovo vyžaduje aspoň jeden záznam práce** — v appce (tlačítko je zamčené, `case 'status'` hlídá)
+    i v pravidlech Firestore (`udUpdateOk`: přechod na `hotovo` jen s `prace.size()>0` nebo správce).
+  - **Prostoj:** v příkazu je JEN zaškrtávátko „Prostoj" (`prostoj:true`, bez času); v tabulce sloupec **Prostoj** ukazuje „ANO" nebo je prázdný (`hasProstoj(o)` =
+    `prostoj===true` NEBO starší `prostojOd`). Časy **od–do** (`prostojOd`/`prostojDo`, jednou za příkaz) se zapisují v záložce Práce (box „Prostoj stroje", jen u příkazu s prostojem;
+    tlačítko `prostoj-save` posílá jen časy, ne `prostoj`). V pravidlech je teď mezi poli vyžadujícími právo Upravovat `prostoj` (ne `prostojOd`) — časy smí zapsat každý, kdo smí zapisovat.
+    Tohle NAHRAZUJE dřívější popis pole „Prostoj od" (v0.14.0, s časem ve formuláři) i sloupce s datem.
+  - Testy: `test-rules.js` má 49 kontrol (nová sekce „ZAPISOVÁNÍ PRÁCE"), prohlížečový test `t-prace.js` s falešným Firebase (`stub2.js` teď umí transakce nad příkazy).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
