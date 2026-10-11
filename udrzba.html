@@ -801,6 +801,7 @@
   .wr-w.ok{background:#e6f4ea;color:#1e7d4b}.wr-w.no{background:#fff1e0;color:#b8480f}
   .wr-ordbox{padding:.6rem .75rem;border:1px dashed #e0b48a;border-radius:10px;background:#fffaf4}
   .wr-ord{color:#b8480f}
+  .wr-nd{margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 </style>
 </head>
 <body>
@@ -2023,6 +2024,11 @@ function praceTabHtml(o){
   const per=Object.entries(t.per).map(([n,m])=>`${esc(n)} ${fmtMin(m)}`).join(' · ');
   const perO=Object.entries(t.perObor).map(([k,m])=>`${esc(oborLabel(k))} ${fmtMin(m)}`).join(' · ');
   const wrote=new Set(); praceOf(o).forEach(r=>{ wrote.add(r.author); (r.workers||[]).forEach(w=>wrote.add(w.uid)); });
+  const canNd=udCanWrite(o)&&o.status==='rozpracováno';
+  const ndBox=o.nd?`<div class="wr-nd"><b>Náhradní díl:</b> <span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>
+    ${canNd&&o.nd==='potreba'&&udCanOrder(o)?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
+    ${canNd&&o.nd==='objednano'&&udCanArrive(o)?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
+    ${canNd&&o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}</div>`:'';
   const asU=assignedUids(o), asN=assignedNames(o);
   const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}">${wrote.has(u)?'✓':'○'} ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'zapsal':'ještě nezapsal'}</i></span>`).join('')}</div>`:'';
   const prMin=minBetween(o.prostojOd,o.prostojDo);
@@ -2051,6 +2057,7 @@ function praceTabHtml(o){
     <div class="row" style="justify-content:space-between;align-items:center"><div class="sec-label">Záznamy práce (${list.length})</div>
       ${canW?`<button class="btn-primary" data-a="work-open" data-v="${o._id}">+ Zapsat práci</button>`:''}</div>
     ${list.length?`<div class="wr-sum"><b>Odpracováno celkem: ${fmtMin(t.total)}</b>${per?`<span class="muted"> — ${per}</span>`:''}${perO?`<div class="muted" style="margin-top:.2rem">Podle oboru: ${perO}</div>`:''}</div>`:'<div class="muted" style="margin-top:.4rem">Zatím žádný záznam práce.</div>'}
+    ${ndBox}
     ${who}
     ${prostojBox}
     ${cards}
@@ -2188,19 +2195,8 @@ function modalView(){
       ${(udCanWrite(o))?`<div class="sec">
         <div class="sec-label">Změnit stav</div>
         <div class="row">
-          ${udCanWrite(o)?`<button class="btn-primary" data-a="work-open" data-v="${o._id}">+ Zapsat práci</button>`:''}
           ${next?(next==='hotovo'&&!praceOf(o).length&&!isAdmin()?`<button class="btn-ghost" disabled title="Nejdřív zapiš práci">Označit jako: ${esc(statusLabel(next))}</button><span class="muted">Hotovo jde až po zapsání práce.</span>`:`<button class="btn-primary" data-a="status" data-v="${next}">Označit jako: ${esc(statusLabel(next))}</button>`):''}
           ${o.status!=='nový'?`<button class="btn-ghost" data-a="status" data-v="nový">Vrátit na „Nový"</button>`:''}
-        </div>
-      </div>`:''}
-      ${(udCanWrite(o) && o.status==='rozpracováno')?`<div class="sec">
-        <div class="sec-label">Náhradní díl</div>
-        <div class="row">
-          ${!o.nd?`<button class="btn-ghost" data-a="nd-set" data-v="potreba">Chybí díl</button>`:''}
-          ${o.nd==='potreba'&&udCanOrder(o)?`<button class="btn-primary" data-a="nd-set" data-v="objednano">Objednáno</button>`:''}
-          ${o.nd==='objednano'&&udCanArrive(o)?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
-          ${o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}
-          ${o.nd?`<span class="badge nd-${o.nd}">${esc(NDLABEL[o.nd]||'')}</span>`:''}
         </div>
       </div>`:''}
     `}
