@@ -770,7 +770,7 @@
   }
 
   /* ===== Zapisování práce ===== */
-  @media (min-width:861px){ .modal{max-width:1120px} }
+  @media (min-width:861px){ .modal{max-width:1400px;max-height:94vh} }
   .wr-chips{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
   .wr-chip{display:inline-flex;align-items:center;gap:.3rem;background:#eceefb;color:#2b3a86;border-radius:999px;padding:.25rem .65rem;font-weight:700;font-size:.85rem}
   .wr-chip button{border:none;background:transparent;cursor:pointer;color:#2b3a86;font-size:.8rem;padding:0}
@@ -795,6 +795,12 @@
   .wr-sum{margin-top:.6rem;padding:.55rem .8rem;background:#f4f5fa;border-radius:10px}
   .wr-prostoj{margin-top:.8rem;padding:.7rem .85rem;border:1px solid #e6c6ea;background:#fbf3fc;border-radius:12px}
   .wr-prow{display:flex;flex-wrap:wrap;gap:.8rem;align-items:flex-end}
+  .wr-who{margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-size:.88rem}
+  .wr-w{border-radius:999px;padding:.15rem .65rem;font-weight:700}
+  .wr-w i{font-style:normal;font-weight:600;opacity:.85}
+  .wr-w.ok{background:#e6f4ea;color:#1e7d4b}.wr-w.no{background:#fff1e0;color:#b8480f}
+  .wr-ordbox{padding:.6rem .75rem;border:1px dashed #e0b48a;border-radius:10px;background:#fffaf4}
+  .wr-ord{color:#b8480f}
 </style>
 </head>
 <body>
@@ -1942,20 +1948,23 @@ const fmtDt=s=>{ const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(
 const newId=()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('w'+Date.now()+Math.random().toString(16).slice(2));
 // souhrn: odpracováno celkem (člověkominuty = čas záznamu × počet lidí) a po lidech
 function workTotals(o){
-  const per={}; let total=0;
-  praceOf(o).forEach(r=>{ const m=Number(r.min)||0; (r.workers||[]).forEach(w=>{ per[w.name]=(per[w.name]||0)+m; total+=m; }); });
-  return {total, per};
+  const per={}, perObor={}; let total=0;
+  praceOf(o).forEach(r=>{ const m=Number(r.min)||0; (r.workers||[]).forEach(w=>{ per[w.name]=(per[w.name]||0)+m; total+=m; if(r.obor) perObor[r.obor]=(perObor[r.obor]||0)+m; }); });
+  return {total, per, perObor};
 }
 let workModal=null;   // {id, editId, rec, err, delId} — okno Zapsat práci
 let workDel=null;
 let doneAsk=null;     // {id} — otázka „Označit příkaz jako Hotovo?" po zápisu s Vyřešeno = Ano
-const newWorkRec=()=>({workers:[{uid:me.uid,name:pn(me.name)}], od:nowLocal(-60), do:nowLocal(), typ:'', popis:'', pricina:'', dily:[{n:'',q:''}], vyreseno:false});
-function openWork(o){ workModal={id:o._id, editId:null, rec:newWorkRec(), err:''}; }
+const oborLabel=k=>(OBOR.find(x=>x.k===k)||{}).label||'';
+const newWorkRec=o=>({workers:[{uid:me.uid,name:pn(me.name)}], od:nowLocal(-60), do:nowLocal(), obor:(oborOf(o)[0]||''), typ:'', popis:'', pricina:'', dily:[{n:'',q:''}], objednat:[], vyreseno:false});
+function openWork(o){ workModal={id:o._id, editId:null, rec:newWorkRec(o), err:''}; }
 function collectWork(){
   if(!workModal) return; const r=workModal.rec, g2=id=>{ const el=document.getElementById(id); return el?el.value:undefined; };
   const od=g2('w-od'); if(od!==undefined) r.od=od;
   const dd=g2('w-do'); if(dd!==undefined) r.do=dd;
   const ty=g2('w-typ'); if(ty!==undefined) r.typ=ty;
+  const ob=g2('w-obor'); if(ob!==undefined) r.obor=ob;
+  r.objednat=(r.objednat||[]).map((d,i)=>({n:g2('w-ord-n-'+i)!==undefined?g2('w-ord-n-'+i):d.n, q:g2('w-ord-q-'+i)!==undefined?g2('w-ord-q-'+i):d.q}));
   const po=g2('w-popis'); if(po!==undefined) r.popis=po;
   const pr=g2('w-pricina'); if(pr!==undefined) r.pricina=pr;
   r.dily=r.dily.map((d,i)=>({n:g2('w-dil-n-'+i)!==undefined?g2('w-dil-n-'+i):d.n, q:g2('w-dil-q-'+i)!==undefined?g2('w-dil-q-'+i):d.q}));
@@ -1977,13 +1986,19 @@ function workModalView(){
           <div><label>Do <span style="color:#c0392b">*</span></label><input type="datetime-local" id="w-do" value="${esc(r.do)}"><button type="button" class="wr-now" data-a="work-now" data-v="do">Teď</button></div>
         </div>
         <div class="muted">Doba práce: <b id="w-dur">${isNaN(min)?'—':(min<=0?'konec musí být po začátku':fmtMin(min)+(r.workers.length>1?` (${r.workers.length} lidé = ${fmtMin(min*r.workers.length)} celkem)`:''))}</b></div>
+        <div class="form-grid cols2"><div><label>Obor <span style="color:#c0392b">*</span></label>
+          <select id="w-obor"><option value="">— vyber —</option>${OBOR.map(x=>`<option value="${x.k}" ${r.obor===x.k?'selected':''}>${esc(x.label)}</option>`).join('')}</select></div>
         <div><label>Typ činnosti <span style="color:#c0392b">*</span></label>
-          <select id="w-typ"><option value="">— vyber —</option>${WORK_TYPES.map(t=>`<option value="${t.k}" ${r.typ===t.k?'selected':''}>${esc(t.label)}</option>`).join('')}</select></div>
+          <select id="w-typ"><option value="">— vyber —</option>${WORK_TYPES.map(t=>`<option value="${t.k}" ${r.typ===t.k?'selected':''}>${esc(t.label)}</option>`).join('')}</select></div></div>
         <div><label>Co jsem dělal <span style="color:#c0392b">*</span></label><textarea id="w-popis" rows="3" placeholder="co se udělalo">${esc(r.popis)}</textarea></div>
         <div><label>Příčina poruchy</label><textarea id="w-pricina" rows="2" placeholder="proč k tomu došlo (nepovinné)">${esc(r.pricina)}</textarea></div>
         <div><label>Použité díly</label>
           ${r.dily.map((d,i)=>`<div class="wr-dil"><input id="w-dil-n-${i}" value="${esc(d.n)}" placeholder="název / číslo dílu"><input id="w-dil-q-${i}" value="${esc(d.q)}" placeholder="množství" class="wr-q"><button type="button" class="wr-x" data-a="work-dil-rm" data-v="${i}" title="Odebrat díl">✕</button></div>`).join('')}
           <button type="button" class="btn-ghost wr-addbtn" data-a="work-dil-add">+ přidat další díl</button></div>
+        <div class="wr-ordbox"><label>Potřeba objednat díl</label>
+          ${(r.objednat||[]).map((d,i)=>`<div class="wr-dil"><input id="w-ord-n-${i}" value="${esc(d.n)}" placeholder="název / číslo dílu"><input id="w-ord-q-${i}" value="${esc(d.q)}" placeholder="množství" class="wr-q"><button type="button" class="wr-x" data-a="work-ord-rm" data-v="${i}" title="Odebrat">✕</button></div>`).join('')}
+          <button type="button" class="btn-ghost wr-addbtn" data-a="work-ord-add">+ přidat díl k objednání</button>
+          <div class="muted" style="font-size:.78rem;margin-top:.25rem">Po uložení se příkaz označí „Chybí díl (potřeba objednat)“.</div></div>
         <div><label>Vyřešeno</label>
           <div class="wr-yn"><button type="button" class="${r.vyreseno?'on yes':''}" data-a="work-vyr" data-v="ano">Ano</button><button type="button" class="${!r.vyreseno?'on no':''}" data-a="work-vyr" data-v="ne">Ne</button></div></div>
       </div>
@@ -2006,6 +2021,10 @@ function doneAskView(){
 function praceTabHtml(o){
   const list=praceOf(o).slice().sort((a,b)=>(b.od||'').localeCompare(a.od||'')), canW=udCanWrite(o), t=workTotals(o);
   const per=Object.entries(t.per).map(([n,m])=>`${esc(n)} ${fmtMin(m)}`).join(' · ');
+  const perO=Object.entries(t.perObor).map(([k,m])=>`${esc(oborLabel(k))} ${fmtMin(m)}`).join(' · ');
+  const wrote=new Set(); praceOf(o).forEach(r=>{ wrote.add(r.author); (r.workers||[]).forEach(w=>wrote.add(w.uid)); });
+  const asU=assignedUids(o), asN=assignedNames(o);
+  const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}">${wrote.has(u)?'✓':'○'} ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'zapsal':'ještě nezapsal'}</i></span>`).join('')}</div>`:'';
   const prMin=minBetween(o.prostojOd,o.prostojDo);
   const prostojBox=hasProstoj(o)?`<div class="wr-prostoj"><div class="sec-label">Prostoj stroje</div>
       <div class="wr-prow"><div><label>Stroj stál od</label><input type="datetime-local" id="pr-od" value="${esc(o.prostojOd||'')}" ${canW?'':'disabled'}></div>
@@ -2015,12 +2034,14 @@ function praceTabHtml(o){
   const cards=list.map(r=>{
     const mine=isAdmin()||r.author===me.uid, ws=(r.workers||[]).map(w=>esc(w.name)).join(', ');
     const dil=(r.dily||[]).filter(d=>d.n).map(d=>`${esc(d.n)}${d.q?` (${esc(d.q)})`:''}`).join(', ');
+    const ord=(r.objednat||[]).filter(d=>d.n).map(d=>`${esc(d.n)}${d.q?` (${esc(d.q)})`:''}`).join(', ');
     return `<div class="wr"><div class="wr-head"><span>${esc(fmtDt(r.od))} – ${esc(fmtDt(r.do))}</span><span class="wr-dur">${esc(fmtMin(r.min))}</span>
         <span class="wr-badge ${r.vyreseno?'ano':'ne'}">Vyřešeno: ${r.vyreseno?'ANO':'NE'}</span></div>
-      <div class="wr-line"><b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
+      <div class="wr-line"><b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Obor:</b> ${esc(oborLabel(r.obor)||'—')} · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
       <div class="wr-line"><b>Co:</b> <span class="wr-text">${esc(r.popis||'')}</span></div>
       ${r.pricina?`<div class="wr-line"><b>Příčina:</b> <span class="wr-text">${esc(r.pricina)}</span></div>`:''}
       ${dil?`<div class="wr-line"><b>Díly:</b> <span class="wr-text">${dil}</span></div>`:''}
+      ${ord?`<div class="wr-line wr-ord"><b>Objednat:</b> <span class="wr-text">${ord}</span></div>`:''}
       ${(mine&&canW)?`<div class="wr-act">${workDel===r.id
         ? `<span class="msg">Smazat tento záznam?</span> <button class="btn-danger" data-a="work-del-yes" data-v="${esc(r.id)}">Ano, smazat</button><button class="btn-ghost" data-a="work-del-no">Zrušit</button>`
         : `<button class="btn-ghost" data-a="work-edit" data-v="${esc(r.id)}">✎ Upravit</button><button class="btn-ghost" data-a="work-del" data-v="${esc(r.id)}">🗑 Smazat</button>`}</div>`:''}
@@ -2029,7 +2050,8 @@ function praceTabHtml(o){
   return `<div class="sec">
     <div class="row" style="justify-content:space-between;align-items:center"><div class="sec-label">Záznamy práce (${list.length})</div>
       ${canW?`<button class="btn-primary" data-a="work-open" data-v="${o._id}">+ Zapsat práci</button>`:''}</div>
-    ${list.length?`<div class="wr-sum"><b>Odpracováno celkem: ${fmtMin(t.total)}</b>${per?`<span class="muted"> — ${per}</span>`:''}</div>`:'<div class="muted" style="margin-top:.4rem">Zatím žádný záznam práce.</div>'}
+    ${list.length?`<div class="wr-sum"><b>Odpracováno celkem: ${fmtMin(t.total)}</b>${per?`<span class="muted"> — ${per}</span>`:''}${perO?`<div class="muted" style="margin-top:.2rem">Podle oboru: ${perO}</div>`:''}</div>`:'<div class="muted" style="margin-top:.4rem">Zatím žádný záznam práce.</div>'}
+    ${who}
     ${prostojBox}
     ${cards}
   </div>`;
@@ -2238,12 +2260,14 @@ async function saveWork(){
   if(!r.workers.length) workModal.err='Vyber aspoň jednoho pracovníka.';
   else if(isNaN(min)) workModal.err='Vyplň čas od a do.';
   else if(min<=0) workModal.err='Konec práce musí být po začátku.';
+  else if(!r.obor) workModal.err='Vyber obor.';
   else if(!r.typ) workModal.err='Vyber typ činnosti.';
   else if(!String(r.popis||'').trim()) workModal.err='Napiš, co se dělalo.';
   else workModal.err='';
   if(workModal.err){ render(); return; }
   const rec={id:workModal.editId||newId(), author:me.uid, authorName:me.name, workers:r.workers, od:r.od, do:r.do, min,
     typ:r.typ, popis:String(r.popis).trim(), pricina:String(r.pricina||'').trim(), dily:r.dily.filter(d=>String(d.n||'').trim()).map(d=>({n:String(d.n).trim(),q:String(d.q||'').trim()})),
+    obor:r.obor, objednat:(r.objednat||[]).filter(d=>String(d.n||'').trim()).map(d=>({n:String(d.n).trim(),q:String(d.q||'').trim()})),
     vyreseno:!!r.vyreseno, ts:Date.now()};
   try{
     const ref=doc(db,'udrzba',id); let out=null;
@@ -2252,9 +2276,11 @@ async function saveWork(){
       if(workModal.editId){ const i=list.findIndex(x=>x.id===workModal.editId); if(i<0) throw new Error('Záznam už neexistuje.'); rec.author=list[i].author; rec.authorName=list[i].authorName; list[i]=rec;
         hist.push(`${today()} · ${me.name} · upravil záznam práce`); }
       else{ list.push(rec); hist.push(`${today()} · ${me.name} · zapsal práci (${fmtMin(min)})`); }
-      tx.update(ref,{prace:list,hist}); out={prace:list,hist};
+      const upd={prace:list,hist};
+      if(rec.objednat.length && !d.nd){ upd.nd='potreba'; hist.push(`${today()} · ${me.name} · nahlásil chybějící díl`); }
+      tx.update(ref,upd); out={prace:list,hist,nd:upd.nd};
     });
-    if(editing&&editing._id===id){ editing.prace=out.prace; editing.hist=out.hist; }
+    if(editing&&editing._id===id){ editing.prace=out.prace; editing.hist=out.hist; if(out.nd) editing.nd=out.nd; }
     const cur=rows.find(x=>x._id===id);
     const ask=rec.vyreseno && cur && cur.status!=='hotovo';
     workModal=null; modalTab='prace';
@@ -2388,10 +2414,12 @@ async function act(a,v,el,ev){
     case 'work-worker-rm': collectWork(); workModal.rec.workers=workModal.rec.workers.filter(w=>w.uid!==v); break;
     case 'work-dil-add': collectWork(); workModal.rec.dily.push({n:'',q:''}); break;
     case 'work-dil-rm': collectWork(); workModal.rec.dily.splice(+v,1); if(!workModal.rec.dily.length) workModal.rec.dily.push({n:'',q:''}); break;
+    case 'work-ord-add': collectWork(); workModal.rec.objednat=(workModal.rec.objednat||[]).concat({n:'',q:''}); break;
+    case 'work-ord-rm': collectWork(); workModal.rec.objednat.splice(+v,1); break;
     case 'work-vyr': collectWork(); workModal.rec.vyreseno=(v==='ano'); break;
     case 'work-save': collectWork(); await saveWork(); return;
     case 'work-edit':{ const o=editing; const r=praceOf(o).find(x=>x.id===v); if(!r) break;
-      workModal={id:o._id,editId:v,rec:JSON.parse(JSON.stringify(Object.assign({dily:[]},r))),err:''}; if(!workModal.rec.dily.length) workModal.rec.dily.push({n:'',q:''}); break; }
+      workModal={id:o._id,editId:v,rec:JSON.parse(JSON.stringify(Object.assign({dily:[],objednat:[]},r))),err:''}; if(!workModal.rec.dily.length) workModal.rec.dily.push({n:'',q:''}); break; }
     case 'work-del': workDel=v; break;
     case 'work-del-no': workDel=null; break;
     case 'work-del-yes': await deleteWork(v); return;
