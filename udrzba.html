@@ -1733,7 +1733,7 @@ function trHTML(o){
     <span class="tc">${stroj}</span>
     <span class="tc">${udCanEdit(o)?`<span class="r2-obs editable" role="button" tabindex="0" data-a="obor-open" data-v="${esc(o._id)}" title="Změnit obor">`:'<span class="r2-obs">'}${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
     <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id,udAssignLevel(o)!=='none')}</span>
-    <span class="tc">${hasProstoj(o)?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}ANO</span>`:''}</span>
+    <span class="tc">${hasProstoj(o)?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${(()=>{ const m=minBetween(o.prostojOd,o.prostojDo); return isNaN(m)||m<0?'ANO':esc(fmtMin(m)); })()}</span>`:''}</span>
     <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
 }
@@ -2033,8 +2033,8 @@ function praceTabHtml(o){
   const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}">${wrote.has(u)?'✓':'○'} ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'zapsal':'ještě nezapsal'}</i></span>`).join('')}</div>`:'';
   const prMin=minBetween(o.prostojOd,o.prostojDo);
   const prostojBox=hasProstoj(o)?`<div class="wr-prostoj"><div class="sec-label">Prostoj stroje</div>
-      <div class="wr-prow"><div><label>Stroj stál od</label><input type="datetime-local" id="pr-od" value="${esc(o.prostojOd||'')}" ${canW?'':'disabled'}></div>
-        <div><label>Stroj jel od</label><input type="datetime-local" id="pr-do" value="${esc(o.prostojDo||'')}" ${canW?'':'disabled'}></div>
+      <div class="wr-prow"><div><label>Stroj stál od</label><input type="datetime-local" id="pr-od" value="${esc(o.prostojOd||'')}" ${canW?'':'disabled'}>${canW?'<button type="button" class="wr-now" data-a="pr-now" data-v="pr-od">Teď</button>':''}</div>
+        <div><label>Stroj jel od</label><input type="datetime-local" id="pr-do" value="${esc(o.prostojDo||'')}" ${canW?'':'disabled'}>${canW?'<button type="button" class="wr-now" data-a="pr-now" data-v="pr-do">Teď</button>':''}</div>
         ${canW?`<button type="button" class="btn-ghost" data-a="prostoj-save" data-v="${o._id}">Uložit prostoj</button>`:''}</div>
       <div class="muted" style="margin-top:.35rem">${isNaN(prMin)?'Doplň začátek a konec prostoje.':(prMin<0?'Konec je před začátkem.':'Délka prostoje: <b>'+fmtMin(prMin)+'</b>')}</div></div>`:'';
   const cards=list.map(r=>{
@@ -2405,6 +2405,7 @@ async function act(a,v,el,ev){
       try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Příkaz '+(o?o.cislo:'')+' smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'cancel-del': editing.confirmDel=false; break;
     case 'work-open':{ const o=rows.find(x=>x._id===v); if(!o||!udCanWrite(o)){ toast('Zapisovat práci tady nemáš povoleno.','err'); break; } openWork(o); break; }
+    case 'pr-now':{ const el=document.getElementById(v); if(el) el.value=nowLocal(); return; }   // jen doplní pole, bez překreslení
     case 'work-close': workModal=null; break;
     case 'work-now': collectWork(); workModal.rec[v]=nowLocal(); break;
     case 'work-worker-rm': collectWork(); workModal.rec.workers=workModal.rec.workers.filter(w=>w.uid!==v); break;
