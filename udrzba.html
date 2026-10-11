@@ -678,6 +678,9 @@
     .tc{padding-left:0;gap:3px;line-height:normal;font-size:13px}
     .tc .tt{padding-left:0;font-weight:700;font-size:14.5px;line-height:1.3;letter-spacing:-.01em;white-space:normal;overflow:visible;text-overflow:clip}
     .dash{color:#c9c5ba}
+  }
+  /* komponenty řádku (stav, priorita, štítky…) — platí i v okně příkazu a na mobilu */
+  .dash{color:#c9c5ba}
     .r2-st{display:flex;align-items:center;gap:10px}
     .r2-st i{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--c);background:var(--c);box-sizing:border-box;flex:none}
     .r2-st i.hollow{background:transparent}
@@ -722,6 +725,7 @@
     .r2-pj svg{width:14px;height:14px;flex:none}
     .r2-pj svg *{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .r2-rel{font-size:13.5px;font-weight:700;white-space:nowrap}
+  @media(min-width:861px){
     /* menu sloupce */
     .colmenu{border:1px solid #e3e0d8;border-radius:16px;box-shadow:0 18px 44px rgba(30,28,20,.18)}
     .cm-sort:hover{background:#f4f3ef}
@@ -804,7 +808,7 @@
   .wr-nd{margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
   .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .infogrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.6rem;margin-top:.9rem}
-  .ig{display:flex;gap:.7rem;align-items:center;background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:.6rem .75rem}
+  .ig-unused{display:flex;gap:.7rem;align-items:center;background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:.6rem .75rem}
   .ig-ico{width:38px;height:38px;border-radius:10px;background:#f6ece3;color:#b8480f;display:grid;place-items:center;flex:none}
   .ig-ico .ico{width:20px;height:20px}
   .ig-t{min-width:0;flex:1}
@@ -815,6 +819,21 @@
   .ig-pj{color:var(--pj)}.ig-pj.off{color:#6f6b60}
   .ig-edit{flex:none;padding:.3rem .8rem}
   .wr-i{width:16px;height:16px;margin-right:.35rem;vertical-align:-3px;color:#b8480f}
+  .ip{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  @media(max-width:860px){ .ip{grid-template-columns:1fr 1fr} }
+  .ipt{background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:.6rem .8rem;display:flex;flex-direction:column;gap:.35rem;min-width:0;justify-content:flex-start}
+  .ipt-l{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+  .ipt-v{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:0}
+  .ipt-v .r2-obs,.ipt-v .r2-who{align-items:center}
+  .ipt-s{font-size:.78rem;color:var(--muted)}
+  .ipt-edit{align-self:flex-start;padding:.25rem .8rem;margin-top:.1rem}
+  .ipt-list{display:flex;flex-direction:column;gap:6px}
+  .ipt-pp{display:flex;align-items:center;gap:.6rem;justify-content:space-between}
+  .ipt-pp b{font-weight:800}
+  .r2-tm{display:inline-flex;align-items:center;gap:6px;background:#f6ece3;color:#b8480f;padding:4px 10px;border-radius:8px;font:800 14px 'Figtree',sans-serif}
+  .r2-tm svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ipt .none{color:#8a8678;font-style:italic}
+  .wr-w .r2-av{display:inline-flex;vertical-align:middle;margin-right:.2rem}
 </style>
 </head>
 <body>
@@ -1166,8 +1185,8 @@ function searchHiddenHint(o){
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
 const HL_OK='.r2-wo,.r2-pp,.tt,.r2-wn,.r2-pj,.r2-rel,.hv,'
-  +'.hero h2,.hero-desc,.meta dd,.ig-v,.oi-title,.oi-top .muted';
-const UI_SKIP='.nohl,button,label,dt,.ig-l,.ig-s,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
+  +'.hero h2,.hero-desc,.meta dd,.oi-title,.oi-top .muted';
+const UI_SKIP='.nohl,button,label,dt,.ipt-l,.ipt-s,.r2-av,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
   const roots=[...document.querySelectorAll('.trow, .order-item')];
@@ -2043,14 +2062,16 @@ const ICO={
   users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3.5-5 7-5s7 1.5 7 5M17 5a3.5 3.5 0 0 1 0 7M22 20c0-2.5-2-4-4-4.5"/>'
 };
 const ico=(n,cls)=>`<svg class="ico ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]||''}</svg>`;
-// dlaždice s ikonou, popiskem a hodnotou (Info i Práce)
-const igTile=(icon,label,val,opt)=>{ opt=opt||{}; return `<div class="ig ${opt.cls||''}"><span class="ig-ico">${ico(icon)}</span><div class="ig-t"><div class="ig-l">${label}</div><div class="ig-v ${opt.nohl?'nohl':''}">${val}</div>${opt.sub?`<div class="ig-s">${opt.sub}</div>`:''}</div>${opt.act||''}</div>`; };
-// prostoj: ANO / délka + od–do
+// dlaždice: malý popisek + stejná komponenta jako v řádku tabulky na hlavní stránce (Info i Práce)
+const ipTile=(label,content,opt)=>{ opt=opt||{}; return `<div class="ipt ${opt.cls||''}"><div class="ipt-l">${label}</div><div class="ipt-v">${content}</div>${opt.sub?`<div class="ipt-s">${opt.sub}</div>`:''}${opt.act||''}</div>`; };
+const SVG_USER='<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="5" r="2.6"/><path d="M2 12.5c0-2.6 2.3-4 5-4s5 1.4 5 4"/></svg>';
+const avatarName=n=>`<span class="r2-who"><span class="r2-avs"><span class="r2-av" style="--h:${hueOf(n)}">${esc(initials(n))}</span></span><span class="r2-wn">${esc(n)}</span></span>`;
+// prostoj: štítek ANO / délka (jako ve sloupci tabulky) + od–do
 function prostojTile(o,act){
   if(!hasProstoj(o)) return '';
   const m=minBetween(o.prostojOd,o.prostojDo), has=!isNaN(m)&&m>=0;
   const sub=(o.prostojOd?`Stál od <b>${esc(fmtDt(o.prostojOd))}</b>`:'')+(o.prostojDo?` · jel od <b>${esc(fmtDt(o.prostojDo))}</b>`:'')||'Čas zatím nezapsán';
-  return igTile('clock','Prostoj stroje',`<span class="ig-pj${o.status==='hotovo'?' off':''}">${has?esc(fmtMin(m)):'ANO'}</span>`,{cls:'ig-pjt',nohl:true,sub,act});
+  return ipTile('Prostoj stroje',`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${has?esc(fmtMin(m)):'ANO'}</span>`,{sub,act});
 }
 let prModal=null;   // {id} — okno Zapsat/Upravit prostoj
 function prModalView(){
@@ -2080,11 +2101,14 @@ function praceTabHtml(o){
     ${canNd&&o.nd==='objednano'&&udCanArrive(o)?`<button class="btn-primary" data-a="nd-set" data-v="prisel">Díl přišel</button>`:''}
     ${canNd&&o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}</div>`:'';
   const asU=assignedUids(o), asN=assignedNames(o);
-  const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}">${wrote.has(u)?'✓':'○'} ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'zapsal':'ještě nezapsal'}</i></span>`).join('')}</div>`:'';
-  const sumGrid=(list.length||hasProstoj(o))?`<div class="infogrid">
-    ${list.length?igTile('clock','Odpracováno celkem',esc(fmtMin(t.total)),{sub:per}):''}
-    ${list.length&&perO?igTile('tool','Podle oboru',perO.replace(/ · /g,'<br>')):''}
-    ${prostojTile(o,canW?`<button type="button" class="btn-ghost ig-edit" data-a="pr-edit" data-v="${o._id}">✎ Upravit</button>`:'')}
+  const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}"><span class="r2-av" style="--h:${hueOf(pn(asN[i]||''))}">${esc(initials(pn(asN[i]||'')))}</span> ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'✓ zapsal':'○ ještě nezapsal'}</i></span>`).join('')}</div>`:'';
+  const perP=Object.entries(t.per).map(([n,m])=>`<span class="ipt-pp">${avatarName(n)}<b>${esc(fmtMin(m))}</b></span>`).join('');
+  const perOb=Object.entries(t.perObor).map(([k,m])=>`<span class="ipt-pp"><span class="r2-ob">${esc(oborLabel(k))}</span><b>${esc(fmtMin(m))}</b></span>`).join('');
+  const sumGrid=(list.length||hasProstoj(o))?`<div class="infogrid ip">
+    ${list.length?ipTile('Odpracováno celkem',`<span class="r2-tm">${SVG_CLOCK}${esc(fmtMin(t.total))}</span>`):''}
+    ${list.length&&perP?ipTile('Podle pracovníků',`<div class="ipt-list">${perP}</div>`):''}
+    ${list.length&&perOb?ipTile('Podle oboru',`<div class="ipt-list">${perOb}</div>`):''}
+    ${prostojTile(o,canW?`<button type="button" class="btn-ghost ipt-edit" data-a="pr-edit" data-v="${o._id}">✎ Upravit</button>`:'')}
   </div>`:'';
   const cards=list.map(r=>{
     const mine=isAdmin()||r.author===me.uid, ws=(r.workers||[]).map(w=>esc(w.name)).join(', ');
@@ -2092,7 +2116,7 @@ function praceTabHtml(o){
     const ord=(r.objednat||[]).filter(d=>d.n).map(d=>`${esc(d.n)}${d.q?` (${esc(d.q)})`:''}`).join(', ');
     return `<div class="wr"><div class="wr-head"><span>${esc(fmtDt(r.od))} – ${esc(fmtDt(r.do))}</span><span class="wr-dur">${esc(fmtMin(r.min))}</span>
         <span class="wr-badge ${r.vyreseno?'ano':'ne'}">Vyřešeno: ${r.vyreseno?'ANO':'NE'}</span></div>
-      <div class="wr-line">${ico('users','wr-i')}<b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Obor:</b> ${esc(oborLabel(r.obor)||'—')} · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
+      <div class="wr-line">${ico('users','wr-i')}<b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Obor:</b> <span class="r2-ob">${esc(oborLabel(r.obor)||'—')}</span> · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
       <div class="wr-line">${ico('tool','wr-i')}<b>Co:</b> <span class="wr-text">${esc(r.popis||'')}</span></div>
       ${r.pricina?`<div class="wr-line"><b>Příčina:</b> <span class="wr-text">${esc(r.pricina)}</span></div>`:''}
       ${dil?`<div class="wr-line">${ico('box','wr-i')}<b>Díly:</b> <span class="wr-text">${dil}</span></div>`:''}
@@ -2208,23 +2232,22 @@ function modalView(){
     }</div>`:''}
   ` : `
     ${modalTab==='prace'?'':`<div class="hero st-${o.status} notop">
-      <div class="hero-top"><span class="badge st-${o.status}">${esc(statusLabel(o.status))}</span>
-        <span class="badge p-${o.priorita}">${esc(o.priorita||'')}</span>
-        <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
-        ${extraBadges(o)}
-        <span class="spacer"></span>
-        <span class="muted">Vytvořil <span class="hv">${esc(pn(o.authorName)||'')}</span></span></div>
       <div class="row" style="align-items:flex-start;margin-top:.5rem">
         <h2 style="flex:1">${esc(o.nazev||'')}</h2>
         ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
       </div>
       <p class="hero-desc">${o.popis?esc(o.popis):'<span class="muted">Bez popisu.</span>'}</p>
-      <div class="infogrid">
-        ${igTile('user','Přiřazeno',assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'<span class="muted">nepřiřazeno</span>')}
-        ${o.wo?igTile('hash','Pracovní příkaz','WO '+esc(o.wo)):''}
-        ${igTile('pin','Linka / stroj',o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>',{nohl:true})}
-        ${igTile('cal','Vytvořeno',esc(dateCz(o.created)))}
+      <div class="infogrid ip">
+        ${ipTile('Stav',r2Stav(o))}
+        ${ipTile('Typ',r2Typ(typOf(o)))}
+        ${ipTile('Priorita',r2Prio(o.priorita))}
+        ${ipTile('Pracovní příkaz',(o.wo?`<span class="r2-wo">${esc(o.wo)}</span>`:'<span class="r2-wo none">bez WO</span>')+`<span class="r2-pp">${esc(o.cislo||'')}</span>`,{cls:'col'})}
+        ${ipTile('Stroj / linka',o.stroj?`<span class="r2-mono">${esc(o.stroj)}</span>${o.linka?`<span class="r2-sub">Linka ${esc(o.linka)}</span>`:''}`:(o.linka?`<span class="r2-mono">${esc(o.linka)}</span>`:'<span class="dash">bez linky</span>'),{cls:'col'})}
+        ${ipTile('Obor',oborOf(o).length?`<span class="r2-obs">${oborOf(o).map(k=>`<span class="r2-ob">${esc(oborLabel(k))}</span>`).join('')}</span>`:'<span class="dash">–</span>')}
+        ${ipTile('Přiřazeno',r2Who(assignedNames(o).map(pn),o._id,false))}
+        ${o.nd?ipTile('Náhradní díl',r2Part(o.nd)):''}
         ${prostojTile(o)}
+        ${ipTile('Vytvořeno',`<span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv">${esc(pn(o.authorName))}</span>`:''}`,{cls:'col'})}
       </div>
     </div>`}
     ${modalTab==='historie' ? `
