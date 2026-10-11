@@ -802,6 +802,19 @@
   .wr-ordbox{padding:.6rem .75rem;border:1px dashed #e0b48a;border-radius:10px;background:#fffaf4}
   .wr-ord{color:#b8480f}
   .wr-nd{margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+  .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .infogrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.6rem;margin-top:.9rem}
+  .ig{display:flex;gap:.7rem;align-items:center;background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:.6rem .75rem}
+  .ig-ico{width:38px;height:38px;border-radius:10px;background:#f6ece3;color:#b8480f;display:grid;place-items:center;flex:none}
+  .ig-ico .ico{width:20px;height:20px}
+  .ig-t{min-width:0;flex:1}
+  .ig-l{font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+  .ig-v{font-weight:800;font-size:.98rem;word-break:break-word}
+  .ig-s{font-size:.78rem;color:var(--muted);margin-top:.1rem}
+  .ig-pjt .ig-ico{background:color-mix(in srgb,var(--pj) 12%,#fff);color:var(--pj)}
+  .ig-pj{color:var(--pj)}.ig-pj.off{color:#6f6b60}
+  .ig-edit{flex:none;padding:.3rem .8rem}
+  .wr-i{width:16px;height:16px;margin-right:.35rem;vertical-align:-3px;color:#b8480f}
 </style>
 </head>
 <body>
@@ -1078,7 +1091,7 @@ function renderShell(inner){
   // vnitřní seznamy (okno Přiřadit/Vybrat, menu sloupce, panel Linka) — jinak by se po zaškrtnutí vracely nahoru
   const LISTS=['.ap-rows','.cm-list','.linka-list'];
   const listScroll=LISTS.map(sel=>[...document.querySelectorAll(sel)].map(e=>e.scrollTop));
-  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (oborPicker?oborPickerView():'') + (pickPicker?pickPickerView():'') + (filterModal?filterModalView():'') + (workModal?workModalView():'') + (doneAsk?doneAskView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
+  mainHost.innerHTML = `<main>${inner}</main>` + (editing?modalView():'') + (assignPicker?assignPickerView():'') + (oborPicker?oborPickerView():'') + (pickPicker?pickPickerView():'') + (filterModal?filterModalView():'') + (workModal?workModalView():'') + (prModal?prModalView():'') + (doneAsk?doneAskView():'') + (toastMsg?`<div class="toast ${toastKind}">${esc(toastMsg)}</div>`:'');
   if(scrollTop!=null){ const nbs=document.querySelectorAll('.overlay .modal-body'); const nb=nbs[nbs.length-1]; if(nb) nb.scrollTop=scrollTop; }
   LISTS.forEach((sel,k)=>{ document.querySelectorAll(sel).forEach((e,i)=>{ if(listScroll[k][i]) e.scrollTop=listScroll[k][i]; }); });
   if(tsLeft||tsTop){ const tsNew=document.querySelector('.tscroller'); if(tsNew){ tsNew.scrollLeft=tsLeft; tsNew.scrollTop=tsTop; } }
@@ -1153,8 +1166,8 @@ function searchHiddenHint(o){
 /* Označují se JEN hledaná data — vybrané prvky, které obsahují skutečný obsah příkazu (HL_OK). Popisky, tlačítka a pomocné
    texty („Přiřazeno", „Linka", „Vytvořil", „+ Přiřadit", „bez WO"…) se neoznačují. Nové datové políčko = přidat sem. */
 const HL_OK='.r2-wo,.r2-pp,.tt,.r2-wn,.r2-pj,.r2-rel,.hv,'
-  +'.hero h2,.hero-desc,.meta dd,.oi-title,.oi-top .muted';
-const UI_SKIP='.nohl,button,label,dt,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
+  +'.hero h2,.hero-desc,.meta dd,.ig-v,.oi-title,.oi-top .muted';
+const UI_SKIP='.nohl,button,label,dt,.ig-l,.ig-s,.sec-label,.r2-unas,.r2-hit,.r2-wo.none,.dash,.ap-cols,.modal-tabs,.modal-foot,.hero-desc .muted,.meta .muted,.hist .muted';
 function applyHighlight(){
   const words=searchWords(); if(!words.length) return;
   const roots=[...document.querySelectorAll('.trow, .order-item')];
@@ -2018,6 +2031,43 @@ function doneAskView(){
     <div class="modal-foot"><div class="r"><button class="btn-ghost" data-a="done-no">Ne, nechat rozpracováno</button><button class="btn-primary" data-a="done-yes">Ano, označit jako Hotovo</button></div></div>
   </div></div>`;
 }
+const ICO={
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  hash:'<path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/>',
+  pin:'<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  tool:'<path d="M14 6a4 4 0 0 0 5 5l-9 9a2.5 2.5 0 0 1-4-4l9-9z"/>',
+  box:'<path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/>',
+  cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11L21 7H6"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3.5-5 7-5s7 1.5 7 5M17 5a3.5 3.5 0 0 1 0 7M22 20c0-2.5-2-4-4-4.5"/>'
+};
+const ico=(n,cls)=>`<svg class="ico ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]||''}</svg>`;
+// dlaždice s ikonou, popiskem a hodnotou (Info i Práce)
+const igTile=(icon,label,val,opt)=>{ opt=opt||{}; return `<div class="ig ${opt.cls||''}"><span class="ig-ico">${ico(icon)}</span><div class="ig-t"><div class="ig-l">${label}</div><div class="ig-v ${opt.nohl?'nohl':''}">${val}</div>${opt.sub?`<div class="ig-s">${opt.sub}</div>`:''}</div>${opt.act||''}</div>`; };
+// prostoj: ANO / délka + od–do
+function prostojTile(o,act){
+  if(!hasProstoj(o)) return '';
+  const m=minBetween(o.prostojOd,o.prostojDo), has=!isNaN(m)&&m>=0;
+  const sub=(o.prostojOd?`Stál od <b>${esc(fmtDt(o.prostojOd))}</b>`:'')+(o.prostojDo?` · jel od <b>${esc(fmtDt(o.prostojDo))}</b>`:'')||'Čas zatím nezapsán';
+  return igTile('clock','Prostoj stroje',`<span class="ig-pj${o.status==='hotovo'?' off':''}">${has?esc(fmtMin(m)):'ANO'}</span>`,{cls:'ig-pjt',nohl:true,sub,act});
+}
+let prModal=null;   // {id} — okno Zapsat/Upravit prostoj
+function prModalView(){
+  const o=rows.find(x=>x._id===prModal.id)||editing||{}; const m=minBetween(o.prostojOd,o.prostojDo);
+  return `<div class="overlay"><div class="modal" style="max-width:560px">
+    <div class="modal-head">Prostoj stroje<button class="x" data-a="pr-close">✕</button></div>
+    <div class="modal-body">
+      <div class="muted" style="margin-bottom:.7rem">${esc(o.cislo||'')} · ${esc(o.nazev||'')}</div>
+      <div class="form-grid cols2">
+        <div><label>Stroj stál od</label><input type="datetime-local" id="pr-od" value="${esc(o.prostojOd||'')}"><button type="button" class="wr-now" data-a="pr-now" data-v="pr-od">Teď</button></div>
+        <div><label>Stroj jel od</label><input type="datetime-local" id="pr-do" value="${esc(o.prostojDo||'')}"><button type="button" class="wr-now" data-a="pr-now" data-v="pr-do">Teď</button></div>
+      </div>
+      ${prModal.err?`<div class="msg" style="margin-top:.6rem">${esc(prModal.err)}</div>`:''}
+    </div>
+    <div class="modal-foot"><span class="muted">Délku prostoje spočítám sám.</span><div class="r"><button class="btn-ghost" data-a="pr-close">Zrušit</button><button class="btn-primary" data-a="prostoj-save" data-v="${o._id}">Uložit prostoj</button></div></div>
+  </div></div>`;
+}
 // záložka Práce v detailu příkazu
 function praceTabHtml(o){
   const list=praceOf(o).slice().sort((a,b)=>(b.od||'').localeCompare(a.od||'')), canW=udCanWrite(o), t=workTotals(o);
@@ -2031,23 +2081,22 @@ function praceTabHtml(o){
     ${canNd&&o.nd==='prisel'?`<button class="btn-ghost" data-a="nd-set" data-v="">Pokračovat</button>`:''}</div>`:'';
   const asU=assignedUids(o), asN=assignedNames(o);
   const who=asU.length?`<div class="wr-who"><b>Přiřazeno:</b> ${asU.map((u,i)=>`<span class="wr-w ${wrote.has(u)?'ok':'no'}">${wrote.has(u)?'✓':'○'} ${esc(pn(asN[i]||''))} <i>${wrote.has(u)?'zapsal':'ještě nezapsal'}</i></span>`).join('')}</div>`:'';
-  const prMin=minBetween(o.prostojOd,o.prostojDo);
-  const prostojBox=hasProstoj(o)?`<div class="wr-prostoj"><div class="sec-label">Prostoj stroje</div>
-      <div class="wr-prow"><div><label>Stroj stál od</label><input type="datetime-local" id="pr-od" value="${esc(o.prostojOd||'')}" ${canW?'':'disabled'}>${canW?'<button type="button" class="wr-now" data-a="pr-now" data-v="pr-od">Teď</button>':''}</div>
-        <div><label>Stroj jel od</label><input type="datetime-local" id="pr-do" value="${esc(o.prostojDo||'')}" ${canW?'':'disabled'}>${canW?'<button type="button" class="wr-now" data-a="pr-now" data-v="pr-do">Teď</button>':''}</div>
-        ${canW?`<button type="button" class="btn-ghost" data-a="prostoj-save" data-v="${o._id}">Uložit prostoj</button>`:''}</div>
-      <div class="muted" style="margin-top:.35rem">${isNaN(prMin)?'Doplň začátek a konec prostoje.':(prMin<0?'Konec je před začátkem.':'Délka prostoje: <b>'+fmtMin(prMin)+'</b>')}</div></div>`:'';
+  const sumGrid=(list.length||hasProstoj(o))?`<div class="infogrid">
+    ${list.length?igTile('clock','Odpracováno celkem',esc(fmtMin(t.total)),{sub:per}):''}
+    ${list.length&&perO?igTile('tool','Podle oboru',perO.replace(/ · /g,'<br>')):''}
+    ${prostojTile(o,canW?`<button type="button" class="btn-ghost ig-edit" data-a="pr-edit" data-v="${o._id}">✎ Upravit</button>`:'')}
+  </div>`:'';
   const cards=list.map(r=>{
     const mine=isAdmin()||r.author===me.uid, ws=(r.workers||[]).map(w=>esc(w.name)).join(', ');
     const dil=(r.dily||[]).filter(d=>d.n).map(d=>`${esc(d.n)}${d.q?` (${esc(d.q)})`:''}`).join(', ');
     const ord=(r.objednat||[]).filter(d=>d.n).map(d=>`${esc(d.n)}${d.q?` (${esc(d.q)})`:''}`).join(', ');
     return `<div class="wr"><div class="wr-head"><span>${esc(fmtDt(r.od))} – ${esc(fmtDt(r.do))}</span><span class="wr-dur">${esc(fmtMin(r.min))}</span>
         <span class="wr-badge ${r.vyreseno?'ano':'ne'}">Vyřešeno: ${r.vyreseno?'ANO':'NE'}</span></div>
-      <div class="wr-line"><b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Obor:</b> ${esc(oborLabel(r.obor)||'—')} · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
-      <div class="wr-line"><b>Co:</b> <span class="wr-text">${esc(r.popis||'')}</span></div>
+      <div class="wr-line">${ico('users','wr-i')}<b>Kdo:</b> <span class="wr-text">${ws}</span> · <b>Obor:</b> ${esc(oborLabel(r.obor)||'—')} · <b>Činnost:</b> ${esc(workTypeLabel(r.typ))}</div>
+      <div class="wr-line">${ico('tool','wr-i')}<b>Co:</b> <span class="wr-text">${esc(r.popis||'')}</span></div>
       ${r.pricina?`<div class="wr-line"><b>Příčina:</b> <span class="wr-text">${esc(r.pricina)}</span></div>`:''}
-      ${dil?`<div class="wr-line"><b>Díly:</b> <span class="wr-text">${dil}</span></div>`:''}
-      ${ord?`<div class="wr-line wr-ord"><b>Objednat:</b> <span class="wr-text">${ord}</span></div>`:''}
+      ${dil?`<div class="wr-line">${ico('box','wr-i')}<b>Díly:</b> <span class="wr-text">${dil}</span></div>`:''}
+      ${ord?`<div class="wr-line wr-ord">${ico('cart','wr-i')}<b>Objednat:</b> <span class="wr-text">${ord}</span></div>`:''}
       ${(mine&&canW)?`<div class="wr-act">${workDel===r.id
         ? `<span class="msg">Smazat tento záznam?</span> <button class="btn-danger" data-a="work-del-yes" data-v="${esc(r.id)}">Ano, smazat</button><button class="btn-ghost" data-a="work-del-no">Zrušit</button>`
         : `<button class="btn-ghost" data-a="work-edit" data-v="${esc(r.id)}">✎ Upravit</button><button class="btn-ghost" data-a="work-del" data-v="${esc(r.id)}">🗑 Smazat</button>`}</div>`:''}
@@ -2056,10 +2105,10 @@ function praceTabHtml(o){
   return `<div class="sec">
     <div class="row" style="justify-content:space-between;align-items:center"><div class="sec-label">Záznamy práce (${list.length})</div>
       ${canW?`<button class="btn-primary" data-a="work-open" data-v="${o._id}">+ Zapsat práci</button>`:''}</div>
-    ${list.length?`<div class="wr-sum"><b>Odpracováno celkem: ${fmtMin(t.total)}</b>${per?`<span class="muted"> — ${per}</span>`:''}${perO?`<div class="muted" style="margin-top:.2rem">Podle oboru: ${perO}</div>`:''}</div>`:'<div class="muted" style="margin-top:.4rem">Zatím žádný záznam práce.</div>'}
+    ${sumGrid}
+    ${list.length?'':'<div class="muted" style="margin-top:.4rem">Zatím žádný záznam práce.</div>'}
     ${ndBox}
     ${who}
-    ${prostojBox}
     ${cards}
   </div>`;
 }
@@ -2170,13 +2219,13 @@ function modalView(){
         ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
       </div>
       <p class="hero-desc">${o.popis?esc(o.popis):'<span class="muted">Bez popisu.</span>'}</p>
-      <dl class="meta">
-        <dt>Přiřazeno</dt><dd>${assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'<span class="muted">nepřiřazeno</span>'}</dd>
-        ${o.wo?`<dt>Pracovní příkaz</dt><dd>WO ${esc(o.wo)}</dd>`:''}
-        <dt>Linka / stroj</dt><dd class="nohl">${o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>'}</dd>
-        <dt>Vytvořeno</dt><dd>${esc(dateCz(o.created))}</dd>
-        ${o.doneAt?`<dt>Hotovo</dt><dd>${esc(dateCz(o.doneAt))}${o.doneByName?' · '+esc(o.doneByName):''}</dd>`:''}
-      </dl>
+      <div class="infogrid">
+        ${igTile('user','Přiřazeno',assignedNames(o).length?esc(assignedNames(o).map(pn).join(', ')):'<span class="muted">nepřiřazeno</span>')}
+        ${o.wo?igTile('hash','Pracovní příkaz','WO '+esc(o.wo)):''}
+        ${igTile('pin','Linka / stroj',o.linka?esc(o.linka)+(o.stroj?' / '+esc(o.stroj):''):'<span class="muted">—</span>',{nohl:true})}
+        ${igTile('cal','Vytvořeno',esc(dateCz(o.created)))}
+        ${prostojTile(o)}
+      </div>
     </div>`}
     ${modalTab==='historie' ? `
       <div class="sec">
@@ -2405,6 +2454,8 @@ async function act(a,v,el,ev){
       try{ await deleteDoc(doc(db,'udrzba',v)); editing=null; toast('Příkaz '+(o?o.cislo:'')+' smazán.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'cancel-del': editing.confirmDel=false; break;
     case 'work-open':{ const o=rows.find(x=>x._id===v); if(!o||!udCanWrite(o)){ toast('Zapisovat práci tady nemáš povoleno.','err'); break; } openWork(o); break; }
+    case 'pr-edit': prModal={id:v}; break;
+    case 'pr-close': prModal=null; break;
     case 'pr-now':{ const el=document.getElementById(v); if(el) el.value=nowLocal(); return; }   // jen doplní pole, bez překreslení
     case 'work-close': workModal=null; break;
     case 'work-now': collectWork(); workModal.rec[v]=nowLocal(); break;
@@ -2422,9 +2473,9 @@ async function act(a,v,el,ev){
     case 'work-del-yes': await deleteWork(v); return;
     case 'prostoj-save':{ const o=rows.find(x=>x._id===v); if(!o||!udCanWrite(o)) break;
       const od=g('pr-od')||null, dd=g('pr-do')||null;
-      if(od&&dd&&minBetween(od,dd)<0){ toast('Konec prostoje je před začátkem.','err'); break; }
+      if(od&&dd&&minBetween(od,dd)<0){ prModal.err='Konec prostoje je před začátkem.'; break; }
       const hist=(o.hist||[]).concat(`${today()} · ${me.name} · zapsal prostoj stroje`);
-      try{ await updateDoc(doc(db,'udrzba',o._id),{prostojOd:od,prostojDo:dd,hist}); editing.prostojOd=od; editing.prostojDo=dd; editing.hist=hist; toast('Prostoj uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
+      try{ await updateDoc(doc(db,'udrzba',o._id),{prostojOd:od,prostojDo:dd,hist}); editing.prostojOd=od; editing.prostojDo=dd; editing.hist=hist; prModal=null; toast('Prostoj uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'done-no': doneAsk=null; break;
     case 'done-yes':{ const o=rows.find(x=>x._id===doneAsk.id); doneAsk=null; if(o){ try{ await changeStatus(o,'hotovo'); if(editing&&editing._id===o._id){ editing.hist=(editing.hist||[]).concat(`${today()} · ${me.name} · stav ${editing.status} → hotovo`); editing.status='hotovo'; editing.doneAt=today(); editing.doneByName=me.name; } toast('Příkaz je hotový.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
     case 'fav-toggle': favOpen=!favOpen; break;
