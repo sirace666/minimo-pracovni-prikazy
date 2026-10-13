@@ -152,6 +152,41 @@ Assembly IP, Glovebox/Decopart, G463**.
   a `co` (přestavby — počet a čas, z toho se počítá changeover na dlaždici). Starší importy to nemají — KPI na to upozorní proužkem
   a stačí report nahrát znovu. Nezmenšuj to zpátky na souhrn přes celý závod.
 
+### Přepínač „Všechny prostoje / Jen technické"
+Lišta `scopeBar()` nad KPI i nad Prostoji, stav drží `scope` ('all' / 'tech').
+Je SPOLEČNÁ pro obě záložky schválně — ať člověk nekouká na dvě různá čísla
+podle toho, kde zrovna je.
+- Technické = `TECH_GROUPS` = **Porucha stroje, Technický prostoj, Přestavba
+  a seřízení**. Patří sem poruchy strojů i robotů. Záměrně sem NEPATŘÍ
+  Materiál a logistika, Organizace výroby, Lidé a přestávky, Kvalita a Nezařazeno
+  — to jsou výrobní, ne technické problémy. Seznam se mění na jednom místě
+  (`TECH_GROUPS`), obě obrazovky se přepnou samy.
+- `totals(proc, only)` a `trend(proc, only)` berou seznam skupin. Když je zadaný,
+  počítají VŽDY z rozpadu po lince (`segs[x].g` a `.r` v denním souhrnu) — jinak
+  by nešlo logistiku odfiltrovat. Skupina konkrétního důvodu se dopočítá z jeho
+  názvu přes `engGroup()`, v souhrnu u něj uložená není.
+- **Graf „Podle směny" se při filtru neukáže.** Denní souhrn nemá rozpad směn
+  po skupinách důvodů, takže by to byl odhad. Místo grafu je hláška s odkazem,
+  kde si to jde vyfiltrovat přesně. NEDOPLŇUJ tam dopočítaný odhad.
+- Tabulka prostojů filtruje přes `isTech(e)` nad jednotlivými záznamy, takže
+  souhrn v KPI a součet v tabulce sedí.
+
+### Záložka Přestavby (`co`)
+Jak dlouho trvá přehodit linku na další výrobu, po procesech.
+- Podzáložky procesů stejné jako v KPI (`coProc`), období se bere z horní lišty.
+- Čísla se počítají z denních souhrnů (`segs[x].co`), ne z jednotlivých prostojů —
+  ty jsou omezené na posledních 1 200 záznamů. `co.cnt` drží SKUTEČNÝ počet
+  přestaveb (G463 report ho nese v `coN`), ne počet řádků.
+- Karty: průměr na přestavbu, počet přestaveb, celkem na přestavbách, nejdelší.
+- Grafy: průměrná délka přestavby po linkách (v minutách — `bars` umí vlastní
+  popisek hodnoty přes pole `vl`), celkový čas po linkách (dá se prokliknout
+  do Prostojů) a vývoj po dnech (`coTrend`).
+- Dole seznam jednotlivých přestaveb od nejdelší, z kolekce `downtimes`
+  (`e.co === true`). U G463 jde o denní součet (`daily`), proto tam místo času
+  svítí „celý den" a počet přestaveb je v `coN`.
+- Proklik do Prostojů si pamatuje, odkud přišel (`drillTab`), a tlačítko
+  „← Zpět" vrátí na Přestavby i se správnou podzáložkou.
+
 ### Proklik z KPI do prostojů
 Řádek v grafu, který má v položce pole `drill` (`'seg:IMM-007'`, `'group:…'`,
 `'reason:…'`, `'shift:R'`), se vykreslí jako tlačítko. Kliknutí (`kpi-drill`)

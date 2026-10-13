@@ -169,6 +169,9 @@
   th.sortth .sar{margin-left:5px;font-size:10px;opacity:.45}
   th.sortth.on{background:#2a5793}
   th.sortth.on .sar{opacity:1}
+  .scopebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);padding:9px 12px;margin-bottom:12px}
+  @media(max-width:680px){.scopebar .rangebtn{flex:1 1 calc(50% - 6px)}}
   .drillbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#eef4fc;border:1px solid #cfe0f5;
     border-radius:var(--radius);padding:9px 11px;margin-bottom:12px}
   .dchip{background:#fff;border:1px solid #cfe0f5;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;color:#274a74}
@@ -496,6 +499,13 @@ const GROUP_COLOR = {
   'Lidé a přestávky':'#1f9254','Systém a data':'#6b7a90','Nezařazeno':'#98a5b6'
 };
 const UNKNOWN = 'Nezařazeno';
+/* Technické prostoje — to, co řeší engineering a údržba: poruchy strojů a robotů,
+   technické prostoje (vzduch, energie, periferie) a přestavby se seřizováním.
+   Záměrně sem NEPATŘÍ logistika, organizace výroby, lidé a kvalita — to jsou
+   výrobní problémy, ne technické. Když budeš chtít seznam změnit, změň ho tady,
+   v Prostojích i v KPI se přepne sám. */
+const TECH_GROUPS = ['Porucha stroje','Technický prostoj','Přestavba a seřízení'];
+const isTech = e => TECH_GROUPS.includes(e.group || engGroup(e.reason));
 function engGroup(reason){
   const t=String(reason||'').toLowerCase();
   for(const r of ENG_GROUPS) if(r.m.some(x=>t.includes(x))) return r.g;
@@ -1334,7 +1344,10 @@ const fileSize = b => b>=1048576 ? (b/1048576).toFixed(1)+' MB' : Math.max(1,Mat
 let me=null, loginBusy=false, loginErr='';
 let engTab='mgmt';                // modul se otevírá na hlavní stránce
 let dashProc='';                 // '' = celý závod, jinak klíč procesu (KPI podzáložky)
+let coProc='';                   // totéž pro záložku Přestavby
+let scope='all';                 // 'all' = všechny prostoje, 'tech' = jen technické
 let drillFrom='';                // proces, ze kterého jsem se proklikl do Prostojů
+let drillTab='dash';             // a jestli to bylo z KPI, nebo z Přestaveb
 let tileWk='';                   // '' = celý měsíc, jinak vybraný týden v dlaždicích procesů
 let days=[], events=[], history=[];
 let scMonths=[], scLoaded=false;
@@ -1661,11 +1674,15 @@ async function runImportDt(){
 /* ===== souhrny pro přehled ===== */
 /* Souhrn za vybrané období. Když je vybraný proces, sečte se jen z jeho linek —
    proto import ukládá rozpad důvodů i po lince (pole `g`, `r`, `sh` u každé linky). */
-function totals(proc){
-  const t={sec:0,net:0,cnt:0,segs:{},groups:{},reasons:{},shifts:{},co:{sec:0,cnt:0},noSplit:0};
+function totals(proc, only){
+  const t={sec:0,net:0,cnt:0,segs:{},groups:{},reasons:{},shifts:{},co:{sec:0,cnt:0},noSplit:0,noShift:0};
+  /* `only` = seznam skupin důvodů, které se mají počítat (např. TECH_GROUPS).
+     Když je zadaný, počítá se VŽDY z rozpadu po lince (pole `g` a `r` v denním
+     souhrnu) — jinak by nešlo odfiltrovat logistiku a výrobní problémy. */
+  const keep = (only && only.length) ? new Set(only) : null;
   const add=(o,k,label,sec,cnt)=>{ const x=o[k]||(o[k]={label,sec:0,net:0,cnt:0}); x.sec+=sec||0; x.cnt+=cnt||0; };
   for(const d of days){
-    if(!proc){
+    if(!proc && !keep){
       t.sec+=d.sec||0; t.net+=d.net||0; t.cnt+=d.cnt||0;
       t.co.sec+=(d.co&&d.co.sec)||0; t.co.cnt+=(d.co&&d.co.cnt)||0;
       for(const key of ['segs','groups','reasons']){
@@ -1680,15 +1697,37 @@ function totals(proc){
       continue;
     }
     for(const [sk,v] of Object.entries(d.segs||{})){
-      if(procOfLine(v.label)!==proc) continue;
-      t.sec+=v.sec||0; t.net+=v.net||0; t.cnt+=v.cnt||0;
-      const o=t.segs[sk]||(t.segs[sk]={label:v.label||sk,sec:0,net:0,cnt:0});
-      o.sec+=v.sec||0; o.net+=v.net||0; o.cnt+=v.cnt||0;
-      t.co.sec+=(v.co&&v.co.sec)||0; t.co.cnt+=(v.co&&v.co.cnt)||0;
-      if(!v.g && !v.r){ t.noSplit+=v.sec||0; continue; }   // starší import bez rozpadu
-      for(const [k,g] of Object.entries(v.g||{})) add(t.groups,k,g.label,g.sec,g.cnt);
-      for(const [k,r] of Object.entries(v.r||{})) add(t.reasons,k,r.label,r.sec,r.cnt);
+      if(proc && procOfLine(v.label)!==proc) continue;
+      /* starší import bez rozpadu důvodů po lince */
+      if(!v.g && !v.r){
+        t.noSplit+=v.sec||0;
+        if(!keep){
+          t.sec+=v.sec||0; t.net+=v.net||0; t.cnt+=v.cnt||0;
+          add(t.segs,sk,v.label,v.sec,v.cnt);
+          t.co.sec+=(v.co&&v.co.sec)||0; t.co.cnt+=(v.co&&v.co.cnt)||0;
+        }
+        continue;
+      }
+      let lSec=0, lCnt=0;
+      for(const [k,g] of Object.entries(v.g||{})){
+        if(keep && !keep.has(g.label)) continue;
+        add(t.groups,k,g.label,g.sec,g.cnt); lSec+=g.sec||0; lCnt+=g.cnt||0;
+      }
+      /* Skupinu konkrétního důvodu dopočítáme z jeho názvu — v souhrnu u něj není. */
+      for(const [k,r] of Object.entries(v.r||{})){
+        if(keep && !keep.has(engGroup(r.label))) continue;
+        add(t.reasons,k,r.label,r.sec,r.cnt);
+      }
+      if(!keep){ lSec=v.sec||0; lCnt=v.cnt||0; t.net+=v.net||0; } else { t.net+=lSec; }
+      t.sec+=lSec; t.cnt+=lCnt;
+      add(t.segs,sk,v.label,lSec,lCnt);
+      if(!keep || keep.has('Přestavba a seřízení')){
+        t.co.sec+=(v.co&&v.co.sec)||0; t.co.cnt+=(v.co&&v.co.cnt)||0;
+      }
       for(const [k,sh] of Object.entries(v.sh||{})){
+        /* Denní souhrn nemá rozpad směn po skupinách důvodů — při filtru ho tedy
+           nedokážeme spočítat a graf směn se radši neukáže, než aby lhal. */
+        if(keep){ t.noShift+=sh.sec||0; continue; }
         const o2=t.shifts[k]||(t.shifts[k]={sec:0,cnt:0}); o2.sec+=sh.sec||0; o2.cnt+=sh.cnt||0;
       }
     }
@@ -1706,17 +1745,25 @@ function bars(items,color){
     const inner=`
       <div class="nm" title="${esc(i.label)}">${esc(i.label)}</div>
       <div class="tr"><i style="width:${Math.max(1,i.sec/max*100).toFixed(1)}%;background:${i.color||color||'#1b4b8f'}"></i></div>
-      <div class="vl">${fmtDur(i.sec)}<span class="muted" style="font-weight:400"> · ${i.cnt}×</span></div>`;
+      <div class="vl">${i.vl||fmtDur(i.sec)}<span class="muted" style="font-weight:400"> · ${i.cnt}×</span></div>`;
     return i.drill
       ? `<button class="bar go" data-a="kpi-drill" data-v="${esc(i.drill)}" title="Ukázat jednotlivé prostoje">${inner}<span class="ar">›</span></button>`
       : `<div class="bar">${inner}</div>`;
   }).join('')+`</div>`;
 }
-function trend(proc){
-  const secOf = d => proc
-    ? Object.values(d.segs||{}).filter(v=>procOfLine(v.label)===proc).reduce((a,v)=>a+(v.sec||0),0)
-    : (d.sec||0);
-  const dd=days.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(d=>Object.assign({},d,{sec:secOf(d)}));
+function trend(proc, only){
+  const keep = (only && only.length) ? new Set(only) : null;
+  const dayVal = d => {
+    if(!proc && !keep) return {sec:d.sec||0, cnt:d.cnt||0};
+    const segs=Object.values(d.segs||{}).filter(v=>!proc || procOfLine(v.label)===proc);
+    if(!keep) return {sec:segs.reduce((a,v)=>a+(v.sec||0),0), cnt:segs.reduce((a,v)=>a+(v.cnt||0),0)};
+    let sec=0, cnt=0;
+    for(const v of segs) for(const g of Object.values(v.g||{}))
+      if(keep.has(g.label)){ sec+=g.sec||0; cnt+=g.cnt||0; }
+    return {sec, cnt};
+  };
+  const dd=days.slice().sort((a,b)=>a.date.localeCompare(b.date))
+    .map(d=>Object.assign({}, d, dayVal(d)));
   if(!dd.length) return '';
   const W=720,H=175,ml=46,mr=10,mt=12,mb=32,iw=W-ml-mr,ih=H-mt-mb;
   const peak=Math.max(...dd.map(d=>d.sec))||1;
@@ -1736,6 +1783,149 @@ function trend(proc){
     <line x1="${ml}" y1="${mt+ih}" x2="${ml+iw}" y2="${mt+ih}" stroke="#c8d3e0"/></svg>`;
 }
 
+
+/* ==========================================================
+   PŘESTAVBY (changeover)
+   Jak dlouho trvá přehodit linku na další výrobu. Čísla se berou
+   z denních souhrnů (pole `co` u každé linky) — ty drží i skutečný
+   počet přestaveb z G463 reportu (`coN`), ne jen počet řádků.
+   ========================================================== */
+function coStats(proc){
+  const t={sec:0, cnt:0, lines:{}, days:[], noSplit:0};
+  for(const d of days.slice().sort((a,b)=>a.date.localeCompare(b.date))){
+    let dSec=0, dCnt=0, any=false;
+    for(const [sk,v] of Object.entries(d.segs||{})){
+      if(proc && procOfLine(v.label)!==proc) continue;
+      const c=v.co||null;
+      if(!c) continue;
+      any=true;
+      if(!c.sec && !c.cnt) continue;
+      const o=t.lines[sk]||(t.lines[sk]={label:v.label||sk, sec:0, cnt:0});
+      o.sec+=c.sec||0; o.cnt+=c.cnt||0;
+      dSec+=c.sec||0; dCnt+=c.cnt||0;
+    }
+    /* starší souhrn bez rozpadu přestaveb po lince — za celý závod ho aspoň sečteme */
+    if(!any && !proc && d.co && (d.co.sec||d.co.cnt)){
+      dSec+=d.co.sec||0; dCnt+=d.co.cnt||0; t.noSplit+=d.co.sec||0;
+    }
+    t.sec+=dSec; t.cnt+=dCnt;
+    t.days.push({date:d.date, sec:dSec, cnt:dCnt});
+  }
+  return t;
+}
+const coMin = (sec,cnt) => cnt ? Math.round(sec/cnt/60) : 0;
+/* Sloupcový graf po dnech — minuty přestaveb a kolik jich bylo. */
+function coTrend(list){
+  const dd=list.filter(x=>x); if(!dd.length) return '<div class="empty">Zatím žádná data.</div>';
+  const W=720,H=175,ml=46,mr=10,mt=12,mb=32,iw=W-ml-mr,ih=H-mt-mb;
+  const peak=Math.max(...dd.map(d=>d.sec))||1;
+  const nice=[10,15,30,60,90,120,180,240,360,480,720];
+  const stepM=nice.find(n=>n*3>=peak/60)||Math.ceil(peak/60/3);
+  const max=stepM*3*60, step=iw/dd.length, bw=Math.min(46,step-8);
+  let g='';
+  for(let i=0;i<=3;i++){ const y=mt+ih-ih*i/3;
+    g+=`<line x1="${ml}" y1="${y}" x2="${ml+iw}" y2="${y}" stroke="#eef1f5"/>
+        <text x="${ml-6}" y="${y+3}" text-anchor="end" font-size="10" fill="#6b7a90">${stepM*i} min</text>`; }
+  const bb=dd.map((d,i)=>{
+    const h=ih*d.sec/max, x=ml+step*i+(step-bw)/2, y=mt+ih-h;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(1,h)}" rx="3" fill="#b7791f"><title>${esc(dayCz(d.date))} — ${fmtDur(d.sec)}, ${d.cnt}× přestavba</title></rect>
+      <text x="${x+bw/2}" y="${mt+ih+15}" text-anchor="middle" font-size="10" fill="#6b7a90">${dayCz(d.date)}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Přestavby po dnech">${g}${bb}
+    <line x1="${ml}" y1="${mt+ih}" x2="${ml+iw}" y2="${mt+ih}" stroke="#c8d3e0"/></svg>`;
+}
+function coSubtabs(){
+  return `<div class="subtabs">
+    <button class="stab ${coProc===''?'on':''}" data-a="co-proc" data-v="">Celý závod</button>
+    ${PROCESSES.map(p=>`<button class="stab ${coProc===p.k?'on':''}" data-a="co-proc" data-v="${p.k}">${p.icon} ${esc(p.label)}</button>`).join('')}
+  </div>`;
+}
+function coView(){
+  if(!days.length) return coSubtabs()+emptyView();
+  const proc=coProc, pd=proc?procDef(proc):null;
+  const st=coStats(proc);
+  const lines=Object.values(st.lines).filter(l=>l.cnt||l.sec);
+  const byTime=lines.slice().sort((a,b)=>b.sec-a.sec);
+  const byAvg=lines.filter(l=>l.cnt).slice().sort((a,b)=>coMin(b.sec,b.cnt)-coMin(a.sec,a.cnt));
+  const avg=coMin(st.sec,st.cnt);
+  /* jednotlivé přestavby z kolekce prostojů — detail, na který se dá kliknout */
+  const evs=events.filter(e=>e.co && (!proc || procOfLine(e.seg)===proc))
+    .sort((a,b)=>(b.sec||0)-(a.sec||0));
+  const longest=evs[0];
+  if(!st.cnt && !st.sec){
+    return coSubtabs()+`<div class="panel"><div class="body" style="text-align:center;padding:30px 18px">
+      <div style="font-size:32px">🔁</div>
+      <div style="font-size:16px;font-weight:800;margin:8px 0 6px">${proc?esc(pd.label)+' — ž':'Ž'}ádné přestavby za vybrané období</div>
+      <p class="muted" style="max-width:540px;margin:0 auto">Buď se opravdu nepřestavovalo, nebo report nemá důvody
+        „Tool changeover", „výměna nástroje" ani „výměna formy". Zkus delší období nahoře.</p>
+    </div></div>`;
+  }
+  return coSubtabs()+
+  (st.noSplit?`<div class="notice warn">Část dat (${fmtDur(st.noSplit)}) je ze staršího importu bez rozpadu přestaveb
+    po lince — v grafech po linkách tahle část chybí, v součtu za celý závod je. Stačí ten report nahrát znovu.</div>`:'')+`
+  <div class="cards">
+    <div class="kcard" style="border-left-color:#b7791f">
+      <div class="lbl">Průměr na přestavbu</div>
+      <div class="val">${avg}<small> min</small></div>
+      <div class="note">${proc?esc(pd.label)+' · ':''}${esc(rangeBounds().label)}</div>
+    </div>
+    <div class="kcard" style="border-left-color:#1b4b8f">
+      <div class="lbl">Počet přestaveb</div>
+      <div class="val">${st.cnt.toLocaleString('cs-CZ')}</div>
+      <div class="note">${lines.length} ${lines.length===1?'linka':(lines.length<5?'linky':'linek')} s přestavbou</div>
+    </div>
+    <div class="kcard" style="border-left-color:#0d7377">
+      <div class="lbl">Celkem na přestavbách</div>
+      <div class="val">${num(st.sec/3600,1)}<small> h</small></div>
+      <div class="note">čas, kdy se nevyrábělo kvůli přehození</div>
+    </div>
+    <div class="kcard" style="border-left-color:#c0392b">
+      <div class="lbl">Nejdelší přestavba</div>
+      <div class="val" style="font-size:17px;line-height:1.25;margin-top:8px">${longest?fmtDur(longest.sec):'—'}</div>
+      <div class="note">${longest?esc(longest.seg)+' · '+dayCz(longest.date):'detail je v seznamu níž'}</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Jak dlouho trvá přestavba<span class="right">průměr na jednu · TOP 12</span></h2>
+      <div class="body">${bars(byAvg.slice(0,12).map(l=>({label:l.label, sec:Math.round(l.sec/l.cnt),
+          cnt:l.cnt, vl:coMin(l.sec,l.cnt)+' min'})),'#b7791f')}
+        <div class="drillhint">Sloupec ukazuje průměrný čas jedné přestavby, za ním je, kolikrát se linka přestavovala.</div></div>
+    </div>
+    <div class="panel">
+      <h2>Kolik času sežerou celkem<span class="right">součet za období · TOP 12</span></h2>
+      <div class="body">${bars(byTime.slice(0,12).map(l=>Object.assign({},l,{drill:'seg:'+l.label})),'#0d7377')}
+        <div class="drillhint">Klikni na linku a uvidíš její prostoje i s poznámkou.</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Vývoj po dnech<span class="right">${proc?esc(pd.label):'celý závod'}</span></h2>
+    <div class="body">${coTrend(st.days)}</div>
+  </div>
+
+  <div class="panel">
+    <h2>Jednotlivé přestavby<span class="right">${evs.length.toLocaleString('cs-CZ')} záznamů · od nejdelší</span></h2>
+    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Z vybraného období je načteno posledních 1 200 prostojů, takže starší přestavby v tomhle seznamu chybět mohou. Souhrny nahoře jsou úplné.</div>`:''}
+    <div class="tblwrap"><table>
+      <thead><tr><th>Datum</th><th>Směna</th><th>Linka</th><th>Od</th><th>Do</th><th>Trvání</th>
+        <th>Důvod</th><th>Poznámka — z čeho na co</th></tr></thead>
+      <tbody>${evs.slice(0,300).map(e=>`
+        <tr class="${e.sec>=3600?'long':''}">
+          <td data-label="Datum">${dayCz(e.date)}</td>
+          <td data-label="Směna">${e.shift||''}</td>
+          <td data-label="Linka"><b>${esc(e.seg)}</b></td>
+          <td data-label="Od">${e.daily?'<span class="muted">celý den</span>':String(e.start).slice(11,16)}</td>
+          <td data-label="Do">${e.daily?'—':(e.end?String(e.end).slice(11,16):'—')}</td>
+          <td data-label="Trvání" class="num"><b>${fmtDur(e.sec)}</b>${e.coN>1?`<span class="muted"> · ${e.coN}×</span>`:''}</td>
+          <td data-label="Důvod" class="desc">${esc(e.reason)}</td>
+          <td data-label="Poznámka" class="desc muted">${esc(e.comment||'')}</td>
+        </tr>`).join('') || `<tr><td colspan="8" class="empty">Za tohle období nejsou načtené jednotlivé přestavby. Souhrny nahoře platí.</td></tr>`}
+      </tbody></table></div>
+    ${evs.length>300?`<div class="foot muted">Zobrazeno prvních 300 řádků z ${evs.length.toLocaleString('cs-CZ')}.</div>`:''}
+  </div>`;
+}
 
 /* ===== Scrap — načítání, přehled, grafy ===== */
 async function loadScrap(force){
@@ -3238,6 +3428,20 @@ function emptyView(){
     ${canImportDt()?`<button class="btn-primary" data-a="tab" data-v="imp">Přejít na import</button>`:''}
   </div></div>`;
 }
+/* Přepínač rozsahu. Je společný pro KPI i Prostoje, ať člověk nekouká
+   na dvě různá čísla podle toho, kde zrovna je. */
+function scopeBar(){
+  return `<div class="scopebar">
+    <span class="muted">Počítat:</span>
+    <button class="rangebtn ${scope==='all'?'on':''}" data-a="scope" data-v="all">Všechny prostoje</button>
+    <button class="rangebtn ${scope==='tech'?'on':''}" data-a="scope" data-v="tech">Jen technické</button>
+    <span class="muted" style="font-size:11px">${scope==='tech'
+      ? 'poruchy strojů a robotů, technické prostoje, přestavby a seřizování — bez logistiky, organizace výroby, lidí a kvality'
+      : 'všechno, co přišlo z reportu'}</span>
+  </div>`;
+}
+const scopeGroups = () => scope==='tech' ? TECH_GROUPS : null;
+
 function dashSubtabs(){
   return `<div class="subtabs">
     <button class="stab ${dashProc===''?'on':''}" data-a="dash-proc" data-v="">Celý závod</button>
@@ -3245,9 +3449,9 @@ function dashSubtabs(){
   </div>`;
 }
 function dashView(){
-  if(!days.length) return dashSubtabs()+emptyView();
+  if(!days.length) return dashSubtabs()+scopeBar()+emptyView();
   const proc=dashProc, pd=proc?procDef(proc):null;
-  const t=totals(proc);
+  const t=totals(proc, scopeGroups());
   const segs=top(t.segs,12).map(x=>Object.assign({},x,{drill:'seg:'+x.label}));
   const groups=top(t.groups).map(x=>Object.assign({},x,{drill:'group:'+x.label}));
   const unk=Object.values(t.groups||{}).find(g=>g.label===UNKNOWN);
@@ -3256,20 +3460,20 @@ function dashView(){
   const worst = segs[0];
   const n=days.length;
   if(proc && !t.sec){
-    return dashSubtabs()+`<div class="panel"><div class="body" style="text-align:center;padding:30px 18px">
+    return dashSubtabs()+scopeBar()+`<div class="panel"><div class="body" style="text-align:center;padding:30px 18px">
       <div style="font-size:32px">${pd.icon}</div>
       <div style="font-size:16px;font-weight:800;margin:8px 0 6px">${esc(pd.label)} — za vybrané období žádné prostoje</div>
       <p class="muted" style="max-width:520px;margin:0 auto">Buď se opravdu nic nestalo, nebo se linky tohohle procesu
         jmenují jinak, než aplikace čeká. Podívej se na hlavní stránku do „Nezařazené linky".</p>
     </div></div>`;
   }
-  return dashSubtabs()+
+  return dashSubtabs()+scopeBar()+
   (t.noSplit?`<div class="notice warn">Část dat (${fmtDur(t.noSplit)}) je ze staršího importu, který ještě neukládal rozpad
     důvodů po linkách — v grafech „Podle důvodu", „Podle směny" a „TOP 10 důvodů" tahle část chybí.
     Stačí ten report nahrát znovu.</div>`:'')+`
   <div class="cards">
     <div class="kcard" style="border-left-color:#1b4b8f">
-      <div class="lbl">Prostoje celkem</div>
+      <div class="lbl">${scope==='tech'?'Technické prostoje':'Prostoje celkem'}</div>
       <div class="val">${num(t.sec/3600,0)}<small> h</small></div>
       <div class="note">${t.cnt.toLocaleString('cs-CZ')} událostí ${
         String(range).startsWith('m') ? '· '+rangeBounds().label+' ('+n+' '+(n===1?'den':(n<5?'dny':'dní'))+' s daty)'
@@ -3319,13 +3523,18 @@ function dashView(){
 
   <div class="grid2">
     <div class="panel">
-      <h2>Vývoj po dnech<span class="right">${proc?esc(pd.label):'celkem přes všechny linky'}</span></h2>
-      <div class="body">${trend(proc)}</div>
+      <h2>Vývoj po dnech<span class="right">${proc?esc(pd.label):'celkem přes všechny linky'}${scope==='tech'?' · jen technické':''}</span></h2>
+      <div class="body">${trend(proc, scopeGroups())}</div>
     </div>
     <div class="panel">
       <h2>Podle směny</h2>
-      <div class="body">${bars(['R','O','N'].filter(k=>t.shifts[k]).map(k=>({label:SHIFT_LBL[k],sec:t.shifts[k].sec,cnt:t.shifts[k].cnt,drill:'shift:'+k})),'#0d7377')}
-        <div class="notice" style="margin:12px 0 0">Směny se počítají podle času začátku: ranní 6–14, odpolední 14–22, noční 22–6.</div>
+      <div class="body">${scope==='tech'
+        ? `<div class="notice">Rozpad po směnách umí denní souhrn jen za všechny prostoje dohromady —
+             u „jen technických" by to byl odhad, a ten radši neukazuju. Přepni na
+             <b>Všechny prostoje</b>, nebo si technické prostoje po směnách vyfiltruj v záložce
+             <b>Prostoje</b>.</div>`
+        : bars(['R','O','N'].filter(k=>t.shifts[k]).map(k=>({label:SHIFT_LBL[k],sec:t.shifts[k].sec,cnt:t.shifts[k].cnt,drill:'shift:'+k})),'#0d7377')
+          +`<div class="notice" style="margin:12px 0 0">Směny se počítají podle času začátku: ranní 6–14, odpolední 14–22, noční 22–6.</div>`}
       </div>
     </div>
   </div>
@@ -3339,6 +3548,7 @@ function dashView(){
 /* Prostoje po filtrech a v pořadí, které si David naklikal ve hlavičce tabulky. */
 function visibleEvents(){
   let r=events.slice();
+  if(scope==='tech') r=r.filter(isTech);
   if(f.proc) r=r.filter(x=>procOfLine(x.seg)===f.proc);
   if(f.seg) r=r.filter(x=>x.seg===f.seg);
   if(f.group) r=r.filter(x=>(x.group||'')===f.group);
@@ -3739,8 +3949,9 @@ function listView(){
   if(!events.length && !busy) return emptyView();
   const r=visibleEvents();
   const segList=[...new Set(events.map(x=>x.seg))].sort((a,b)=>a.localeCompare(b,'cs'));
-  const grpList=[...new Set(events.map(x=>x.group||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
-  const rsnList=[...new Set(events.map(x=>x.reason||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
+  const src=scope==='tech'?events.filter(isTech):events;
+  const grpList=[...new Set(src.map(x=>x.group||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
+  const rsnList=[...new Set(src.map(x=>x.reason||''))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'cs'));
   const sum=r.reduce((s,x)=>s+(x.sec||0),0);
   /* Když jsem sem přišel prokliknutím z KPI, ať je vidět odkud a jak se vrátit. */
   const chips=[
@@ -3750,15 +3961,15 @@ function listView(){
     f.reason ? {t:'Důvod: '+f.reason} : null,
     f.shift  ? {t:'Směna: '+(SHIFT_LBL[f.shift]||f.shift)} : null
   ].filter(Boolean);
-  return `
+  return scopeBar()+`
   ${chips.length?`<div class="drillbar">
-    <button class="btn-ghost" data-a="drill-back">← Zpět na KPI</button>
+    <button class="btn-ghost" data-a="drill-back">← Zpět na ${drillTab==='co'?'Přestavby':'KPI'}</button>
     <span class="muted" style="font-size:12px">Prostoje za ${esc(rangeBounds().label)}, zúžené na:</span>
     ${chips.map(c=>`<span class="dchip">${esc(c.t)}</span>`).join('')}
     <button class="btn-ghost" data-a="drill-clear" style="margin-left:auto">Zrušit filtr</button>
   </div>`:''}
   <div class="panel">
-    <h2>Prostoje<span class="right">${r.length.toLocaleString('cs-CZ')} záznamů · ${fmtDur(sum)} · ${esc(rangeBounds().label)}</span></h2>
+    <h2>${scope==='tech'?'Technické prostoje':'Prostoje'}<span class="right">${r.length.toLocaleString('cs-CZ')} záznamů · ${fmtDur(sum)} · ${esc(rangeBounds().label)}</span></h2>
     <div class="filters">
       <input class="grow" id="f-q" placeholder="Hledat v linkách, důvodech a poznámkách…" value="${esc(f.q)}">
       <select id="f-proc"><option value="">Všechny procesy</option>${PROCESSES.map(p=>`<option value="${p.k}" ${f.proc===p.k?'selected':''}>${esc(p.label)}</option>`).join('')}</select>
@@ -4053,6 +4264,7 @@ function render(){
               : engTab==='mgmt'  ? mgmtView()
               : engTab==='dash'  ? dashView()
               : engTab==='par'   ? parView()
+              : engTab==='co'    ? coView()
               : engTab==='list'  ? listView()
               : engTab==='scrap' ? scrapView()
               : importView();
@@ -4063,6 +4275,7 @@ function render(){
       <button class="tab ${engTab==='tasks'?'on':''}" data-a="tab" data-v="tasks">Akční plán</button>
       <button class="tab ${engTab==='dash'?'on':''}" data-a="tab" data-v="dash">KPI</button>
       <button class="tab ${engTab==='list'?'on':''}" data-a="tab" data-v="list">Prostoje</button>
+      <button class="tab ${engTab==='co'?'on':''}" data-a="tab" data-v="co">Přestavby</button>
       <button class="tab ${engTab==='par'?'on':''}" data-a="tab" data-v="par">Generovat pareto</button>
       <a class="tab" href="${SCRAP_URL}" title="Otevře aplikaci Quality loss report — Scrap">Scrap ↗</a>
       <span class="sp">
@@ -4071,6 +4284,8 @@ function render(){
           :engTab==='mgmt'?'<span class="muted" style="font-size:11.5px">Hlavní stránka počítá po týdnech z posledních 12 týdnů.</span>'
           :engTab==='scrap'?'<span class="muted" style="font-size:11.5px">Scrap se počítá po měsících — posledních 12.</span>'
           :engTab==='par'?'<span class="muted" style="font-size:11.5px">Období si u parety vybereš přímo na stránce.</span>'
+          :engTab==='co'?`<span class="muted" style="font-size:11.5px">Období:</span>
+        ${RANGES.map(r=>`<button class="rangebtn ${range===r.k?'on':''}" data-a="range" data-v="${r.k}">${r.t}</button>`).join('')}`
           :`<span class="muted" style="font-size:11.5px">Období:</span>
         ${RANGES.map(r=>`<button class="rangebtn ${range===r.k?'on':''}" data-a="range" data-v="${r.k}">${r.t}</button>`).join('')}`}
         <button class="btn-ghost" data-a="reload">↻ Načíst znovu</button>
@@ -4224,18 +4439,19 @@ async function act(a,v){
       if(v==='tasks') loadTasks();
       if(v==='scrap'){ location.href=SCRAP_URL; return; }
       if(v==='dash') loadDays();
+      if(v==='co'){ loadDays(); loadEvents(); }
       if(v==='par') loadMgmt();
       if(v==='imp' && imp.step===3) imp=newImp(imp.kind);
       break;
     case 'range':
       range=String(v||'7'); loaded=false; evLoaded='';
-      loadDays(true); if(engTab==='list') loadEvents();
+      loadDays(true); if(engTab==='list'||engTab==='co') loadEvents();
       break;
     case 'reload':
       loaded=false; evLoaded=''; scLoaded=false; mgLoaded=false; tLoaded=false;
       if(engTab==='mgmt'||engTab==='ps') loadMgmt(true);
       if(engTab==='tasks') loadTasks(true);
-      loadDays(true); if(engTab==='list') loadEvents();
+      loadDays(true); if(engTab==='list'||engTab==='co') loadEvents();
       break;
     /* ----- akční plán ----- */
     case 'tk-ownadd':{ collectTask(); const o=openTask&&taskOwners(openTask);
@@ -4262,6 +4478,8 @@ async function act(a,v){
     /* Vybraný týden v dlaždicích posune i tabulku výkonu linek pod nimi,
        ať na stránce nesvítí dva různé týdny. */
     case 'tile-wk': tileWk=v||''; if(v) mgWeek=v; break;
+    case 'scope': scope = v==='tech' ? 'tech' : 'all'; break;
+    case 'co-proc': coProc=v||''; break;
     case 'dash-proc': dashProc=v||''; break;
     /* ----- generovat pareto ----- */
     case 'par-pick':      par.pick=v; par.q=''; break;
@@ -4284,14 +4502,19 @@ async function act(a,v){
        na co jsem klikl. Ostatní filtry se přitom vynulují. */
     case 'kpi-drill':{
       const i=String(v).indexOf(':'), kind=String(v).slice(0,i), val=String(v).slice(i+1);
-      f={seg:'', group:'', shift:'', reason:'', proc:dashProc||'', q:''};
+      const fromCo = engTab==='co';
+      f={seg:'', group:'', shift:'', reason:'', proc:(fromCo?coProc:dashProc)||'', q:''};
       if(kind==='seg'){ f.seg=val; f.proc=''; }      // konkrétní linka proces nepotřebuje
       else if(kind==='group')  f.group=val;
       else if(kind==='shift')  f.shift=val;
       else if(kind==='reason') f.reason=val;
-      drillFrom=dashProc||''; engTab='list'; loadEvents();
+      drillFrom=(fromCo?coProc:dashProc)||''; drillTab=fromCo?'co':'dash';
+      engTab='list'; loadEvents();
       break; }
-    case 'drill-back': engTab='dash'; dashProc=drillFrom||''; break;
+    case 'drill-back':
+      engTab=drillTab||'dash';
+      if(engTab==='co') coProc=drillFrom||''; else dashProc=drillFrom||'';
+      break;
     case 'drill-clear': f={seg:'',group:'',shift:'',reason:'',proc:'',q:''}; break;
     /* Klik na sloupec: nový sloupec začne od největšího (u textu od A),
        další klik na ten samý pořadí otočí. */
