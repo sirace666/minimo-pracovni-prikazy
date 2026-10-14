@@ -428,7 +428,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit, writeBatch, runTransaction }
+  query, where, orderBy, limit, startAfter, writeBatch, runTransaction }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 import { getStorage, ref as sref, uploadBytes, getDownloadURL, deleteObject }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
@@ -1342,6 +1342,7 @@ let engTab='mgmt';                // modul se otevírá na hlavní stránce
 let dashProc='';                 // '' = celý závod, jinak klíč procesu (KPI podzáložky)
 let coProc='';                   // totéž pro záložku Přestavby
 let scope='all';                 // 'all' = všechny prostoje, 'tech' = jen technické
+let evShow=300;                  // kolik řádků prostojů je vidět (tlačítkem se přidává)
 let drillFrom='';                // proces, ze kterého jsem se proklikl do Prostojů
 let drillTab='dash';             // a jestli to bylo z KPI, nebo z Přestaveb
 let tileWk='';                   // '' = celý měsíc, jinak vybraný týden v dlaždicích procesů
@@ -1463,19 +1464,43 @@ async function loadDays(force){
   }catch(e){ errMsg=ruleHint(e); }
   busy=''; render();
 }
-async function loadEvents(){
+/* Prostoje se načítají po dávkách přes celé vybrané období.
+   Dřív se bral jen jeden balík 1 200 nejnovějších — a protože se řadí od
+   nejnovějšího, starší dny z výpisu i z filtrů prostě zmizely, aniž by to
+   bylo poznat. Proto se teď stránkuje kurzorem, dokud nedojdou data.
+   EV_MAX je jen pojistka, aby omylem vybrané obří období nevyčerpalo
+   bezplatný limit čtení ve Firestore. */
+const EV_PAGE = 1000;
+const EV_MAX  = 20000;
+async function loadEvents(force){
   const b=rangeBounds(), key=b.from+'…'+b.to;
-  if(evLoaded===key) return;
+  if(evLoaded===key && !force) return;
   busy='Načítám prostoje…'; errMsg=''; render();
   try{
-    const qs = await getDocs(b.to
-      ? query(collection(db,'downtimes'), where('date','>=',b.from), where('date','<=',b.to), orderBy('date','desc'), limit(1200))
-      : query(collection(db,'downtimes'), where('date','>=',b.from), orderBy('date','desc'), limit(1200)));
-    events = qs.docs.map(d=>Object.assign({_id:d.id}, d.data())).sort((a,b2)=>String(b2.start).localeCompare(String(a.start)));
-    evMore = qs.docs.length>=1200;
+    const where2 = b.to ? [where('date','>=',b.from), where('date','<=',b.to)]
+                        : [where('date','>=',b.from)];
+    const out=[]; let cursor=null, capped=false;
+    for(;;){
+      const qs = await getDocs(query(collection(db,'downtimes'), ...where2,
+        orderBy('date','desc'), ...(cursor?[startAfter(cursor)]:[]), limit(EV_PAGE)));
+      for(const d of qs.docs) out.push(Object.assign({_id:d.id}, d.data()));
+      cursor = qs.docs[qs.docs.length-1];
+      if(qs.docs.length < EV_PAGE) break;
+      if(out.length >= EV_MAX){ capped=true; break; }
+      busy='Načítám prostoje… '+out.length.toLocaleString('cs-CZ'); render();
+    }
+    events = out.sort((a,b2)=>String(b2.start).localeCompare(String(a.start)));
+    evMore = capped;
     evLoaded = key;
   }catch(e){ errMsg=ruleHint(e); }
   busy=''; render();
+}
+/* Dny, které mají denní souhrn, ale ve výpisu prostojů z nich nic není.
+   Díky tomu je hned vidět rozdíl mezi „ten den se nic nestalo" a „nenačetlo se". */
+function missingDays(){
+  if(!events.length || !days.length) return [];
+  const have=new Set(events.map(e=>e.date));
+  return days.filter(d=>(d.cnt||d.sec) && !have.has(d.date)).map(d=>d.date).sort();
 }
 
 /* SheetJS se stahuje, až když se opravdu importuje — stránku to nezdržuje. */
@@ -1901,7 +1926,7 @@ function coView(){
 
   <div class="panel">
     <h2>Jednotlivé přestavby<span class="right">${evs.length.toLocaleString('cs-CZ')} záznamů · od nejdelší</span></h2>
-    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Z vybraného období je načteno posledních 1 200 prostojů, takže starší přestavby v tomhle seznamu chybět mohou. Souhrny nahoře jsou úplné.</div>`:''}
+    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Vybrané období má přes ${EV_MAX.toLocaleString('cs-CZ')} prostojů, víc jich najednou nenačítám — starší přestavby v tomhle seznamu chybět mohou. Souhrny nahoře jsou úplné, počítají se z denních souhrnů.</div>`:''}
     <div class="tblwrap"><table>
       <thead><tr><th>Datum</th><th>Směna</th><th>Linka</th><th>Od</th><th>Do</th><th>Trvání</th>
         <th>Důvod</th><th>Poznámka — z čeho na co</th></tr></thead>
@@ -3973,7 +3998,17 @@ function listView(){
       <select id="f-shift"><option value="">Všechny směny</option>${['R','O','N'].map(k=>`<option value="${k}" ${f.shift===k?'selected':''}>${SHIFT_LBL[k]}</option>`).join('')}</select>
       <button class="btn-ghost" data-a="export">⭳ Export CSV</button>
     </div>
-    ${evMore?`<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">Z vybraného období je načteno posledních 1 200 prostojů, takže u starších dnů nemusí být výpis ani filtr úplný. Zkrať období nebo použij export.</div>`:''}
+    ${(function(){
+      const miss=missingDays();
+      if(evMore) return `<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">
+        Vybrané období má přes ${EV_MAX.toLocaleString('cs-CZ')} prostojů, víc jich najednou nenačítám,
+        aby aplikace nevyčerpala bezplatný limit čtení. Zkrať období.</div>`;
+      if(miss.length) return `<div class="notice warn" style="margin:0;border-radius:0;border-left:0;border-right:0">
+        ${miss.length===1?'Den':'Dny'} ${miss.map(dayCz).join(', ')} ${miss.length===1?'má':'mají'} denní souhrn,
+        ale jednotlivé prostoje z ${miss.length===1?'něj':'nich'} tu nejsou. Zkus ↻ Načíst znovu;
+        když to nepomůže, nahraj ten report znovu v Importu.</div>`;
+      return '';
+    })()}
     <div class="tblwrap">
       <table>
         <thead><tr>${EV_COLS.map(c=>{
@@ -3981,7 +4016,7 @@ function listView(){
           return `<th class="sortth ${on?'on':''}" data-a="ev-sort" data-v="${c.k}"
             title="Seřadit podle ${esc(c.t)}">${esc(c.t)}<span class="sar">${on?(evSort.dir==='desc'?'▼':'▲'):'⇅'}</span></th>`;
         }).join('')}</tr></thead>
-        <tbody>${r.slice(0,300).map(e=>`
+        <tbody>${r.slice(0,evShow).map(e=>`
           <tr class="${e.sec>=3600?'long':''}">
             <td data-label="Datum">${dayCz(e.date)}</td>
             <td data-label="Směna">${e.shift||''}</td>
@@ -3996,7 +4031,15 @@ function listView(){
         </tbody>
       </table>
     </div>
-    ${r.length>300?`<div class="foot muted">Zobrazeno prvních 300 řádků z ${r.length.toLocaleString('cs-CZ')}. Zúži filtr nebo si data vyexportuj.</div>`:''}
+    ${r.length>evShow?`<div class="foot">
+      <span class="muted">Vidíš prvních ${evShow.toLocaleString('cs-CZ')} řádků z ${r.length.toLocaleString('cs-CZ')} —
+        seřazených ${esc((EV_COLS.find(c=>c.k===evSort.k)||EV_COLS[0]).t.toLowerCase())}, takže zbytek je dál v pořadí.</span>
+      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-ghost" data-a="ev-more">Zobrazit dalších 300</button>
+        <button class="btn-ghost" data-a="ev-all">Zobrazit všech ${r.length.toLocaleString('cs-CZ')}</button>
+        <button class="btn-ghost" data-a="export">⭳ Export CSV</button>
+      </span></div>`
+    :(r.length?`<div class="foot muted">Vidíš všech ${r.length.toLocaleString('cs-CZ')} ${r.length===1?'záznam':(r.length<5?'záznamy':'záznamů')}, které filtru odpovídají.</div>`:'')}
   </div>`;
 }
 
@@ -4343,10 +4386,10 @@ function bind(){
   });
 
   const q=document.getElementById('f-q');
-  if(q) q.oninput=()=>{ f.q=q.value; const p=q.selectionStart; render();
+  if(q) q.oninput=()=>{ f.q=q.value; evShow=300; const p=q.selectionStart; render();
     const n=document.getElementById('f-q'); if(n){ n.focus(); n.setSelectionRange(p,p); } };
   [['f-seg','seg'],['f-group','group'],['f-shift','shift'],['f-reason','reason'],['f-proc','proc']].forEach(([id,k])=>{
-    const el=document.getElementById(id); if(el) el.onchange=()=>{ f[k]=el.value; render(); };
+    const el=document.getElementById(id); if(el) el.onchange=()=>{ f[k]=el.value; evShow=300; render(); };
   });
 
   document.querySelectorAll('[data-map]').forEach(el=>{
@@ -4438,14 +4481,14 @@ async function act(a,v){
       if(v==='imp' && imp.step===3) imp=newImp(imp.kind);
       break;
     case 'range':
-      range=String(v||'7'); loaded=false; evLoaded='';
+      range=String(v||'7'); loaded=false; evLoaded=''; evShow=300;
       loadDays(true); if(engTab==='list'||engTab==='co') loadEvents();
       break;
     case 'reload':
       loaded=false; evLoaded=''; scLoaded=false; mgLoaded=false; tLoaded=false;
       if(engTab==='mgmt'||engTab==='ps') loadMgmt(true);
       if(engTab==='tasks') loadTasks(true);
-      loadDays(true); if(engTab==='list'||engTab==='co') loadEvents();
+      loadDays(true); if(engTab==='list'||engTab==='co') loadEvents(true);
       break;
     /* ----- akční plán ----- */
     case 'tk-ownadd':{ collectTask(); const o=openTask&&taskOwners(openTask);
@@ -4472,7 +4515,9 @@ async function act(a,v){
     /* Vybraný týden v dlaždicích posune i tabulku výkonu linek pod nimi,
        ať na stránce nesvítí dva různé týdny. */
     case 'tile-wk': tileWk=v||''; if(v) mgWeek=v; break;
-    case 'scope': scope = v==='tech' ? 'tech' : 'all'; break;
+    case 'scope': scope = v==='tech' ? 'tech' : 'all'; evShow=300; break;
+    case 'ev-more': evShow+=300; break;
+    case 'ev-all':  evShow=1e9; break;
     case 'co-proc': coProc=v||''; break;
     case 'dash-proc': dashProc=v||''; break;
     /* ----- generovat pareto ----- */
@@ -4503,13 +4548,13 @@ async function act(a,v){
       else if(kind==='shift')  f.shift=val;
       else if(kind==='reason') f.reason=val;
       drillFrom=(fromCo?coProc:dashProc)||''; drillTab=fromCo?'co':'dash';
-      engTab='list'; loadEvents();
+      evShow=300; engTab='list'; loadEvents();
       break; }
     case 'drill-back':
       engTab=drillTab||'dash';
       if(engTab==='co') coProc=drillFrom||''; else dashProc=drillFrom||'';
       break;
-    case 'drill-clear': f={seg:'',group:'',shift:'',reason:'',proc:'',q:''}; break;
+    case 'drill-clear': f={seg:'',group:'',shift:'',reason:'',proc:'',q:''}; evShow=300; break;
     /* Klik na sloupec: nový sloupec začne od největšího (u textu od A),
        další klik na ten samý pořadí otočí. */
     case 'ev-sort':{
