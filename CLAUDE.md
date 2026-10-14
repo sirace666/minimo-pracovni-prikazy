@@ -1809,7 +1809,7 @@ počkej asi 8 s a ověř 200 (`/udrzba`, `/shopfloor`). Port VŽDY 8091. Martino
 „localhost nejel, nastartoval jsem ho"). Stejně ho zkontroluj kdykoli Martin napíše, že „nejde localhost" nebo než ho pošleš
 něco prohlížet. Server může spadnout třeba po úklidu dočasných souborů nebo po restartu počítače.
 
-**Stav srovnání s Davidem (aktualizováno 2026-10-13, verze 0.18.32):** sloučená je i jeho poslední změna z 12. 10. 2026 (Engineering: přepínač „Všechny prostoje / Jen technické" a záložka Přestavby; změnil jen `engineering.html` a `CLAUDE.md`, pravidla se neměnila, merge bez konfliktů). Starší stav:
+**Stav srovnání s Davidem (aktualizováno 2026-10-14, verze 0.18.33):** sloučená je i jeho poslední změna ze 14. 10. 2026 (Engineering: prostoje za delší období se načítají po dávkách přes celé období místo jednoho balíku 1 200, tabulka má „Zobrazit dalších 300 / všech" a hlásí dny s denním souhrnem, které ve výpisu chybí; změnil jen `engineering.html` a `CLAUDE.md`, pravidla se neměnila, merge bez konfliktů). Předchozí sloučení (0.18.32, 12. 10. 2026): Engineering — přepínač „Všechny prostoje / Jen technické" a záložka Přestavby. Starší stav:
 **Stav srovnání s Davidem (2026-10-09, verze 0.18.2):** do verze 0.18.2 je sloučený i jeho modul **Shopfloor walk** (`shopfloor.html`, 9. 10. 2026; 1 změna navíc, pravidla Firestore i Storage — cesta `sfw/`). Předchozí sloučení (2026-10-07): jeho `upstream/main` (26 nových změn:
 Engineering — import prostojů z G463, import akčního plánu, pareto, problem
 solving, mazání tasků; Nákup — „+ Import požadavků" z PDF; nová pravidla Firestore
