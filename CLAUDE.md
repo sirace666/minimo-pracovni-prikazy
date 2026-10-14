@@ -195,6 +195,23 @@ období i proces. Nad tabulkou je pak lišta se štítky a tlačítkem **Zpět n
 Tabulka prostojů má kvůli tomu filtry i na proces (`f.proc`) a konkrétní důvod
 (`f.reason`) — export CSV je respektuje taky.
 
+### Načítání prostojů — NEZAVÁDĚJ zpátky jeden limit
+`loadEvents()` stránkuje kolekci `downtimes` kurzorem (`startAfter`) po dávkách
+1 000, dokud nedojdou data za vybrané období. Dřív se bral jediný balík
+`limit(1200)` seřazený od nejnovějšího — a protože se ořízl odspodu, STARŠÍ DNY
+z výpisu i ze všech filtrů prostě zmizely, aniž by to bylo poznat. Nevracej to.
+- `EV_MAX` (20 000) je jen pojistka proti omylem vybranému obřímu období, aby
+  se nevyčerpal bezplatný limit čtení. Když se na něj narazí, `evMore` je true
+  a nad tabulkou se o tom píše.
+- KPI a Přehled čtou dál jen denní souhrny `dt_days`, ne jednotlivé prostoje.
+- `missingDays()` porovná dny, které mají denní souhrn, se dny ve výpisu.
+  Když něco chybí, tabulka to vypíše — ať je rozdíl mezi „ten den se nic
+  nestalo" a „nenačetlo se" vidět na první pohled.
+- Tabulka ukazuje `evShow` řádků (začíná na 300) a v patičce jsou tlačítka
+  „Zobrazit dalších 300" a „Zobrazit všech N". Při změně filtru, období nebo
+  prokliku se počítadlo vrací na 300. Dřív tam byl pevný strop 300 bez možnosti
+  dál — což vypadalo stejně jako chybějící data.
+
 ### Řazení tabulky prostojů
 Sloupce v záložce Prostoje jsou klikací (`EV_COLS`, stav `evSort`). První klik
 na nový sloupec řadí u čísel a datumů od největšího, u textu od A; další klik
