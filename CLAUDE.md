@@ -1631,6 +1631,11 @@ protože:
   - **Použití sady** zapne VŠECHNY uložené filtry (i Stroj, Přiřazeno, Díl, Moje, WO, Porucha) a vynuluje ostatní. Dřívější upozornění „do oblíbených se ukládá jen Typ, Stav…" je pryč.
   - **Související oprava (0.18.42):** poslední sloupec tabulky (Vytvořeno) je 150 px (dřív 120), jinak se nadpis u řazeného sloupce usekl na „VYTVOŘ…" (vedle nadpisu je chevron a tlačítko řazení).
   - **Test:** `t-fav.js` (`stub-nast.js` umí `udrzbaFilters`, parametr `?legacy=1` = jedna starší uložená sada s pěti poli).
+  - **Linka, Stroj, Přiřazeno a Vytvořil v okně (v0.18.43, Martin):** `favOptions(dim)` (`FAV_USAGE`) nabízí VŠECHNY možnosti — linky a stroje z nastavení (`cfg.sections`) + ty z příkazů, a u
+    Přiřazeno/Vytvořil **všechny uživatele z Nastavení** (+ lidi z příkazů bez profilu, jméno z příkazu), Přiřazeno navíc „Nepřiřazeno". U každé je počet příkazů, ve kterých už je (`n`, z `rows`
+    vč. hotových): použité mají v oranžovém odznaku číslo (`.fvs-used`, třída `.fv-used`), zatím nepoužité jsou šedé bez čísla (`.fv-unused`). Všechny čtyři sekce mají vždy pole Hledat
+    (`data-favq`; porovnává se jen text položky, ne číslo) a vysvětlivku. **Menu sloupců v tabulce se NEmění** — tam se dál nabízí jen to, co v příkazech je (`whoOptions`/`autorOptions`).
+    Řádky v seznamech mají všude stejnou výšku (`flex:none`), dlouhý seznam se posouvá (dřív se položky stlačovaly). Test: `t-fav3.js`.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

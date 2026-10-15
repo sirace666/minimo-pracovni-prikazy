@@ -137,7 +137,11 @@
   .fvs-n{min-width:18px;height:18px;padding:0 6px;border-radius:999px;background:#e8590c;color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center}
   .fvs-clr{margin-left:auto;border:0;background:transparent;color:var(--muted);font:600 12px inherit;text-decoration:underline;cursor:pointer;padding:0}
   .fvs-q{width:100%;margin-bottom:6px}
-  .fvs-list{max-height:240px;overflow-y:auto}
+  .fvs-list{max-height:264px;overflow-y:auto}
+  .fvs-list .filter-check{flex:none;padding-top:4px;padding-bottom:4px}   /* stejná výška řádků ve všech sekcích; v dlouhém seznamu se nestlačují, ale posouvají */
+  .fvs-hint{margin:-2px 0 6px;font-size:11px;color:var(--muted)}
+  .fvs-used{flex:none;margin-left:auto;min-width:20px;padding:0 7px;border-radius:999px;background:#fbf1ea;color:#b8480f;font-size:11px;font-weight:800;line-height:18px;text-align:center}
+  .fv-unused .fc-label,.fv-unused .fc-label .who{color:#9b968a}
   @media(max-width:700px){ .fv-top{grid-template-columns:1fr} }
   .color-row{display:flex;gap:6px;flex-wrap:wrap;padding-top:2px}
   .color-dot{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
@@ -1641,16 +1645,50 @@ const FAV_GROUPS=[
   ['Díl a prostoj',[['nd','Díl'],['prostoj','Prostoj']]]
 ];
 const FAV_MINE=[{k:'assigned',label:'Přiřazené mně'},{k:'created',label:'Vytvořené mnou'}];
+// Linka, Stroj, Přiřazeno a Vytvořil mají v okně VŠECHNY možnosti (linky a stroje z nastavení, všichni uživatelé) a vždy hledání.
+// U každé je počet příkazů, ve kterých už je (n); ty, co zatím v žádném příkazu nejsou, se zobrazí slaběji.
+// (Menu sloupců v tabulce zůstává beze změny — tam se nabízí jen to, co v příkazech opravdu je.)
+const FAV_USAGE=['linka','stroj','who','autor'];
+function favOptions(dim){
+  if(dim==='mineSel') return FAV_MINE;
+  if(!FAV_USAGE.includes(dim)) return colOptions(dim);
+  const use={}, bump=k=>{ if(k) use[k]=(use[k]||0)+1; };
+  if(dim==='linka') rows.forEach(o=>bump(o.linka));
+  else if(dim==='stroj') rows.forEach(o=>bump(o.stroj));
+  else if(dim==='autor') rows.forEach(o=>bump(o.author));
+  else rows.forEach(o=>assignedUids(o).forEach(bump));
+  if(dim==='linka'){
+    const names=[...linkaOptions()]; Object.keys(use).forEach(k=>{ if(!names.includes(k)) names.push(k); });   // linky z příkazů, které už nejsou v nastavení, taky
+    return names.map(k=>({k,label:k,n:use[k]||0}));
+  }
+  if(dim==='stroj') return strojOptions().map(o=>({...o,n:use[o.k]||0}));
+  // lidé: všichni z Nastavení + ti, kdo jsou v příkazech, ale profil už nemají (jméno z příkazu)
+  const fb={};
+  rows.forEach(o=>{
+    if(dim==='autor'){ if(o.author&&o.authorName) fb[o.author]=o.authorName; }
+    else{ const nm=assignedNames(o); assignedUids(o).forEach((u,i)=>{ if(nm[i]) fb[u]=nm[i]; }); }
+  });
+  const ids=new Set(users.map(u=>u._id)); Object.keys(use).forEach(k=>ids.add(k));
+  const people=[...ids].map(uid=>{ const x=users.find(y=>y._id===uid);
+      return {k:uid,label:x?pn(x.name||x.email):(fb[uid]?pn(fb[uid]):uid),n:use[uid]||0}; })
+    .sort((a,b)=>a.label.localeCompare(b.label,'cs'));
+  if(dim==='autor') return people;
+  const none=rows.filter(o=>assignedUids(o).length===0).length;
+  return [{k:'_none',label:'Nepřiřazeno',n:none,html:'<span class="none">Nepřiřazeno</span>'},
+          ...people.map(p=>({...p,html:`<span class="who">${esc(p.label)}</span>`}))];
+}
 function favSection(dim,title){
-  const opts=dim==='mineSel'?FAV_MINE:colOptions(dim), sel=filterModal[dim]||[], many=opts.length>7;
+  const opts=favOptions(dim), sel=filterModal[dim]||[], usage=FAV_USAGE.includes(dim), many=usage||opts.length>7;
   const q=String(favQuery[dim]||'').trim().toLowerCase();
   const shown=q?opts.filter(o=>String(o.label).toLowerCase().includes(q)):opts;
   const rowsHtml=shown.length
-    ? shown.map(o=>`<label class="filter-check"><input type="checkbox" data-favflt="${dim}" value="${esc(o.k)}" ${sel.includes(o.k)?'checked':''}><span class="fc-box"></span><span class="fc-label">${o.html||esc(o.label)}</span></label>`).join('')
+    ? shown.map(o=>{ const used=usage&&o.n>0;
+        return `<label class="filter-check${usage?(used?' fv-used':' fv-unused'):''}"><input type="checkbox" data-favflt="${dim}" value="${esc(o.k)}" ${sel.includes(o.k)?'checked':''}><span class="fc-box"></span><span class="fc-label">${o.html||esc(o.label)}</span>${used?`<span class="fvs-used" title="${o.n===1?'je v 1 příkazu':'je v '+o.n+' příkazech'}">${o.n}</span>`:''}</label>`; }).join('')
     : `<div class="muted" style="padding:6px 8px;font-size:12px">${opts.length?'Nic nenalezeno.':'Zatím není z čeho vybírat.'}</div>`;
   return `<section class="fvs${sel.length?' has-sel':''}">
     <div class="fvs-h"><span>${esc(title)}</span>${sel.length?`<span class="fvs-n">${sel.length}</span><button type="button" class="fvs-clr" data-a="fav-dim-clear" data-v="${dim}">Zrušit</button>`:''}</div>
     ${many?`<input type="text" class="fvs-q" data-favq="${dim}" placeholder="Hledat…" autocomplete="off" value="${esc(favQuery[dim]||'')}">`:''}
+    ${usage?'<div class="fvs-hint">Číslo = v kolika příkazech už je. Šedé zatím v žádném není.</div>':''}
     <div class="checklist fvs-list">${rowsHtml}</div>
   </section>`;
 }
@@ -2853,7 +2891,7 @@ function bind(){
   // hledání v seznamech okna Nový/Upravit filtr: jen skrývá/ukazuje položky (bez překreslení, ať se neztrácí kurzor); text se drží v favQuery
   document.querySelectorAll('[data-favq]').forEach(inp=>{ inp.oninput=()=>{
     const d=inp.dataset.favq, q=inp.value.trim().toLowerCase(); favQuery[d]=inp.value;
-    inp.closest('.fvs').querySelectorAll('.fvs-list .filter-check').forEach(l=>{ l.style.display=(!q||l.textContent.toLowerCase().includes(q))?'':'none'; });
+    inp.closest('.fvs').querySelectorAll('.fvs-list .filter-check').forEach(l=>{ const t=l.querySelector('.fc-label'); l.style.display=(!q||(t?t.textContent:l.textContent).toLowerCase().includes(q))?'':'none'; });
   }; });
   // textové filtry v okně (WO jen číslice, Porucha volný text) — drží se v paměti, bez překreslení
   document.querySelectorAll('[data-favtxt]').forEach(inp=>{ inp.oninput=()=>{
