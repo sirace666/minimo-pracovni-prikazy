@@ -1245,23 +1245,26 @@ function passes(o,skip,skip2){
   return true;
 }
 const countView=k=>tileRows().filter(o=>passes(o,'view') && (k?(VIEWS.find(v=>v.k===k)||{test:()=>false}).test(o):true)).length;
-const countTyp=k=>rows.filter(o=>passes(o,'typ') && typOf(o)===k).length;
+/* Čísla ve filtrech (i v „Zobrazeno N z M“) ukazují to, co je vidět: se zapnutým Skrýt hotové se hotové nepočítají (tileRows),
+   stejně jako na dlaždicích (Martin, 2026-10-15). Výjimka je počet u volby Hotovo ve filtru Stav — ten se počítá z `rows`,
+   protože po jejím zaškrtnutí se hotové opravdu ukážou, takže tam číslo říká, kolik jich přibude. */
+const countTyp=k=>tileRows().filter(o=>passes(o,'typ') && typOf(o)===k).length;
 const countStav=k=>rows.filter(o=>passes(o,'stav') && (STAV_FILTER_OPTS.find(s=>s.k===k)||{test:()=>false}).test(o)).length;
-const countPriorita=k=>rows.filter(o=>passes(o,'priorita') && o.priorita===k).length;
+const countPriorita=k=>tileRows().filter(o=>passes(o,'priorita') && o.priorita===k).length;
 const countKritickaOpen=()=>rows.filter(o=>passes(o,'priorita') && o.priorita==='kritická' && o.status!=='hotovo').length;
-const countLinka=name=>rows.filter(o=>passes(o,'linka') && o.linka===name).length;
+const countLinka=name=>tileRows().filter(o=>passes(o,'linka') && o.linka===name).length;
 const linkaOptions=()=>(cfg.sections||[]).map(s=>s.name).filter(Boolean);
-const countObor=k=>rows.filter(o=>passes(o,'obor') && oborOf(o).includes(k)).length;
+const countObor=k=>tileRows().filter(o=>passes(o,'obor') && oborOf(o).includes(k)).length;
 // nd čísla na dlaždici schválně ignorují i 'view' (skip2) — nemají se
 // měnit podle toho, která dlaždice nahoře je zrovna aktivní, jen podle
 // sidebar filtrů (Typ/Stav/Priorita/Obor/Linka/hledání).
 const countNd=k=>tileRows().filter(o=>passes(o,'nd','view') && o.nd===k).length;
 // čísla na dlaždici Moje (stejně jako u dílu: nezávislá na aktivní dlaždici, řídí se jen ostatními filtry)
 const countMine=k=>tileRows().filter(o=>passes(o,'mineSel','view') && (k==='assigned'?assignedUids(o).includes(me.uid):o.author===me.uid)).length;
-const countWho=k=>rows.filter(o=>passes(o,'who') && (k==='_none'?assignedUids(o).length===0:assignedUids(o).includes(k))).length;
-const countProstoj=k=>rows.filter(o=>passes(o,'prostoj') && (hasProstoj(o)?'ano':'ne')===k).length;
-const countStroj=k=>rows.filter(o=>passes(o,'stroj') && o.stroj===k).length;
-const countAutor=k=>rows.filter(o=>passes(o,'autor') && o.author===k).length;
+const countWho=k=>tileRows().filter(o=>passes(o,'who') && (k==='_none'?assignedUids(o).length===0:assignedUids(o).includes(k))).length;
+const countProstoj=k=>tileRows().filter(o=>passes(o,'prostoj') && (hasProstoj(o)?'ano':'ne')===k).length;
+const countStroj=k=>tileRows().filter(o=>passes(o,'stroj') && o.stroj===k).length;
+const countAutor=k=>tileRows().filter(o=>passes(o,'autor') && o.author===k).length;
 // počet aktivních filtrů (bez dlaždic nahoře a hledání) — pro štítek u "FILTRY" a tlačítko Zrušit
 const activeFilterCount=()=>filters.typ.length+filters.stav.length+filters.priorita.length+filters.obor.length+filters.linka.length+filters.stroj.length+filters.nd.length+filters.mineSel.length+filters.who.length+filters.prostoj.length+filters.autor.length+(filters.wo?1:0)+(filters.nazev?1:0);
 const unassignedHasEm=()=>tileRows().some(o=>passes(o,'view') && assignedUids(o).length===0 && typOf(o)==='EM');
@@ -1636,7 +1639,7 @@ const COLS=[
 ];
 const PROSTOJ_OPTS=[{k:'ano',label:'S prostojem'},{k:'ne',label:'Bez prostoje'}];
 const DIM_LABEL={mineSel:'Moje',typ:'Typ',stav:'Stav',priorita:'Priorita',obor:'Obor',linka:'Linka',who:'Přiřazeno',prostoj:'Prostoj',stroj:'Stroj',nd:'Díl',wo:'WO',nazev:'Porucha',autor:'Vytvořil'};
-const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,nd:k=>rows.filter(o=>passes(o,'nd') && o.nd===k).length,who:countWho,prostoj:countProstoj,autor:countAutor};
+const COUNT_FN={typ:countTyp,stav:countStav,priorita:countPriorita,obor:countObor,linka:countLinka,stroj:countStroj,nd:k=>tileRows().filter(o=>passes(o,'nd') && o.nd===k).length,who:countWho,prostoj:countProstoj,autor:countAutor};
 // textové filtry sloupců (hledání místo zaškrtávátek): wo = jen číslice, nazev = volný text
 const TEXT_FILTERS={wo:{ph:'Hledat číslo WO',digits:true},nazev:{ph:'Hledat v poruchách',digits:false}};
 // "2026-10-01T17:32" → "1. 10. 17:32" (do tabulky) / "1. 10. 2026 17:32" (do popisku)
@@ -1708,7 +1711,7 @@ function sbarHTML(n){
   const overridden=hideDone && filters.stav.includes('hotovo');   // přepínač je zapnutý, ale filtr Stav hotové výslovně chce
   const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}><span class="tr"></span>Skrýt hotové</button>`;
   const funnel='<svg class="sb-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z"/></svg>';
-  return {filtered:chips.length>0, html:`<div class="sb-l">${funnel}<span class="sb-count">Zobrazeno <b>${n}</b> z ${rows.length}</span>`
+  return {filtered:chips.length>0, html:`<div class="sb-l">${funnel}<span class="sb-count">Zobrazeno <b>${n}</b> z ${tileRows().length}</span>`
     +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit vše</button>`:'<span class="sb-nof">· bez filtru</span>')+`</div>${sw}`};
 }
 function theadHTML(){

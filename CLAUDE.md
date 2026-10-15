@@ -1318,8 +1318,8 @@ protože:
        Zbudou-li po skrytí jen hotové (třeba hledání trefí jen hotový), místo
        prázdné tabulky se ukáže hláška „Zbývají jen hotové příkazy" s tlačítkem
        Zobrazit hotové (`.empty2` větev v `listView()`).
-       **Čísla na dlaždicích nahoře se přepínačem MĚNÍ (od 0.18.21)** — viz „Čísla na dlaždicích" níž; počty v menu filtrů se NEMĚNÍ (obsahují i hotové, ať jde
-       Hotovo ve filtru Stav vybrat).
+       **Čísla na dlaždicích nahoře i počty v menu filtrů se přepínačem MĚNÍ (dlaždice od 0.18.21, menu filtrů od 0.18.34)** — viz „Čísla na dlaždicích" a
+       „Počty ve filtrech" níž. Platí jedno pravidlo: čísla ukazují to, co je vidět.
   - **Pevný horní blok, rolují jen řádky (Martin):** od 861 px šířky a 560 px
     výšky se stránka sama nescrolluje. `#app` je flex sloupec o výšce okna
     (`100dvh`, `overflow:hidden`), `#main-host` → `main` → `.board2` → `.listcard2`
@@ -1539,9 +1539,13 @@ protože:
 - **Čísla na dlaždicích sledují Skrýt hotové (2026-10-10, v0.18.21)** — Martin: číslo na dlaždici má odpovídat tomu, co se zrovna zobrazí na stránce
   (příklad: Vše 30 s vypnutým Skrýt hotové, Vše 25 se zapnutým při 25 aktivních + 5 hotových). `tileRows()` = `rows` bez hotových, když je zapnuté Skrýt hotové
   (`doneShown()` false) a jde o počítač (≥861 px; na mobilu přepínač není, tam se počítá všechno). Používají ho `countView`, `countNd`, `countMine`,
-  `unassignedHasEm`/`unassignedHasEmCrit`. Když je ve filtru Stav zaškrtnuté Hotovo, hotové se počítají (jako `doneShown()`). Počty v MENU filtrů (`countStav` apod.)
-  hotové počítají vždy — jinak by u Hotovo ve filtru Stav stála 0, i když se po zaškrtnutí hotové ukážou. Tohle NAHRAZUJE dřívější rozhodnutí (0.17.2), že čísla dlaždic
-  přepínač nemění.
+  `unassignedHasEm`/`unassignedHasEmCrit`. Když je ve filtru Stav zaškrtnuté Hotovo, hotové se počítají (jako `doneShown()`). Tohle NAHRAZUJE dřívější rozhodnutí (0.17.2), že čísla dlaždic
+  přepínač nemění. (HISTORICKÉ: tehdy se počty v MENU filtrů hotové počítaly vždy; od 0.18.34 už ne, viz níž.)
+- **Počty ve filtrech a „Zobrazeno N z M" sledují Skrýt hotové (2026-10-15, v0.18.34)** — Martin: u Priorita „Nízká" bylo v menu 5, v tabulce 3, protože 2 byly
+  hotové a skryté. Pravidlo celé appky: **číslo ukazuje to, co je vidět.** Všechny `count*` funkce filtrů (`countTyp/Priorita/Obor/Linka/Stroj/Who/Prostoj/Autor`, `COUNT_FN.nd`)
+  teď berou `tileRows()` místo `rows`, takže hotové skryté přepínačem nepočítají. „Zobrazeno N z M": M je `tileRows().length` (bez skrytých hotových), tedy stejně jako
+  dlaždice Vše bez filtru. **Jediná výjimka je počet u volby Hotovo ve filtru Stav** (`countStav` zůstává na `rows`): po jejím zaškrtnutí se hotové opravdu ukážou, takže tam
+  číslo říká, kolik jich přibude (jinak by u Hotovo stála 0). Přidáš-li nový `count*`, použij `tileRows()`, ne `rows`.
 - **Rychlá změna oboru z řádku tabulky (2026-10-10, v0.18.22)** — Martin: kliknutí na štítek oboru (třeba Nástrojárna) otevře okno, kde se obor rovnou upraví.
   `.r2-obs.editable` (`data-a="obor-open"`) je klikací JEN když `udCanEdit(o)` (obor je obsah příkazu; pravidla Firestore ho mají mezi poli, která vyžadují právo
   Upravovat). Otevře `oborPickerView()` (stav `oborPicker={id,sel}`; od 0.18.23 má STEJNÝ vzhled jako okno Přiřadit pracovníky — řádky `.ap-row` s obyčejným zaškrtávátkem a jemným podbarvením při najetí, ne tmavě vyplněné `.filter-check`; štítky oboru v řádku mají při najetí stejné barvy jako „+ Přiřadit" `#b8480f`/`#fbf1ea`): tři zaškrtávátka z `OBOR`, aspoň jeden musí zůstat (jinak hláška a zakázané Uložit),
