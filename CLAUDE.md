@@ -1875,7 +1875,7 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
   `firestore-pravidla-pridat.txt`, `Spustit-localhost.bat`, `.git`, `.claude`, všechny soubory začínající tečkou. Po přidání nového
   neveřejného souboru ho dej do `ignore` a po nasazení ověř, že na webu dává 404.
 - Zdrojový kód (HTML/JS) si návštěvník stejně může zobrazit v prohlížeči — to nejde zakázat; chráněna jsou DATA přihlášením a pravidly
-  Firestore. Přístup se řídí **účtem**: ukázkové účty `mistr@minimo.local` a `udrzbar@minimo.local` (level basic) jsou v testovacím
+  Firestore. Přístup se řídí **účtem**: ukázkové účty `udrzbar@minimo.local`, `process.engineer@minimo.local` a `tool.setter@minimo.local` (level basic; od 2026-10-15, dřív i `mistr@minimo.local`) jsou v testovacím
   projektu; hesla zná jen Martin (NEPIŠ je do repa). Přístup „zhasne" vypnutím účtu ve Firebase konzoli (Authentication → Users).
 - Údržbu mají ukázkové účty jen tehdy, když jim ji správce v Nastavení zobrazí (od 0.18.18 se NEŘÍDÍ seznamem e-mailů, výchozí je skryté — po
   nasazení 0.18.18 musel Martin oběma účtům v Nastavení vybrat předvolbu). Dlaždice Údržba v `index.html` má `udrzbaOnly:true`
@@ -1894,11 +1894,16 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
   projekt — `firebase deploy --only firestore:rules` /
   `firebase deploy --only storage:rules` (pozor, `--only firestore:rules,storage:rules`
   dohromady občas hlásilo chybu, radši zvlášť).
-- Testovací účty (Firebase Auth, jen v tomhle projektu):
-  `admin.test@minimo.local` (role `admin`), `technik.test@minimo.local`
-  (běžný pilotní uživatel, `assignedTo` test dat). Hesla viz historie
-  konverzace s Martinem / dají se kdykoliv resetovat v konzoli
-  (Authentication → Users).
+- **Testovací účty — od 2026-10-15 jsou JEN TYTO ČTYŘI** (Martin to určil; Firebase Auth, jen v tomhle projektu):
+  | Účet | E-mail | Role / předvolba v Údržbě |
+  |---|---|---|
+  | ADMIN | `admin.test@minimo.local` | Super Admin, vidí všude |
+  | Údržbář | `udrzbar@minimo.local` | předvolba Údržba |
+  | PE | `process.engineer@minimo.local` | předvolba Process engineer |
+  | TS | `tool.setter@minimo.local` | předvolba Tool setters |
+  Hesla zná jen Martin a **nepíšou se do repa ani do paměti** (resetují se v konzoli: Authentication → Users).
+  Žádné jiné zkušební účty nezakládej ani nepoužívej; starší (`technik.test`, `mistr@minimo.local`, `ZZ TEST`/`ZZ DBG`…) se mají smazat včetně
+  osiřelých profilů ve Firestore `users`. **Účty zakládá a maže Martin sám v konzoli** (já to dělat nesmím).
 - **Nikdy nemíchat s Davidovým `nakupni-pozadavky`** — ten má opravdová
   data 39 lidí z Yanfengu. Do něj se sahá jen na čtení (přes
   `martin.smrz.osobni@gmail.com`, který tam má Editor roli), nikdy na zápis
