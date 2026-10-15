@@ -303,9 +303,21 @@
   .modal-tab.on.typ-em{color:var(--danger);border-bottom-color:var(--danger)}
   .form-grid{display:grid;gap:.7rem}
   .form-grid.cols2{grid-template-columns:1fr 1fr}
-  .hist{font-size:.82rem}
-  .hist div{padding:.3rem 0;border-top:1px dotted var(--border)}
-  .hist div:first-child{border-top:none}
+  /* Historie příkazu: souhrn nahoře a osa po dnech (0.18.35) */
+  .tl-sum{margin:0 0 1.1rem}
+  .tl-sv{font-size:14px;font-weight:800;color:var(--text)}
+  .tl-day{display:flex;align-items:center;gap:.6rem;margin:1.1rem 0 .3rem;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .tl-day::after{content:'';flex:1;height:1px;background:var(--border)}
+  .tl>.tl-day:first-child{margin-top:0}
+  .tl-row{display:flex;gap:.7rem;align-items:flex-start;padding:.4rem 0}
+  .tl-ic{position:relative;flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--c)}
+  .tl-ic::before{content:'';position:absolute;inset:0;border-radius:50%;background:var(--c);opacity:.14}
+  .tl-ic svg{position:relative;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .tl-main{min-width:0;flex:1}
+  .tl-t{font-size:.9rem;font-weight:700;color:var(--text)}
+  .tl-d{font-size:.84rem;color:var(--text);margin-top:1px;overflow-wrap:anywhere}
+  .tl-meta{font-size:.76rem;color:var(--muted);margin-top:2px}
+  .tl-done .tl-t{color:#15803d}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy-1);color:#fff;padding:.6rem 1.1rem;
     border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:80;font-weight:600;font-size:.85rem}
@@ -767,7 +779,6 @@
     .ap-row.locked .ap-person{cursor:default}
     .ap-badge.ap-cm{background:#f1efe9;color:#58554b}
     .ap-drill{background:#faf9f6}
-    .hist div{border-top-color:#e3e0d8}
     .toast{background:#1c1b17;border-radius:999px;font-family:'Figtree','Segoe UI',sans-serif;padding:.65rem 1.25rem}
     .toast.err{background:#c0392b}.toast.ok{background:#1d7a44}
     .listcard2 .empty2{background:#fff;border:1px dashed #dcd8ce;border-radius:14px;font-family:'Figtree','Segoe UI',sans-serif}
@@ -984,6 +995,9 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 // (denormalizované v době, kdy se ještě ukládalo neupravené jméno z e-mailu).
 const pn = s => window.minimoDisplayName ? window.minimoDisplayName(s) : s;
 const today = () => new Date().toISOString().slice(0,10);
+// Řádek historie: „2026-10-15 14:32 · Jméno · co se stalo" (místní čas). Starší řádky mají jen datum.
+const histStamp = () => nowLocal().replace('T',' ');
+const histLine = text => `${histStamp()} · ${me.name} · ${text}`;
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
 
 /* ===== auth ===== */
@@ -1159,14 +1173,16 @@ function histParts(h){
   String(h).split(' · ').forEach((seg,i)=>{
     if(i) out.push({t:' · ',d:false});
     let m;
-    if(HIST_BOILER.test(seg) || HIST_WORK.test(seg) || /^změnil obor: /.test(seg)) out.push({t:seg,d:false});
+    if((m=/^(zapsal práci \([^)]*\))(?:: (.*))?$/.exec(seg))){ out.push({t:m[1],d:false}); if(m[2]) out.push({t:': ',d:false},{t:m[2],d:true}); }   // za dvojtečkou je text, který člověk napsal = data
+    else if((m=/^(nahlásil chybějící díl): (.*)$/.exec(seg))) out.push({t:m[1]+': ',d:false},{t:m[2],d:true});
+    else if(/^(upravil příkaz|zapsal prostoj stroje) \(.*\)$/.test(seg)) out.push({t:seg,d:false});   // podrobnosti změn a časy prostoje jsou šablona
+    else if(HIST_BOILER.test(seg) || HIST_WORK.test(seg) || /^změnil obor: /.test(seg)) out.push({t:seg,d:false});
     else if((m=/^přiřazeno: (.*)$/.exec(seg))) out.push({t:'přiřazeno: ',d:false},{t:m[1],d:!HIST_BOILER.test(m[1])});
     else if(/^stav (.+) → (.+)$/.test(seg)) out.push({t:seg,d:false});   // změna stavu = šablona, stav se nehledá
     else out.push({t:seg,d:true});
   });
   return out;
 }
-const histHtmlLine=h=>histParts(h).map(x=>x.d?`<span class="hv">${esc(x.t)}</span>`:esc(x.t)).join('');
 const hiddenSearchText=o=>({popis:String(o.popis||''),hist:(o.hist||[]).map(h=>histParts(h).filter(x=>x.d).map(x=>x.t).join(' ')).join(' ')});
 function matchesSearch(o){
   if(!filters.q) return true;
@@ -2205,11 +2221,120 @@ function editForm(o){
     </div>
   </div>`;
 }
+/* ===== Historie příkazu: souhrn nahoře + osa po dnech (2026-10-15, v0.18.35) =====
+   Řádek historie je řetězec „datum[ čas] · kdo · co se stalo". Starší řádky mají jen datum a stručný text, nové mají i čas
+   a konkrétní údaje (co se změnilo, jaká práce, jaký díl). Staré řádky se nepřepisují, jen se hezčeji ukážou. */
+const histCut=(s,n)=>{ s=String(s==null?'':s).replace(/\s+/g,' ').replace(/ · /g,' – ').replace(/;/g,',').trim(); return s.length>n?s.slice(0,n-1)+'…':s; };
+const dayNum=s=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); return m?Math.floor(Date.UTC(+m[1],+m[2]-1,+m[3])/864e5):NaN; };
+const plDays=n=>n<=0?'méně než 1 den':n===1?'1 den':n<5?`${n} dny`:`${n} dní`;
+const cap1=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+// co se v příkazu změnilo (pro řádek „upravil příkaz (…)") — jen položky, které člověk ve formuláři opravdu mění
+function changeDetails(old,cur){
+  const out=[], S=v=>String(v==null?'':v).trim(), V=v=>histCut(v,40)||'—';
+  const add=(label,a,b)=>{ if(S(a)!==S(b)) out.push(`${label} ${V(a)} → ${V(b)}`); };
+  add('porucha',old.nazev,cur.nazev);
+  if(S(old.popis)!==S(cur.popis)) out.push('popis upraven');
+  add('priorita',PRIORITA_LABEL[old.priorita]||old.priorita,PRIORITA_LABEL[cur.priorita]||cur.priorita);
+  add('typ',typOf(old),typOf(cur));
+  add('linka',old.linka,cur.linka);
+  add('stroj',old.stroj,cur.stroj);
+  add('WO',old.wo,cur.wo);
+  const ob=x=>oborOf(x).slice().sort();
+  if(ob(old).join(',')!==ob(cur).join(',')) out.push(`obor ${ob(old).map(oborLabel).join(', ')||'—'} → ${ob(cur).map(oborLabel).join(', ')||'—'}`);
+  if(hasProstoj(old)!==hasProstoj(cur)) out.push(`prostoj ${hasProstoj(old)?'ano':'ne'} → ${hasProstoj(cur)?'ano':'ne'}`);
+  return out;
+}
+const workDetail=rec=>{ const t=workTypeLabel(rec.typ), p=histCut(rec.popis,120); return (t||p)?`: ${[t,p].filter(Boolean).join(' – ')}`:''; };
+const dilDetail=list=>list&&list.length?': '+histCut(list.map(d=>d.q?`${d.n} (${d.q})`:d.n).join(', '),120):'';
+const prostojDetail=(od,dd)=>{
+  const a=prostojCz(od), b=prostojCz(dd);
+  if(a&&b){ const m=minBetween(od,dd); return ` (${a} – ${b}${isNaN(m)||m<0?'':', '+fmtMin(m)})`; }
+  return a?` (od ${a})`:(b?` (do ${b})`:'');
+};
+const HIST_COLOR={novy:'#6366f1',stav:'#ea7317',hotovo:'#15803d',prace:'#2563a8',prostoj:'#a21caf',dil:'#b45309',who:'#6b7290',edit:'#6b7290',other:'#6b7290'};
+const HIST_ICO={
+  novy:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 2.5v9M2.5 7h9"/></svg>',
+  stav:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7h8M7.5 3.5 11 7l-3.5 3.5"/></svg>',
+  hotovo:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.5l2.7 2.7L11 4.6"/></svg>',
+  prace:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9.6 2.4a3 3 0 0 0-3.2 4L2.5 10.3a1 1 0 0 0 1.4 1.4L7.8 7.8a3 3 0 0 0 4-3.2L10 6.4 8.2 4.6z"/></svg>',
+  prostoj:SVG_CLOCK, dil:SVG_BOX,
+  who:'<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="4.8" r="2.3"/><path d="M2.6 12c.5-2.5 2.2-3.7 4.4-3.7s3.9 1.2 4.4 3.7"/></svg>',
+  edit:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 11.5l.7-2.7 6.2-6.2 2 2-6.2 6.2z"/></svg>',
+  other:'<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="1.6"/></svg>'
+};
+// rozbor jednoho řádku historie na událost: {date,time,who,kind,title,det:[{t,d}],from,to,wait}; d=true je text, který člověk napsal (hledá se a označuje)
+function histEvent(raw){
+  const segs=String(raw).split(' · '), three=segs.length>=3;
+  const stamp=three?segs[0]:'', who=three?segs[1]:'', text=three?segs.slice(2).join(' · '):String(raw);
+  const sm=/^(\d{4}-\d{2}-\d{2})(?: (\d{2}:\d{2}))?$/.exec(stamp);
+  const ev={date:sm?sm[1]:'', time:(sm&&sm[2])||'', who, kind:'other', title:cap1(text), det:[]};
+  let m;
+  if(/^založil příkaz/.test(text)){ ev.kind='novy'; ev.title='Založil příkaz'; }
+  else if((m=/^stav (.+) → (.+)$/.exec(text))){ ev.from=m[1]; ev.to=m[2]; ev.kind=m[2]==='hotovo'?'hotovo':'stav';
+    ev.title=m[2]==='hotovo'?'Označil jako hotovo':'Změnil stav'; ev.det=[{t:`${statusLabel(m[1])} → ${statusLabel(m[2])}`,d:false}]; }
+  else if(/^označil jako hotovo/.test(text)){ ev.kind='hotovo'; ev.title='Označil jako hotovo'; }
+  else if((m=/^zapsal práci \(([^)]*)\)(?:: (.*))?$/.exec(text))){ ev.kind='prace'; ev.title='Zapsal práci · '+m[1]; if(m[2]) ev.det=[{t:m[2],d:true}]; }
+  else if(/^(upravil|smazal) záznam práce/.test(text)){ ev.kind='prace'; }
+  else if((m=/^zapsal prostoj stroje(?: \((.*)\))?$/.exec(text))){ ev.kind='prostoj'; ev.title='Zapsal prostoj stroje'; if(m[1]) ev.det=[{t:m[1],d:false}]; }
+  else if((m=/^nahlásil chybějící díl(?:: (.*))?$/.exec(text))){ ev.kind='dil'; ev.title='Nahlásil chybějící díl'; ev.wait='start'; if(m[1]) ev.det=[{t:m[1],d:true}]; }
+  else if(/^díl objednán/.test(text)){ ev.kind='dil'; ev.title='Díl objednán'; }
+  else if(/^(díl dorazil|pokračuje se v opravě)/.test(text)){ ev.kind='dil'; ev.wait='end'; }
+  else if((m=/^přiřazeno: (.*)$/.exec(text))){ ev.kind='who'; ev.title='Přiřazeno'; ev.det=[{t:m[1],d:!HIST_BOILER.test(m[1])}]; }
+  else if((m=/^upravil příkaz(?: \((.*)\))?$/.exec(text))){ ev.kind='edit'; ev.title='Upravil příkaz'; if(m[1]) ev.det=m[1].split('; ').map(t=>({t,d:false})); }
+  else if((m=/^změnil obor: (.*)$/.exec(text))){ ev.kind='edit'; ev.title='Změnil obor'; ev.det=[{t:m[1],d:false}]; }
+  return ev;
+}
+function histRowHtml(ev){
+  const col=ev.kind==='stav'?(STAV_BARVA[ev.to]||HIST_COLOR.stav):(HIST_COLOR[ev.kind]||HIST_COLOR.other);
+  const det=ev.det.map(x=>`<div class="tl-d">${x.d?`<span class="hv">${esc(x.t)}</span>`:esc(x.t)}</div>`).join('');
+  const meta=[ev.who?`<span class="hv">${esc(pn(ev.who))}</span>`:'', ev.time?`<span class="hv">${esc(ev.time)}</span>`:''].filter(Boolean).join(' · ');
+  return `<div class="tl-row${ev.kind==='hotovo'?' tl-done':''}"><span class="tl-ic" style="--c:${col}">${HIST_ICO[ev.kind]||HIST_ICO.other}</span>
+    <div class="tl-main"><div class="tl-t">${esc(ev.title)}</div>${det}${meta?`<div class="tl-meta">${meta}</div>`:''}</div></div>`;
+}
+function histTimelineHtml(o){
+  const evs=(o.hist||[]).map(histEvent);
+  // hotový příkaz bez řádku o přechodu do Hotovo (starší data) — doplní se z uložených údajů, ať je konec příběhu vidět
+  if(o.status==='hotovo' && !evs.some(e=>e.kind==='hotovo')) evs.push({date:String(o.doneAt||'').slice(0,10),time:'',who:o.doneByName||'',kind:'hotovo',title:'Označil jako hotovo',det:[]});
+  if(!evs.length) return '<div class="muted">Zatím žádné záznamy.</div>';
+  const p2=n=>String(n).padStart(2,'0'), ymd=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const tNow=ymd(new Date()), tYes=ymd(new Date(Date.now()-864e5));
+  const label=d=>!d?'Bez data':d===tNow?'Dnes':d===tYes?'Včera':dateCz(d).replace(/\.$/,'');
+  let html='', last=null;
+  evs.slice().reverse().forEach(ev=>{   // nejnovější nahoře; pořadí určuje zápis do pole, ne čas
+    if(ev.date!==last){ html+=`<div class="tl-day">${esc(label(ev.date))}</div>`; last=ev.date; }
+    html+=histRowHtml(ev);
+  });
+  return `<div class="tl">${html}</div>`;
+}
+// souhrn nahoře: doba otevření, odpracováno, prostoj, čekání na díl, doba ve stavech (dny, ze zapsaných dat)
+function histSummaryHtml(o){
+  const evs=(o.hist||[]).map(histEvent), done=o.status==='hotovo', p2=n=>String(n).padStart(2,'0'), d0=new Date();
+  const tNow=`${d0.getFullYear()}-${p2(d0.getMonth()+1)}-${p2(d0.getDate())}`;
+  const created=String(o.created||'').slice(0,10), end=done?String(o.doneAt||tNow).slice(0,10):tNow;
+  const tiles=[], tile=(label,val,sub)=>tiles.push(ipTile(label,(Array.isArray(val)?val:[val]).map(v=>`<span class="tl-sv">${esc(v)}</span>`).join(''),sub?{sub:esc(sub)}:undefined));
+  if(created) tile(done?'Vyřízeno za':'Otevřeno', plDays(Math.max(0,dayNum(end)-dayNum(created))), `od ${dateCz(created).replace(/\.$/,'')}`);
+  const wt=workTotals(o).total;
+  if(wt) tile('Odpracováno', fmtMin(wt), `záznamů: ${praceOf(o).length}`);
+  if(hasProstoj(o)){ const pm=(o.prostojOd&&o.prostojDo)?minBetween(o.prostojOd,o.prostojDo):NaN;
+    if(!isNaN(pm)&&pm>=0) tile('Stroj stál', fmtMin(pm)); else tile('Stroj stál','ANO','čas není zapsán'); }
+  let ws=null, waitDays=0, hadWait=false;   // čekání na díl: od „nahlásil chybějící díl" po „díl dorazil" / „pokračuje se"
+  evs.forEach(e=>{
+    if(e.wait==='start'&&ws==null&&e.date){ ws=e.date; hadWait=true; }
+    else if(e.wait==='end'&&ws!=null){ waitDays+=Math.max(0,dayNum(e.date||ws)-dayNum(ws)); ws=null; }
+  });
+  if(ws!=null) waitDays+=Math.max(0,dayNum(end)-dayNum(ws));
+  if(hadWait) tile('Čekání na díl', plDays(waitDays), ws!=null?'dosud čeká':'');
+  const acc={}; let st='nový', lastD=created, any=false;   // doba ve stavech podle řádků „stav A → B"
+  evs.forEach(e=>{ if(!e.to||!e.date||!lastD) return; any=true; const f=e.from||st; acc[f]=(acc[f]||0)+Math.max(0,dayNum(e.date)-dayNum(lastD)); lastD=e.date; st=e.to; });
+  if(any && st!=='hotovo') acc[st]=(acc[st]||0)+Math.max(0,dayNum(end)-dayNum(lastD));
+  if(any){ const parts=['nový','rozpracováno'].filter(k=>k in acc).map(k=>`${statusLabel(k)}: ${plDays(acc[k])}`); if(parts.length) tile('Podle stavů', parts); }
+  return tiles.length?`<div class="infogrid ip tl-sum">${tiles.join('')}</div>`:'';
+}
+
 function modalView(){
   const o=editing, isNew=!o._id;
   const showEdit = isNew || editMode;
   const canEdit = isNew || udCanEdit(o);
-  const histHtml = (o.hist&&o.hist.length)?o.hist.slice().reverse().map(h=>`<div>${histHtmlLine(h)}</div>`).join(''):'<div class="muted">Zatím žádné záznamy.</div>';
   const next = NEXT_STATUS[o.status];
   const tabs = showEdit ? `<div class="modal-tabs">
     <button type="button" class="modal-tab ${typOf(o)==='EM'?'on typ-em':''}" data-a="set-typ" data-v="EM">Havarijní (EM)</button>
@@ -2234,7 +2359,7 @@ function modalView(){
       : `<button class="btn-danger" data-a="del" data-v="${o._id}">Smazat příkaz</button>`
     }</div>`:''}
   ` : `
-    ${modalTab==='prace'?'':`<div class="hero st-${o.status} notop">
+    ${(modalTab==='prace'||modalTab==='historie')?'':`<div class="hero st-${o.status} notop">
       <div class="row" style="align-items:flex-start;margin-top:.5rem">
         <h2 style="flex:1">${esc(o.nazev||'')}</h2>
         ${canEdit?`<button class="btn-ghost" data-a="edit">✎ Upravit</button>`:''}
@@ -2254,8 +2379,9 @@ function modalView(){
       </div>
     </div>`}
     ${modalTab==='historie' ? `
-      <div class="sec">
-        <div class="hist">${histHtml}</div>
+      <div class="sec" style="border-top:none">
+        ${histSummaryHtml(o)}
+        ${histTimelineHtml(o)}
       </div>
     ` : modalTab==='prace' ? praceTabHtml(o) : `
       ${(udAssignLevel(o)!=='none')?`<div class="sec">
@@ -2303,7 +2429,7 @@ function validate(){
 async function createPrikaz(){
   const cislo=await nextNumber();
   const rec=Object.assign({priorita:'běžná',typ:'CM',obor:[]},editing,{cislo,status:'nový',author:me.uid,authorName:me.name,authorEmail:me.email,
-    created:today(),createdTs:serverTimestamp(),hist:[`${today()} · ${me.name} · založil příkaz`]});
+    created:today(),createdTs:serverTimestamp(),hist:[histLine(`založil příkaz`)]});
   delete rec._id;
   await addDoc(collection(db,'udrzba'),rec);
   return cislo;
@@ -2312,17 +2438,22 @@ async function updatePrikaz(){
   const id=editing._id; const old=rows.find(r=>r._id===id)||{};
   const hist=(editing.hist||[]).slice();
   const oldUids=assignedUids(old).slice().sort().join(','), newUids=assignedUids(editing).slice().sort().join(',');
-  if(oldUids!==newUids) hist.push(`${today()} · ${me.name} · přiřazeno: ${assignedNames(editing).join(', ')||'nikdo'}`);
-  hist.push(`${today()} · ${me.name} · upravil příkaz`);
+  const assignChanged=oldUids!==newUids;
+  if(assignChanged) hist.push(histLine(`přiřazeno: ${assignedNames(editing).join(', ')||'nikdo'}`));
+  // řádek „upravil příkaz" říká i CO se změnilo; když se změnilo jen přiřazení, stačí řádek o přiřazení
+  const det=changeDetails(old,editing);
+  if(det.length) hist.push(histLine(`upravil příkaz (${det.join('; ')})`));
+  else if(!assignChanged) hist.push(histLine('upravil příkaz'));
   const {_id,...data}=editing; data.hist=hist;
   await updateDoc(doc(db,'udrzba',id),data);
 }
 async function changeStatus(o,newStatus){
   const hist=(o.hist||[]).slice();
-  hist.push(`${today()} · ${me.name} · stav ${o.status} → ${newStatus}`);
+  hist.push(histLine(`stav ${o.status} → ${newStatus}`));
   const patch={status:newStatus,hist};
   if(newStatus==='hotovo'){ patch.doneAt=today(); patch.doneByName=me.name; }
   await updateDoc(doc(db,'udrzba',o._id),patch);
+  return patch;   // volající si z něj vezme hotovou historii (stejný řádek i čas jako v databázi)
 }
 
 async function saveWork(){
@@ -2345,10 +2476,10 @@ async function saveWork(){
     await runTransaction(db,async tx=>{
       const snap=await tx.get(ref); const d=snap.data()||{}; const list=(d.prace||[]).slice(); const hist=(d.hist||[]).slice();
       if(workModal.editId){ const i=list.findIndex(x=>x.id===workModal.editId); if(i<0) throw new Error('Záznam už neexistuje.'); rec.author=list[i].author; rec.authorName=list[i].authorName; list[i]=rec;
-        hist.push(`${today()} · ${me.name} · upravil záznam práce`); }
-      else{ list.push(rec); hist.push(`${today()} · ${me.name} · zapsal práci (${fmtMin(min)})`); }
+        hist.push(histLine(`upravil záznam práce`)); }
+      else{ list.push(rec); hist.push(histLine(`zapsal práci (${fmtMin(min)})${workDetail(rec)}`)); }
       const upd={prace:list,hist};
-      if(rec.objednat.length && !d.nd){ upd.nd='potreba'; hist.push(`${today()} · ${me.name} · nahlásil chybějící díl`); }
+      if(rec.objednat.length && !d.nd){ upd.nd='potreba'; hist.push(histLine(`nahlásil chybějící díl${dilDetail(rec.objednat)}`)); }
       tx.update(ref,upd); out={prace:list,hist,nd:upd.nd};
     });
     if(editing&&editing._id===id){ editing.prace=out.prace; editing.hist=out.hist; if(out.nd) editing.nd=out.nd; }
@@ -2364,7 +2495,7 @@ async function deleteWork(rid){
   try{
     const ref=doc(db,'udrzba',id); let out=null;
     await runTransaction(db,async tx=>{
-      const snap=await tx.get(ref); const d=snap.data()||{}; const list=(d.prace||[]).filter(x=>x.id!==rid); const hist=(d.hist||[]).concat(`${today()} · ${me.name} · smazal záznam práce`);
+      const snap=await tx.get(ref); const d=snap.data()||{}; const list=(d.prace||[]).filter(x=>x.id!==rid); const hist=(d.hist||[]).concat(histLine(`smazal záznam práce`));
       tx.update(ref,{prace:list,hist}); out={prace:list,hist};
     });
     if(editing&&editing._id===id){ editing.prace=out.prace; editing.hist=out.hist; }
@@ -2462,15 +2593,15 @@ async function act(a,v,el,ev){
     case 'status':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
       if(!udCanWrite(o)){ toast('Měnit tento příkaz nemáš povoleno.','err'); break; }
       if(v==='hotovo'&&!praceOf(o).length&&!isAdmin()){ toast('Hotovo jde až po zapsání práce.','err'); break; }
-      try{ await changeStatus(o,v);
-        editing.hist=(editing.hist||[]).concat(`${today()} · ${me.name} · stav ${editing.status} → ${v}`);
+      try{ const patch=await changeStatus(o,v);
+        editing.hist=patch.hist;
         editing.status=v;
         if(v==='hotovo'){ editing.doneAt=today(); editing.doneByName=me.name; }
         toast('Stav změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'nd-set':{ const o=rows.find(x=>x._id===editing._id); if(!o)return;
       if(!udCanWrite(o)||(v==='objednano'&&!udCanOrder(o))||(v==='prisel'&&!udCanArrive(o))){ toast('Tuhle změnu dílu nemáš povolenou.','err'); break; }
       const ndLabelHist={potreba:'nahlásil chybějící díl',objednano:'díl objednán',prisel:'díl dorazil','':'pokračuje se v opravě'};
-      const hist=(o.hist||[]).slice().concat(`${today()} · ${me.name} · ${ndLabelHist[v]||'změna stavu dílu'}`);
+      const hist=(o.hist||[]).slice().concat(histLine(`${ndLabelHist[v]||'změna stavu dílu'}`));
       try{ await updateDoc(doc(db,'udrzba',o._id),{nd:v||null,hist});
         editing.nd=v||null; editing.hist=hist;
         toast('Stav dílu změněn.','ok'); }catch(e){ toast(e.message,'err'); } break; }
@@ -2500,10 +2631,10 @@ async function act(a,v,el,ev){
     case 'prostoj-save':{ const o=rows.find(x=>x._id===v); if(!o||!udCanWrite(o)) break;
       const od=g('pr-od')||null, dd=g('pr-do')||null;
       if(od&&dd&&minBetween(od,dd)<0){ prModal.err='Konec prostoje je před začátkem.'; break; }
-      const hist=(o.hist||[]).concat(`${today()} · ${me.name} · zapsal prostoj stroje`);
+      const hist=(o.hist||[]).concat(histLine('zapsal prostoj stroje'+prostojDetail(od,dd)));
       try{ await updateDoc(doc(db,'udrzba',o._id),{prostojOd:od,prostojDo:dd,hist}); editing.prostojOd=od; editing.prostojDo=dd; editing.hist=hist; prModal=null; toast('Prostoj uložen.','ok'); }catch(e){ toast(e.message,'err'); } break; }
     case 'done-no': doneAsk=null; break;
-    case 'done-yes':{ const o=rows.find(x=>x._id===doneAsk.id); doneAsk=null; if(o){ try{ await changeStatus(o,'hotovo'); if(editing&&editing._id===o._id){ editing.hist=(editing.hist||[]).concat(`${today()} · ${me.name} · stav ${editing.status} → hotovo`); editing.status='hotovo'; editing.doneAt=today(); editing.doneByName=me.name; } toast('Příkaz je hotový.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
+    case 'done-yes':{ const o=rows.find(x=>x._id===doneAsk.id); doneAsk=null; if(o){ try{ const patch=await changeStatus(o,'hotovo'); if(editing&&editing._id===o._id){ editing.hist=patch.hist; editing.status='hotovo'; editing.doneAt=today(); editing.doneByName=me.name; } toast('Příkaz je hotový.','ok'); }catch(e){ toast(e.message,'err'); } } break; }
     case 'fav-toggle': favOpen=!favOpen; break;
     case 'fav-new': filterModal=newFilterDraft(); favOpen=false; favLinkaOpen=false; favLinkaQuery=''; break;
     case 'fav-edit':{ const f=savedFilters.find(x=>x.id===v); if(f) filterModal=JSON.parse(JSON.stringify(f)); favOpen=false; favLinkaOpen=false; favLinkaQuery=''; break; }
@@ -2553,7 +2684,7 @@ async function act(a,v,el,ev){
       if(oldS!==newS){
         try{
           const labels=OBOR.filter(x=>sel.includes(x.k)).map(x=>x.label);
-          const hist=(o.hist||[]).slice(); hist.push(`${today()} · ${me.name} · změnil obor: ${labels.join(', ')}`);
+          const hist=(o.hist||[]).slice(); hist.push(histLine(`změnil obor: ${labels.join(', ')}`));
           await updateDoc(doc(db,'udrzba',o._id),{obor:OBOR.map(x=>x.k).filter(k=>sel.includes(k)),hist});
           if(editing&&editing._id===o._id){ editing.obor=OBOR.map(x=>x.k).filter(k=>sel.includes(k)); editing.hist=hist; }
           toast('Obor změněn.','ok');
@@ -2594,7 +2725,7 @@ async function act(a,v,el,ev){
           const oldU=assignedUids(o).slice().sort().join(','), newU=uids.slice().sort().join(',');
           if(oldU!==newU){
             try{
-              const hist=(o.hist||[]).slice(); hist.push(`${today()} · ${me.name} · přiřazeno: ${names.join(', ')||'nikdo'}`);
+              const hist=(o.hist||[]).slice(); hist.push(histLine(`přiřazeno: ${names.join(', ')||'nikdo'}`));
               await updateDoc(doc(db,'udrzba',o._id),{assignedTo:uids,assignedToNames:names,hist});
               if(editing&&editing._id===o._id){ editing.assignedTo=uids; editing.assignedToNames=names; editing.hist=hist; }   // otevřený detail se musí obnovit taky
               toast('Přiřazení uloženo.','ok');

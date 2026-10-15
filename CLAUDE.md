@@ -1481,7 +1481,7 @@ protože:
   jménech přiřazených, autorovi,
   prostoji, datu vytvoření i v **historii** (`o.hist`) — ale jen v jejích DATECH: datum, jméno a jména přiřazených. Šablonová
   slova řádků („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) se nehledají ani neoznačují (`histParts()`,
-  `HIST_BOILER`, v0.18.8; datové části jsou v `<span class="hv">`). Přibude-li nový typ řádku historie (`hist.push(...)`), přidej jeho šablonu do `HIST_BOILER`/`histParts()`. Shoda je **PŘESNÁ včetně diakritiky** — nerozlišují se jen velká a malá písmena
+  `HIST_BOILER`, v0.18.8; datové části jsou v `<span class="hv">`). Přibude-li nový typ řádku historie (`hist.push(histLine(...))`), přidej jeho šablonu do `HIST_BOILER`/`histParts()` a do `histEvent()` (osa, v0.18.35). Shoda je **PŘESNÁ včetně diakritiky** — nerozlišují se jen velká a malá písmena
   (v0.18.9, Martin: „přesně co napíšu"; „či" nenajde „cí", „dveri" nenajde „dveří"; `findWord()`/`textHas()`/`lcChar()`, dřívější „volné"
   hledání bez diakritiky je pryč); víc slov oddělených mezerou = příkaz musí obsahovat VŠECHNA (`searchWords()`). Nalezený text se po každém
   `render()` označí žlutě (`applyHighlight()`, `<mark class="hl">`) v řádcích tabulky, v kartách na mobilu a v detailu příkazu
@@ -1582,6 +1582,24 @@ protože:
   - **Info a Práce s ikonami, prostoj v okně (2026-10-11, v0.18.30, Martin):** textový seznam `<dl class="meta">` v Info nahradily dlaždice `.infogrid` > `.ig` (ikona `ico(...)` z `ICO`, popisek `.ig-l`, hodnota `.ig-v`, `igTile()`): Přiřazeno, WO, Linka/stroj, Vytvořeno a **Prostoj** (`prostojTile(o)`: „ANO" nebo délka + „Stál od … · jel od …", fialová barva `--pj`, šedá u hotového). **Řádek „Hotovo — datum · jméno" z Info je pryč** (`doneAt` se dál ukládá). V záložce Práce jsou nahoře stejné dlaždice: Odpracováno celkem (+ po lidech), Podle oboru a Prostoj s tlačítkem **✎ Upravit**. **Čas prostoje se zapisuje v okně** `prModalView()` (`prModal={id,err}`, akce `pr-edit`/`pr-close`/`pr-now`/`prostoj-save`, pole `#pr-od`/`#pr-do` s tlačítky Teď), ne přímo v záložce. Karty záznamů mají ikony řádků (`.wr-i`). Hodnoty dlaždic jsou v `HL_OK` (`.ig-v`), popisky v `UI_SKIP`; Linka/stroj a Prostoj mají `nohl` (nehledají se).
   - **Info a Práce přepsané na komponenty z tabulky (2026-10-11, v0.18.31, Martin: „použij ikony a vzhled jako na hlavní stránce", bez prostých štítků Rozpracováno / Kritická / CM / Mechanika):** tohle NAHRAZUJE popis dlaždic s čtvercovou ikonou z v0.18.30 (`igTile`/`.ig`/`ICO` v bloku „Záznamy práce" — `ICO`/`ico()` zůstaly jen pro ikony řádků karet záznamů). Info má dlaždice `ipTile(label, obsah)` (`.infogrid.ip` > `.ipt`) s TÝMIŽ komponentami jako řádek tabulky: `r2Stav`, `r2Typ`, `r2Prio`, WO `r2-wo` + `r2-pp`, stroj `r2-mono` + „Linka X", obor `r2-ob`, přiřazení `r2Who` (avatary), stav dílu `r2Part`, prostoj `r2-pj`, vytvořeno `r2-rel` + autor. Barevná lišta se štítky (`hero-top`) v náhledu příkazu je pryč, zůstal jen název, popis a Upravit. Záložka Práce: Odpracováno celkem (`r2-tm`), Podle pracovníků (avatary + čas), Podle oboru (`r2-ob` + čas), Prostoj (`r2-pj` + Upravit). **CSS komponent `r2-*` je vyjmuté z `@media(min-width:861px)`** (jinak by v okně příkazu na mobilu nebyly nastylované); tabulkové věci (`.trow…`) zůstaly v media query. Na mobilu jsou dlaždice ve 2 sloupcích. Přidáš-li do tabulky novou komponentu a chceš ji v Info, použij ji i tam.
   - Testy: `test-rules.js` má 49 kontrol (nová sekce „ZAPISOVÁNÍ PRÁCE"), prohlížečový test `t-prace.js` s falešným Firebase (`stub2.js` teď umí transakce nad příkazy).
+- **Záložka Historie: čistá osa po dnech + souhrn (2026-10-15, v0.18.35)** — Martin: v Historii má být jen historie, ne blok Info nad ní; a chtěl víc informací v řádcích.
+  - **Čistá záložka:** blok s názvem a dlaždicemi (`.hero`) se ukazuje jen v Info (v Práci ani v Historii ne). Historie = souhrn + osa; nahoře zůstává jen číslo PP v hlavičce okna.
+  - **Řádek historie** je dál řetězec `datum[ čas] · kdo · co se stalo` v poli `hist` (žádná změna datového modelu ani pravidel Firestore). **Nové řádky se píšou VŽDY přes
+    `histLine(text)`** (čas v místním čase `YYYY-MM-DD HH:MM`), ne ručně přes `today()`. Starší řádky mají jen datum a stručný text; nepřepisují se, jen se hezčeji ukážou.
+  - **Konkrétní údaje v řádcích (jen u nových zápisů):** `upravil příkaz (porucha A → B; priorita Běžná → Kritická; …)` z `changeDetails(old,cur)` (sleduje porucha, popis, priorita, typ, linka,
+    stroj, WO, obor, prostoj; popis jen „popis upraven"), `zapsal práci (1 h): Typ – popis` (`workDetail`), `nahlásil chybějící díl: Název (množství)` (`dilDetail`),
+    `zapsal prostoj stroje (od – do, délka)` (`prostojDetail`). Když se změní jen přiřazení, píše se jen řádek `přiřazeno:` (už ne i prázdné „upravil příkaz").
+    **Do textu řádku nepiš ` · ` ani `;`** (rozdělují řádek a seznam změn) — `histCut()` je ze vstupů odstraní.
+  - **Vykreslení:** `histEvent(raw)` rozebere řádek na událost (druh, nadpis, podrobnosti), `histTimelineHtml(o)` seskupí po dnech (Dnes / Včera / datum, nejnovější nahoře; pořadí určuje
+    pořadí v poli, ne čas), každý druh má ikonu a barvu (`HIST_ICO`, `HIST_COLOR`; stav se barví podle cílového stavu). Hotový příkaz bez řádku o přechodu do Hotovo (starší data)
+    dostane událost z `doneAt`/`doneByName`. **Přibude-li nový druh řádku historie:** zapiš ho přes `histLine()`, přidej ho do `histEvent()` (osa) a do `histParts()`/`HIST_BOILER` (hledání).
+  - **Souhrn nahoře** (`histSummaryHtml`, dlaždice `ipTile`): Otevřeno / Vyřízeno za (dny od založení, u hotového do `doneAt`), Odpracováno (`workTotals`), Stroj stál (od–do, jinak „ANO / čas není zapsán"),
+    Čekání na díl (od „nahlásil chybějící díl" po „díl dorazil"/„pokračuje se"), Podle stavů (dny v Novém a Rozpracovaném z řádků `stav A → B`). Počítá se ze zapsaných dat na dny; dlaždice
+    se ukážou jen když je z čeho počítat.
+  - **Hledání:** text, který člověk napsal (popis práce, názvy dílů, jména přiřazených), je v historii data (hledá se a označuje); „upravil příkaz (…)" a prostoj jsou šablona.
+  - ⚠️ **Pravidla Firestore historii nehlídají:** blok `match /udrzba` nekontroluje pole `hist`, takže kdo smí příkaz měnit, může teoreticky historii přepsat. Chceme-li z ní důkaz
+    (audit, Maximo), je potřeba pravidlo „hist se jen prodlužuje" — zatím není, nahlášeno Martinovi.
+  - **Test:** `t-hist.js` (falešný Firebase; `stub2.js` teď po zápisu obnoví seznam příkazů jako skutečný Firestore a má testovací příkaz „HISTORIE test").
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
