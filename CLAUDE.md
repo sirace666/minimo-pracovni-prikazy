@@ -1904,8 +1904,9 @@ Martin ukazuje appku nadřízeným a nechce, aby měli repozitář. Dostanou jen
   Hesla zná jen Martin a **nepíšou se do repa ani do paměti** (resetují se v konzoli: Authentication → Users).
   Žádné jiné zkušební účty nezakládej ani nepoužívej; starší (`technik.test`, `mistr@minimo.local`, `ZZ TEST`/`ZZ DBG`…) se mají smazat včetně
   osiřelých profilů ve Firestore `users`. **Účty zakládá a maže Martin sám v konzoli** (já to dělat nesmím).
-  **V Nastavení jsou testovací účty vždy úplně nahoře** (od 0.18.37): `nastaveni.html` řadí uživatele přes `userRank()` a `TEST_ORDER` — nejdřív v pevném pořadí admin, údržbář, PE, tool setter,
-  pak další účty z `@minimo.local`, potom ostatní abecedně podle jména. Jména v profilech se kvůli tomu neupravují. Přibude-li zkušební účet, přidej e-mail do `TEST_ORDER`.
+  **V Nastavení jsou testovací účty vždy úplně nahoře** (od 0.18.37, zjednodušeno v 0.18.38): `nastaveni.html` řadí uživatele přes `userRank()` — nejdřív VŠECHNY účty s e-mailem
+  `@minimo.local` (mezi sebou abecedně podle jména), pak ostatní lidé abecedně. Žádný pevný seznam ani pevné pořadí. Jména v profilech se kvůli tomu neupravují a nový zkušební účet
+  s e-mailem `@minimo.local` je nahoře sám.
 - **Nikdy nemíchat s Davidovým `nakupni-pozadavky`** — ten má opravdová
   data 39 lidí z Yanfengu. Do něj se sahá jen na čtení (přes
   `martin.smrz.osobni@gmail.com`, který tam má Editor roli), nikdy na zápis

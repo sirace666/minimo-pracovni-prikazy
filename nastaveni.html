@@ -349,11 +349,9 @@ onAuthStateChanged(auth, async (user)=>{
   ready=true; render();
 });
 
-/* Zkušební účty (@minimo.local) jsou v seznamu vždy úplně nahoře, v pevném pořadí: admin, údržbář, PE, tool setter.
-   Další účty z @minimo.local jdou hned za nimi, ostatní lidé pak abecedně podle jména. */
-const TEST_ORDER = ['admin.test@minimo.local','udrzbar@minimo.local','process.engineer@minimo.local','tool.setter@minimo.local'];
-const userRank = u => { const e=String(u.email||'').trim().toLowerCase(), i=TEST_ORDER.indexOf(e);
-  return i>=0 ? i : (e.endsWith('@minimo.local') ? TEST_ORDER.length : TEST_ORDER.length+1); };
+/* Zkušební účty (všechny s e-mailem @minimo.local) jsou v seznamu vždy úplně nahoře, mezi sebou abecedně podle jména.
+   Ostatní lidé jsou pod nimi taky abecedně. */
+const userRank = u => String(u.email||'').trim().toLowerCase().endsWith('@minimo.local') ? 0 : 1;
 function subscribe(){
   unsub = onSnapshot(collection(db,'users'), s=>{
     users = s.docs.map(d=>{ const u={uid:d.id, ...d.data()};
