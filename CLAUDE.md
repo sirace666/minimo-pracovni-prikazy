@@ -815,15 +815,13 @@ protože:
     Nový filtr", jen předvyplněné (`case 'fav-edit'` klonuje záznam do
     `filterModal`).
   - **Okno Nový/Upravit filtr** (`filterModalView()`) — Název, barva
-    (paleta 8 předvolených barev `FAV_COLORS`, ne libovolný picker),
-    a **samostatná** sada checkboxů Typ/Stav/Priorita/Obor
-    (`favCheckGroup()`, vázaná na `data-favflt` — generický handler
-    v `bind()`, analogický k `data-flt`, ale píše do `filterModal[dim]`
-    místo globálního `filters[dim]`) — nezávislá na tom, co je zrovna
-    zaškrtnuté v levém panelu, přesně jak chtěl Martin. Linka v tomhle
-    okně NENÍ přes `favCheckGroup()` (viz oprava níž z 2026-09-28) —
-    má vlastní `favLinkaGroup()`. Smazání má stejné dvoukrokové
-    potvrzení jako mazání pracovního příkazu (`filterModal.confirmDel`).
+    (paleta 8 předvolených barev `FAV_COLORS` + vlastní) a **samostatná** sada filtrů vázaná na
+    `data-favflt` (generický handler v `bind()`, analogický k `data-flt`, ale píše do
+    `filterModal[dim]` místo globálního `filters[dim]`) — nezávislá na tom, co je zrovna
+    zaškrtnuté v tabulce, přesně jak chtěl Martin. **Od 0.18.42 jsou v okně VŠECHNY filtry**,
+    viz „Okno Nový/Upravit filtr — všechny filtry" níž (HISTORICKÉ: dřív jen Typ/Stav/Priorita/Obor
+    přes `favCheckGroup()` a Linka přes `favLinkaGroup()`, oboje zrušeno). Smazání má stejné
+    dvoukrokové potvrzení jako mazání pracovního příkazu (`filterModal.confirmDel`).
   - **Oprava při testování**: `#fv-name` ztrácelo napsaný text při
     jiné akci v okně (barva/checkbox), protože každá akce spouští
     `render()` (celý `innerHTML` přepis) a input neměl `oninput`
@@ -847,7 +845,7 @@ protože:
     `#main-host` a hned po přepisu ho vrátí (jinak nový DOM element =
     scroll na nule, vadilo to hlavně v okně Nový/Upravit filtr při
     zaškrtávání).
-  - **Linka v okně Nový/Upravit filtr přestala být plochý seznam
+  - **(HISTORICKÉ — od 0.18.42 je Linka v okně obyčejná sekce jako ostatní filtry a `mode:'fav'`, `favLinkaGroup`, `.fav-linka-wrap` zrušeny.) Linka v okně Nový/Upravit filtr přestala být plochý seznam
     všech linek** (`favCheckGroup('linka',...)` pryč) — sdílí stejné
     jádro jako panel Linka v levém sloupci: `linkaPickerCore(mode)`
     (`mode:'filter'` čte/píše `filters.linka`+`linkaOpen`+`linkaQuery`,
@@ -1364,12 +1362,11 @@ protože:
     `filters.stroj` (názvy strojů), `filters.wo` a `filters.nazev` (řetězce).
     Jsou v `passes()` s `skip`, mají `countWho`/`countProstoj`/`countAutor`/
     `countStroj` a počítají se do
-    `activeFilterCount()` (štítek u „FILTRY", tlačítko Zrušit). **Do uložené
-    oblíbené sady NEPATŘÍ** (schéma `udrzbaFilters` se nezměnilo, žádná změna
-    pravidel): `favApply()` je při použití sady vynuluje a „Uložit aktuální
-    výběr" při jejich zapnutí upozorní toastem. Při přidání další dimenze ji
-    dej i do `clear-filters`, `favApply`, `favIsOn`, `activeFilterCount` a
-    toastu u `fav-save-current`.
+    `activeFilterCount()` (štítek u „FILTRY", tlačítko Zrušit). **Od 0.18.42 se do
+    oblíbené sady ukládají VŠECHNY** (výběry `FAV_ARR`, texty `FAV_TXT`, helper `favPick()`;
+    starší sady jen s pěti poli se berou jako „ostatní prázdné"; pravidla Firestore se nezměnila,
+    `udrzbaFilters/{uid}.list[]` pole nevaliduje). Při přidání další dimenze ji dej do `clear-filters`,
+    `FAV_ARR`/`FAV_TXT`, `FAV_GROUPS` (okno), `activeFilterCount` a `colOptions`/`chipLabel`.
   - **Okno „Vybrat linku" / „Vybrat stroj" ve formuláři příkazu (v0.16.0):**
     Linka a Stroj už nejsou `<select>`/`<input>`, ale tlačítka `.assign-trigger`
     (`data-a="pick-open"`), která otevřou okno stejného vzhledu jako Přiřadit
@@ -1477,7 +1474,7 @@ protože:
   6. **„Jen vybrané" a „Zrušit vše" všude, kde se zaškrtává víc věcí:** okno Přiřadit pracovníky (`assignPicker.only`, akce
      `assign-only`/`assign-clear`), menu sloupce (Zrušit vše je tlačítko vedle Jen vybrané, dolní odkaz „Vymazat výběr" je pryč;
      u textových filtrů zůstalo „Vymazat"), panel Náhradní díl (`nd-clear`), panel Linka v levém panelu i v okně oblíbeného
-     (`linka-clear`/`fav-linka-clear`), okno oblíbeného filtru (`fav-clear-all`). Tlačítka mají třídu `.cm-onlybtn`.
+     (`linka-clear`), okno oblíbeného filtru (`fav-clear-all` a u každé sekce `fav-dim-clear`). Tlačítka mají třídu `.cm-onlybtn`.
   - **Zkoušení:** stub Firebase (`%TEMP%\minimo-test3\stub.js`) zapisuje volání `updateDoc` do `window.__upd`, takže jde
     ověřit i uložení bez databáze.
 - **Hledání ve všem + označení nalezeného textu (2026-10-09, v0.18.4)** — Martin: hlavní hledání má najít naprosto vše
@@ -1535,7 +1532,7 @@ protože:
   zároveň přiřazený mně i mnou vytvořený, se počítá v obou), klik otevře panel se dvěma zaškrtávátky (`filters.mineSel`: `assigned` = přiřazené mně,
   `created` = mnou vytvořené; nic nebo obojí = sjednocení) a tlačítkem Zrušit vše (`mine-clear`). Panel se zavírá klikem mimo (`.mine-tile-wrap`), výběr
   zůstane; zruší se přechodem na jinou dlaždici (`flt-view`, `nd-tile-toggle`, `mine-tile-toggle` se hlídají navzájem). `mineSel` je v `passes()`,
-  `activeFilterCount()`, `clear-filters` a ve štítcích nad tabulkou („Moje: Přiřazené"); do oblíbených sad NEPATŘÍ. Popisky jsou schválně krátké, protože
+  `activeFilterCount()`, `clear-filters` a ve štítcích nad tabulkou („Moje: Přiřazené"); od 0.18.42 je součástí oblíbených sad. Popisky jsou schválně krátké, protože
   nad nimi stojí „Moje" (Martin).
   **Oprava 0.18.20 (Martin: „buď špatná čísla, nebo špatné filtry"):** `passes()` přeskakuje `mineSel` i když se přeskakuje `view` — a přesně takhle
   se počítají čísla na dlaždicích (`countView`, `countNd`, `countMine`, `unassignedHasEm`). Výběr v panelu Moje tak mění jen seznam, ne čísla ostatních dlaždic.
@@ -1622,6 +1619,18 @@ protože:
   - **Rozcestník:** na dlaždici Nastavení je oranžový odznak „2 noví" (`loadNewUsers`, `newUsersBadge`). Čte se jen `users where needsReview == true` (malá sada, ne celý seznam), a to jen
     když má člověk přístup k Nastavení (`resolveModule(...,'nastaveni')!=='none'`).
   - **Test:** `t-novi.js` (falešný Firebase, `stub-nast.js` ze `make-stub-nast.js`; parametr `?new=1` = přihlášený ještě nemá profil).
+- **Okno Nový/Upravit filtr — všechny filtry (2026-10-16, v0.18.42)** — Martin: do okna dát všechny filtry včetně ikon, rozdělit je přehledně a okno zvětšit.
+  - **Co se ukládá:** `FAV_ARR` = typ, stav, priorita, obor, linka, stroj, nd, who, prostoj, autor, mineSel (pole) a `FAV_TXT` = wo, nazev (řetězce). `favPick(f)` vybere jen tato pole a chybějící
+    doplní prázdná, takže **starší sady** (jen typ/stav/priorita/obor/linka) fungují beze změny. `favApply`, `favIsOn`, `fav-save-current`, `fav-edit`, `fav-save`, `fav-clear-all` pracují
+    nad celým seznamem. Dokument `udrzbaFilters/{uid}` zůstal `{list:[…]}`; **pravidla Firestore se neměnila**.
+  - **Vzhled:** okno má šířku až 1080 px (`.fv-modal`), nahoře Název + Barva, pruh „Vybráno: N / Zrušit vše" a sekce po skupinách (`FAV_GROUPS`): **Základ** (Typ, Stav, Priorita),
+    **Kde** (Linka, Stroj, Obor), **Kdo** (Přiřazeno, Vytvořil, Moje), **Díl a prostoj** (Díl, Prostoj) a **Hledání v textu** (WO, Porucha). Položky jsou stejné (`colOptions(dim)` s `html`,
+    tedy i ikony a barvy) jako v menu sloupců; „Moje" má vlastní `FAV_MINE`. Sekce s víc než 7 položkami má hledání (`data-favq`, drží se v `favQuery`, jen skrývá položky bez překreslení),
+    každá vybraná sekce má počet a „Zrušit" (`fav-dim-clear`), seznam se posouvá (`.fvs-list`, v `LISTS` pro zachování posunu). Texty WO (jen číslice) a Porucha (`data-favtxt`) se drží v paměti
+    bez překreslení. Stav neobsahuje „Čeká na díl" (patří do Dílu).
+  - **Použití sady** zapne VŠECHNY uložené filtry (i Stroj, Přiřazeno, Díl, Moje, WO, Porucha) a vynuluje ostatní. Dřívější upozornění „do oblíbených se ukládá jen Typ, Stav…" je pryč.
+  - **Související oprava (0.18.42):** poslední sloupec tabulky (Vytvořeno) je 150 px (dřív 120), jinak se nadpis u řazeného sloupce usekl na „VYTVOŘ…" (vedle nadpisu je chevron a tlačítko řazení).
+  - **Test:** `t-fav.js` (`stub-nast.js` umí `udrzbaFilters`, parametr `?legacy=1` = jedna starší uložená sada s pěti poli).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
