@@ -1444,7 +1444,9 @@ protože:
     (pravidla `.trow.st-hotovo:not(:hover) …`); EM má růžové pozadí a červený okraj VŽDY (hotové EM `#f3e2df`).
     **Přidáš-li do řádku nový prvek, přidej mu i hotovou (šedou) variantu.**
   - **Záhlaví** `.thd` = šedý `#e9e7e1` pruh radius 9 (sticky; `box-shadow` v barvě pozadí zakrývá mezeru, ať v ní řádky při
-    posunu neprosvítají), zapnutý filtr = text `#b8480f`. Akcentová barva v `.board2` a `.colmenu` je přepsaná na
+    posunu neprosvítají), zapnutý filtr = text `#b8480f`. **Od 0.18.40 přesně podle návrhu:** nadpis sloupce má vždy chevron (`SVG_CHEV`, `.hc-i`); řazení nadpis NEbarví (oranžový je jen sloupec
+    se zapnutým filtrem) a sloupec, podle kterého se řadí, má vedle nadpisu samostatné bílé tlačítko se šipkou ↑/↓ (`.hc-sort`, akce `sort-dir` otočí směr; `.thd>div` je flex).
+    Přepínač **Skrýt hotové** má text PŘED přepínačem (přepínač je vpravo). Akcentová barva v `.board2` a `.colmenu` je přepsaná na
     `#b8480f` (oranžovohnědá z návrhu); pozadí stránky `#f3f2ee`; písmo Figtree + JetBrains Mono (Google Fonts) jen v
     `.pagehead/.board2/.colmenu/.favpanel`, okna příkazu zůstala Nunito. Karta `.listcard2` je průhledná.
   - **Dlaždice nahoře** (od 0.18.3 bez červeného vykřičníku u Nepřiřazených — zůstává jen červené číslo) mají markup `.vt-icon` (SVG) + `.vt-body`; Náhradní díl ukazuje „N požadováno / N objednáno / N přišlo"

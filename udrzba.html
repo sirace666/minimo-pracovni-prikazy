@@ -656,11 +656,16 @@
     .tbl{min-width:1300px;--cols:148px 50px 118px 112px minmax(0,2.4fr) 130px 150px minmax(0,1.5fr) 112px 120px}
     .thd,.trow{column-gap:14px;padding:0 17px}
     .thd{background:#e9e7e1;border:0;border-radius:9px;height:34px;margin-bottom:5px;color:#6f6b60;box-shadow:0 5px 0 #f3f2ee}
-    .thd>div{padding:0}
-    .hc{width:calc(100% + 8px);margin-left:-8px;height:auto;padding:4px 8px;gap:6px;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.04em;color:#6f6b60}
-    .hc .hc-i{margin-left:0;color:inherit;font-size:11px}
+    .thd>div{padding:0;display:flex;align-items:center;gap:6px}
+    .hc{width:auto;flex:0 1 auto;min-width:0;margin-left:-8px;height:auto;padding:4px 8px;gap:6px;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.04em;color:#6f6b60}
+    .hc .hc-i{margin-left:0;color:inherit;display:flex}
+    .hc .hc-i svg{width:12px;height:12px}
     .hc:hover,.hc.open{background:#dedbd3;color:#6f6b60}
-    .hc.on,.hc.sorted,.hc.on .hc-i,.hc.sorted .hc-i{background:transparent;color:#b8480f}
+    /* jako v návrhu: řazení nadpis nebarví — oranžový je jen sloupec se zapnutým filtrem; sloupec, podle kterého se řadí, má vedle nadpisu bílé tlačítko se šipkou */
+    .hc.sorted,.hc.sorted .hc-i{color:#6f6b60}
+    .hc.on,.hc.on.sorted,.hc.on .hc-i{background:transparent;color:#b8480f}
+    .hc-sort{flex:none;width:22px;height:22px;border:0;border-radius:6px;background:#fff;color:#2b2924;font:800 12px 'Figtree',sans-serif;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .hc-sort:hover{background:#f6f4ee}
     .hc.on:hover,.hc.on.open{background:#dedbd3}
     .hc[data-v="nazev"]{padding-left:8px}
     /* řádky */
@@ -1746,15 +1751,17 @@ function sbarHTML(n){
     chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${esc(d+'|'+k)}" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(chipLabel(d,k))}">${esc(DIM_LABEL[d])}: ${chipHtml(d,k)}<span aria-hidden="true">✕</span></button>`)));
   Object.keys(TEXT_FILTERS).forEach(d=>{ if(filters[d]) chips.push(`<button type="button" class="fchip" data-a="chip-rm" data-v="${d}|" aria-label="Odebrat filtr ${esc(DIM_LABEL[d])}: ${esc(filters[d])}">${esc(DIM_LABEL[d])}: <b>${esc(filters[d])}</b><span aria-hidden="true">✕</span></button>`); });
   const overridden=hideDone && filters.stav.includes('hotovo');   // přepínač je zapnutý, ale filtr Stav hotové výslovně chce
-  const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}><span class="tr"></span>Skrýt hotové</button>`;
+  const sw=`<button type="button" class="sb-switch" role="switch" aria-checked="${hideDone}" data-a="hide-done"${overridden?' title="Hotové se zobrazují, protože je ve filtru Stav zaškrtnuté Hotovo."':''}>Skrýt hotové<span class="tr"></span></button>`;
   const funnel='<svg class="sb-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5z"/></svg>';
   return {filtered:chips.length>0, html:`<div class="sb-l">${funnel}<span class="sb-count">Zobrazeno <b>${n}</b> z ${tileRows().length}</span>`
     +(chips.length?chips.join('')+`<button type="button" class="sb-clear" data-a="clear-filters">Zrušit vše</button>`:'<span class="sb-nof">· bez filtru</span>')+`</div>${sw}`};
 }
+// chevron u nadpisu sloupce (jako v návrhu); šipka řazení je zvlášť (.hc-sort)
+const SVG_CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 function theadHTML(){
   return COLS.map(c=>{
     const on=c.tabs?c.tabs.some(t=>TEXT_FILTERS[t.dim]?!!filters[t.dim]:filters[t.dim].length>0):(c.dim?(TEXT_FILTERS[c.dim]?!!filters[c.dim]:filters[c.dim].length>0):false), isS=sortKey===c.sort;
-    return `<div role="columnheader"><button type="button" class="hc${on?' on':''}${isS?' sorted':''}${colOpen===c.k?' open':''}" data-a="col-open" data-v="${c.k}" aria-haspopup="true" aria-expanded="${colOpen===c.k}" title="${on?'Filtr je zapnutý':'Filtr a řazení'}"><span class="hc-l">${esc(c.label)}</span><span class="hc-i" aria-hidden="true">${isS?(sortDir==='asc'?'↑':'↓'):'▾'}</span></button></div>`;
+    return `<div role="columnheader"><button type="button" class="hc${on?' on':''}${isS?' sorted':''}${colOpen===c.k?' open':''}" data-a="col-open" data-v="${c.k}" aria-haspopup="true" aria-expanded="${colOpen===c.k}" title="${on?'Filtr je zapnutý':'Filtr a řazení'}"><span class="hc-l">${esc(c.label)}</span><span class="hc-i" aria-hidden="true">${SVG_CHEV}</span></button>${isS?`<button type="button" class="hc-sort" data-a="sort-dir" title="${sortDir==='asc'?'Řazeno vzestupně':'Řazeno sestupně'} — klikni pro otočení" aria-label="${sortDir==='asc'?'Řazeno vzestupně':'Řazeno sestupně'}, otočit řazení">${sortDir==='asc'?'↑':'↓'}</button>`:''}</div>`;
   }).join('');
 }
 /* ===== stav / typ / priorita / stav dílu / prostoj: text a barva — v tabulce i v menu filtrů =====
@@ -2538,6 +2545,7 @@ async function act(a,v,el,ev){
     case 'col-only': colOnly=!colOnly; break;
     case 'col-close': colOpen=null; break;
     case 'col-sort':{ const i=v.indexOf('|'); sortKey=v.slice(0,i); sortDir=v.slice(i+1); break; }
+    case 'sort-dir': sortDir=sortDir==='asc'?'desc':'asc'; break;   // šipka vedle nadpisu sloupce, podle kterého se řadí
     case 'col-clear': if(TEXT_FILTERS[v]) filters[v]=''; else if(Array.isArray(filters[v])) filters[v]=[]; break;
     case 'chip-rm':{ const i=v.indexOf('|'), d=v.slice(0,i), k=v.slice(i+1);
       if(TEXT_FILTERS[d]) filters[d]=''; else if(Array.isArray(filters[d])){ const j=filters[d].indexOf(k); if(j>=0) filters[d].splice(j,1); } break; }
