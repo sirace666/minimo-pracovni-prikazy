@@ -1025,7 +1025,15 @@ onAuthStateChanged(auth, async user=>{
 async function loadProfile(user){
   const ref=doc(db,'users',user.uid);
   let d={};
-  try{ const s=await getDoc(ref); if(s.exists()) d=s.data(); }catch(e){}
+  try{
+    const s=await getDoc(ref);
+    if(s.exists()) d=s.data();
+    else{   // první přihlášení: profil se založí tady (stejně jako v rozcestníku), ať se člověk objeví v Nastavení jako NOVÝ
+      const boot=window.minimoDisplayName?window.minimoDisplayName(user.email):(user.email||'').split('@')[0];
+      d={name:boot, email:user.email, level:'basic', role:'zadavatel', needsReview:true, createdAt:serverTimestamp()};
+      try{ await setDoc(ref,d); }catch(e){}
+    }
+  }catch(e){}
   const forced=isForcedAdmin(user.email);
   const role = forced ? 'admin' : (d.role||'zadavatel');
   const level = d.level || ROLE2LEVEL[role] || 'basic';

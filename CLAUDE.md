@@ -47,7 +47,8 @@ nim build proces. Bezpečnost řeší pravidla Firestore, ne skrývání klíč�
 - kolekce `opravy` — externí opravy
 - kolekce `people`, `absences`, `shifts`, `rotations` — plánování směn
 - kolekce `users` — id dokumentu = uid uživatele; pole `name`, `level`, `role`,
-  `positions`, `perms`, `modules` (přístup k modulům: none / read / write)
+  `positions`, `perms`, `modules` (přístup k modulům: none / read / write); u nových lidí od 0.18.39
+  i `createdAt`, `needsReview` a `reviewedAt` (viz „Noví uživatelé" v dodatku)
 - dokument `meta/config` — účty, úseky, stroje, povinná pole, kurzy, čítače
   `seq` (nákup) a `seqOpr` (opravy)
 - kolekce `downtimes` — jeden dokument = jeden prostoj ze Symesticu.
@@ -1605,6 +1606,19 @@ protože:
   a `createdTip(o)` („Vytvořeno 2. 10. 2026 v 14:11"). **V Info** je dlaždice Vytvořeno: tučné datum + vedle něj čas písmem JetBrains Mono (`.r2-when`, `.r2-time`), pod tím autor. **V tabulce**
   (sloupec Vytvořeno) je čas jen v `title` na datu i na jménu, do buňky se nepřidává. Hledání podle data i souhrn v Historii používají `createdAt(o).d`, ať datum všude sedí. Čas se nehledá.
   Pozor: `created` je datum v UTC (`today()`), `createdTs` v místním čase — kolem půlnoci se mohou lišit, zobrazuje se místní.
+- **Noví uživatelé: štítek NOVÝ, počet a odznak na rozcestníku (2026-10-16, v0.18.39)** — Martin: jak poznám, že se někdo poprvé přihlásil a mám mu přidat práva.
+  - **Profil se zakládá jen při prvním přihlášení** (ne při založení účtu ve Firebase Auth) a **jen na třech místech**: `index.html` (`ensureUserDoc`), `nakup.html` (`loadProfile`) a `udrzba.html`
+    (`loadProfile`, přidáno 0.18.39, ať Údržbář s odkazem přímo na Údržbu nezůstane bez profilu). `opravy.html`, `engineering.html`, `shopfloor.html`, `profil.html` a `instalace.html` profil NEzakládají,
+    jen čtou (výchozí hodnoty) — kdo se poprvé přihlásí přímo tam, v Nastavení se neobjeví, dokud nevstoupí do rozcestníku/Nákupu/Údržby. Davidovy moduly záměrně neměníme.
+  - **Nová pole `users/{uid}`:** `createdAt` (serverTimestamp při vzniku profilu), `needsReview:true` (čeká na zpracování správcem), po uložení v Nastavení `needsReview:false` + `reviewedAt`.
+    Starší profily tato pole nemají, proto se NEoznačují jako noví. Správce se v Nákupu (`role==='admin'`) neoznačuje. **Pravidla Firestore se neměnila** (založení vlastního profilu povoluje
+    libovolná pole, úprava je jen správce).
+  - **Nastavení:** pořadí v seznamu = 1) zkušební účty `@minimo.local`, 2) noví (`needsReview`), nejnovější první, 3) ostatní abecedně. U nového je oranžový štítek NOVÝ a zvýrazněný řádek,
+    v hlavičce panelu štítek „2 noví uživatelé čekají na nastavení" (`newUsersText`). Štítek zmizí, když správce nového otevře přes Upravit a **Uloží** (`saveUser` zapíše `needsReview:false`);
+    samotné otevření a zavření ho nesmaže.
+  - **Rozcestník:** na dlaždici Nastavení je oranžový odznak „2 noví" (`loadNewUsers`, `newUsersBadge`). Čte se jen `users where needsReview == true` (malá sada, ne celý seznam), a to jen
+    když má člověk přístup k Nastavení (`resolveModule(...,'nastaveni')!=='none'`).
+  - **Test:** `t-novi.js` (falešný Firebase, `stub-nast.js` ze `make-stub-nast.js`; parametr `?new=1` = přihlášený ještě nemá profil).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

@@ -69,6 +69,10 @@
   td.nm{font-weight:600;white-space:nowrap}
   td.uid{font-size:10.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
   .me-tag{font-size:10px;color:#2563a8;font-weight:700;margin-left:6px}
+  .new-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;background:#e8590c;color:#fff;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
+  tbody tr.is-new td{background:#fff5ec}
+  tbody tr.is-new:hover td{background:#ffedd9}
+  .new-count{display:inline-block;background:#e8590c;color:#fff;font-weight:800;border-radius:999px;padding:1px 10px;margin-left:2px}
   td.ta-c{text-align:center}
   .udel{background:#fdecea;border:1px solid #f5cfca;color:var(--red);border-radius:8px;
     font-size:14px;line-height:1;padding:5px 9px;cursor:pointer;font-weight:700}
@@ -121,7 +125,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteDoc }
+import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 /* DOČASNĚ přepnuto na testovací projekt kvůli vývoji modulu Údržba.
@@ -349,16 +353,22 @@ onAuthStateChanged(auth, async (user)=>{
   ready=true; render();
 });
 
-/* Zkušební účty (všechny s e-mailem @minimo.local) jsou v seznamu vždy úplně nahoře, mezi sebou abecedně podle jména.
-   Ostatní lidé jsou pod nimi taky abecedně. */
-const userRank = u => String(u.email||'').trim().toLowerCase().endsWith('@minimo.local') ? 0 : 1;
+/* Pořadí v seznamu: 1) zkušební účty (@minimo.local), mezi sebou abecedně; 2) noví lidé, kteří čekají na nastavení
+   (needsReview), nejnovější první; 3) ostatní abecedně podle jména. */
+const isTestAcc = u => String(u.email||'').trim().toLowerCase().endsWith('@minimo.local');
+const userRank = u => isTestAcc(u) ? 0 : (u.needsReview===true ? 1 : 2);
+const tsSec = t => (t && (t.seconds!=null ? t.seconds : (typeof t.toMillis==='function' ? t.toMillis()/1000 : 0))) || 0;
+const newUsersText = n => n===1 ? '1 nový uživatel čeká na nastavení'
+  : n<5 ? `${n} noví uživatelé čekají na nastavení` : `${n} nových uživatelů čeká na nastavení`;
 function subscribe(){
   unsub = onSnapshot(collection(db,'users'), s=>{
     users = s.docs.map(d=>{ const u={uid:d.id, ...d.data()};
         // "karel.pistek" → "Karel Pistek" (auto-založené účty ukládaly jméno
         // rovnou z e-mailu, needitované) — Info/Práva/seznam vždycky pěkně.
         u.name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||u.uid); return u; })
-      .sort((a,b)=>userRank(a)-userRank(b) || String(a.name||'').localeCompare(String(b.name||''),'cs'));
+      .sort((a,b)=>userRank(a)-userRank(b)
+        || (userRank(a)===1 ? tsSec(b.createdAt)-tsSec(a.createdAt) : 0)
+        || String(a.name||'').localeCompare(String(b.name||''),'cs'));
     render();
   }, e=>toast('Chyba načítání uživatelů: '+e.message,'err'));
 }
@@ -457,7 +467,10 @@ async function saveUser(){
   const sel=document.getElementById('ue-level'); if(sel) u.level=sel.value;
   try{
     if(u.udAccess==='show') u.modules.udrzba='write'; else delete u.modules.udrzba;   // přístup k Údržbě = users.modules.udrzba (čte ho i hlavička a rozcestník)
-    await updateDoc(doc(db,'users',u.uid), {level:u.level, role:LEVEL2ROLE[u.level], positions:u.positions, perms:u.perms, modules:u.modules, udrzba:udNorm(u.udrzba)});
+    const patch={level:u.level, role:LEVEL2ROLE[u.level], positions:u.positions, perms:u.perms, modules:u.modules, udrzba:udNorm(u.udrzba)};
+    const cur=users.find(x=>x.uid===u.uid);
+    if(cur && cur.needsReview===true){ patch.needsReview=false; patch.reviewedAt=serverTimestamp(); }   // správce nového člověka zpracoval → štítek NOVÝ zmizí
+    await updateDoc(doc(db,'users',u.uid), patch);
     uedit=null; toast('Uloženo.','ok'); render();
   }catch(e){ toast('Nepodařilo se uložit: '+e.message,'err'); }
 }
@@ -499,8 +512,10 @@ function view(){
     const chips = (u.positions||[]).length
       ? (u.positions||[]).map(p=>`<span class="pchip">${esc(p)}</span>`).join(' ')
       : '<span style="color:var(--muted)">—</span>';
-    return `<tr>
-      <td class="nm">${esc(u.name||'—')}${meMark}</td>
+    const isNew = u.needsReview===true;
+    const newTag = isNew ? '<span class="new-tag" title="Nový uživatel — nastav mu úroveň, pozice a přístup a ulož">NOVÝ</span>' : '';
+    return `<tr${isNew?' class="is-new"':''}>
+      <td class="nm">${esc(u.name||'—')}${meMark}${newTag}</td>
       <td>${badge(lvl)}</td>
       <td class="pos">${chips}</td>
       ${rw?`<td class="ta-c"><button class="btn-edit" data-edit="${u.uid}">Upravit</button></td>
@@ -519,7 +534,7 @@ function view(){
         👁️ Máte modul Nastavení <b>jen pro čtení</b> – uživatele vidíte, ale nemůžete je upravovat ani mazat.</p>`;
   return `${uh}
   <main>
-    <div class="panel"><h2>👥 Uživatelé <span class="right">${users.length} účtů</span></h2><div class="body">
+    <div class="panel"><h2>👥 Uživatelé <span class="right">${users.length} účtů${(()=>{ const n=users.filter(u=>u.needsReview===true).length; return n?` · <b class="new-count">${newUsersText(n)}</b>`:''; })()}</span></h2><div class="body">
       ${roNote}
       <p style="margin:0 0 12px;font-size:12px;color:var(--muted);background:#eef3fb;border:1px solid #d6e2f3;border-radius:8px;padding:9px 11px">
         ℹ️ Účet se tu objeví, až se jím člověk <b>poprvé přihlásí</b> do portálu (profil se vytvoří automaticky).

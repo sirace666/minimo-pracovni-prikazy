@@ -656,7 +656,8 @@ async function loadProfile(user){
   const role = (forced || anyUsers.empty) ? 'admin' : 'zadavatel';
   const bootName = window.minimoDisplayName ? window.minimoDisplayName(user.email) : user.email.split('@')[0];
   const prof = {name:bootName, email:user.email, role, team: role==='admin'?'Administrátor':'—'};
-  await setDoc(ref, prof);
+  // needsReview + createdAt: v Nastavení se ukáže jako NOVÝ, dokud mu správce nepřidělí práva (správce sám se neoznačuje)
+  await setDoc(ref, Object.assign({createdAt:serverTimestamp()}, role==='admin'?{}:{needsReview:true}, prof));
   return Object.assign({uid:user.uid, email:user.email, level:ROLE2LEVEL[role]||'basic', modules:{}}, prof);
 }
 

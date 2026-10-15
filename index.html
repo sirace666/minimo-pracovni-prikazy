@@ -50,6 +50,8 @@
   .tile .nm{font-size:16px;font-weight:800;color:var(--navy-1)}
   .tile .ds{font-size:12.5px;color:var(--muted);line-height:1.5;flex:1}
   .tile .go{align-self:flex-start;font-size:12px;font-weight:700;color:#2563a8}
+  .tile{position:relative}
+  .tile .newbadge{position:absolute;top:12px;right:12px;background:#e8590c;color:#fff;font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 11px;box-shadow:0 2px 6px rgba(232,89,12,.35)}
   .tile.soon{opacity:.72;cursor:default}
   .tile.soon .badge{align-self:flex-start;background:#eef1f5;color:#6b7a90;border:1px solid var(--line);
     border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
@@ -77,7 +79,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc }
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 /* Společný Firebase projekt pro celý portál (nakupni-pozadavky).
@@ -119,7 +121,8 @@ async function ensureUserDoc(user){
     const snap=await getDoc(ref);
     if(snap.exists()) return snap.data();
     const bootName = window.minimoDisplayName ? window.minimoDisplayName(user.email) : (user.email||'').split('@')[0];
-    const data={name:bootName, email:user.email, level:'basic', role:'zadavatel'};
+    // needsReview + createdAt: správce v Nastavení uvidí, že je tu nový člověk, kterému má přidělit práva
+    const data={name:bootName, email:user.email, level:'basic', role:'zadavatel', needsReview:true, createdAt:serverTimestamp()};
     try{ await setDoc(ref,data); }catch(e){}   // vlastní záznam smí založit každý (pravidla)
     return data;
   }catch(e){ return null; }
@@ -150,7 +153,7 @@ const MODULES = [
   {ico:'⚙️', nm:'Nastavení',         ds:'Správa uživatelů, práv a modulů.', href:'nastaveni.html', active:true, key:'nastaveni'},
 ];
 
-let me=null, myLevel='basic', myModules={}, myPositions=[], loginBusy=false, loginErr='';
+let me=null, myLevel='basic', myModules={}, myPositions=[], loginBusy=false, loginErr='', newUsers=0;
 const appEl=document.getElementById('app');
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -163,7 +166,17 @@ onAuthStateChanged(auth, async (user)=>{
   myModules=(d && d.modules) || {};
   myPositions=(d && d.positions) || [];
   render();
+  loadNewUsers();
 });
+
+/* Počet nových lidí, kteří čekají na nastavení — jen pro toho, kdo smí do Nastavení. Čte se jen tohle malé podmnožství
+   (users.needsReview == true), ne celý seznam uživatelů. Odznak se ukáže na dlaždici Nastavení. */
+async function loadNewUsers(){
+  newUsers=0;
+  if(resolveModule(myModules,myLevel,'nastaveni')==='none') return;
+  try{ const s=await getDocs(query(collection(db,'users'),where('needsReview','==',true))); newUsers=s.size; render(); }catch(e){}
+}
+const newUsersBadge = () => `<span class="newbadge" title="Noví uživatelé čekají na nastavení">${newUsers} ${newUsers===1?'nový':newUsers<5?'noví':'nových'}</span>`;
 
 function render(){
   if(!me){ appEl.innerHTML=loginView(); wireLogin(); return; }
@@ -214,7 +227,7 @@ function appView(){
     : m.udrzbaOnly ? isUdrzbaOwner()
     : m.ownerOnly ? isOpravyOwner()
     : (!m.key || resolveModule(myModules,myLevel,m.key)!=='none')).map(m=> m.active
-    ? `<a class="tile active" href="${m.href}">
+    ? `<a class="tile active" href="${m.href}">${m.key==='nastaveni'&&newUsers>0?newUsersBadge():''}
          <span class="ico">${m.ico}</span>
          <span class="nm">${esc(m.nm)}</span>
          <span class="ds">${esc(m.ds)}</span>
