@@ -1435,7 +1435,7 @@ protože:
     tučný text, typ = mono štítek (EM červený), priorita = tónovaný štítek s 4 proužky, WO mono + číslo PP pod ním
     („bez WO"), stroj mono štítek + „Linka X" pod ním, obor jako obrysové štítky, přiřazení = avatary s iniciálami
     (max 3, barva podle `hueOf(jméno)`) + jména / „+ Přiřadit", prostoj fialový štítek s hodinami (`--pj`; u hotového šedý),
-    vytvořeno = datum „5. 10. 2026" + autor (od 0.18.3; dřív „před N dny", funkce `relDays` je pryč). **Menu filtrů a štítky dál používají staré pomocníky**
+    vytvořeno = datum „5. 10. 2026" + autor, čas v popisku po najetí myší (od 0.18.36; od 0.18.3 datum, dřív „před N dny", funkce `relDays` je pryč). **Menu filtrů a štítky dál používají staré pomocníky**
     (`stavHtml/typHtml/prioHtml/ndInlineHtml/prostojHtml`) — nemíchat. Řádek je samostatná karta (border, radius 10,
     mezera 5 px); hotové jsou odlišené (od 0.18.14, varianta A): tmavší šedé pozadí `#ebe9e3`, **zelený pruh vlevo** (`inset 4px 0 0 #3f9a62`) a
     **zelená fajfka ✓** místo kolečka stavu (`<i class="chk">`, `SVG_CHECK`); text je tmavý šedý `#4a4740`–`#5c584f`, štítky šedé `#dedbd2`,
@@ -1600,6 +1600,11 @@ protože:
   - ⚠️ **Pravidla Firestore historii nehlídají:** blok `match /udrzba` nekontroluje pole `hist`, takže kdo smí příkaz měnit, může teoreticky historii přepsat. Chceme-li z ní důkaz
     (audit, Maximo), je potřeba pravidlo „hist se jen prodlužuje" — zatím není, nahlášeno Martinovi.
   - **Test:** `t-hist.js` (falešný Firebase; `stub2.js` teď po zápisu obnoví seznam příkazů jako skutečný Firestore a má testovací příkaz „HISTORIE test").
+- **Čas založení příkazu (2026-10-15, v0.18.36)** — Martin: v Info u Vytvořeno má být vidět i čas a v tabulce se má čas ukázat po najetí myší na datum nebo jméno.
+  Čas i den se berou z `createdTs` (časové razítko serveru, místní čas) přes `createdAt(o)` → `{d:'YYYY-MM-DD',t:'HH:MM'}`; bez `createdTs` zůstane jen datum z `created`. Z toho jsou `createdDate(o)`
+  a `createdTip(o)` („Vytvořeno 2. 10. 2026 v 14:11"). **V Info** je dlaždice Vytvořeno: tučné datum + vedle něj čas písmem JetBrains Mono (`.r2-when`, `.r2-time`), pod tím autor. **V tabulce**
+  (sloupec Vytvořeno) je čas jen v `title` na datu i na jménu, do buňky se nepřidává. Hledání podle data i souhrn v Historii používají `createdAt(o).d`, ať datum všude sedí. Čas se nehledá.
+  Pozor: `created` je datum v UTC (`today()`), `createdTs` v místním čase — kolem půlnoci se mohou lišit, zobrazuje se místní.
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

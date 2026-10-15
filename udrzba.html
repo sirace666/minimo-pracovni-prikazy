@@ -737,6 +737,8 @@
     .r2-pj svg{width:14px;height:14px;flex:none}
     .r2-pj svg *{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .r2-rel{font-size:13.5px;font-weight:700;white-space:nowrap}
+    .r2-when{display:flex;align-items:baseline;gap:8px}
+    .r2-time{font:600 12.5px 'JetBrains Mono',monospace;color:#6f6b60;white-space:nowrap}
   @media(min-width:861px){
     /* menu sloupce */
     .colmenu{border:1px solid #e3e0d8;border-radius:16px;box-shadow:0 18px 44px rgba(30,28,20,.18)}
@@ -998,6 +1000,17 @@ const today = () => new Date().toISOString().slice(0,10);
 // Řádek historie: „2026-10-15 14:32 · Jméno · co se stalo" (místní čas). Starší řádky mají jen datum.
 const histStamp = () => nowLocal().replace('T',' ');
 const histLine = text => `${histStamp()} · ${me.name} · ${text}`;
+// Kdy byl příkaz založen: den i čas z časového razítka serveru (createdTs) v místním čase; bez něj jen datum z pole created.
+const tsMs = t => { if(!t) return NaN; if(typeof t.toMillis==='function') return t.toMillis(); if(typeof t.toDate==='function') return t.toDate().getTime(); if(t.seconds!=null) return t.seconds*1000; return NaN; };
+function createdAt(o){
+  const ms=tsMs(o&&o.createdTs);
+  if(isNaN(ms)) return {d:String((o&&o.created)||'').slice(0,10), t:''};
+  const x=new Date(ms), p=n=>String(n).padStart(2,'0');
+  return {d:`${x.getFullYear()}-${p(x.getMonth()+1)}-${p(x.getDate())}`, t:`${p(x.getHours())}:${p(x.getMinutes())}`};
+}
+const createdDate = o => dateCz(createdAt(o).d).replace(/\.$/,'');
+// popisek po najetí myší na datum nebo jméno ve sloupci Vytvořeno: „Vytvořeno 6. 10. 2026 v 14:32"
+const createdTip = o => { const c=createdAt(o); return `Vytvořeno ${createdDate(o)}${c.t?' v '+c.t:''}`; };
 const dateCz = s => { if(!s) return ''; const p=String(s).slice(0,10).split('-'); return p.length===3?`${+p[2]}. ${+p[1]}. ${p[0]}.`:s; };
 
 /* ===== auth ===== */
@@ -1162,7 +1175,7 @@ function visibleSearchText(o){
   // Stav, Typ, Priorita, Obor, Stroj, Linka a stav dílu se SCHVÁLNĚ nehledají — na to jsou filtry (Martin, 2026-10-09)
   return ([o.cislo,o.wo,o.nazev,...assignedNames(o).map(pn),
     o.authorName&&pn(o.authorName),
-    dateCz(o.created)].filter(Boolean).join(' '));
+    dateCz(createdAt(o).d)].filter(Boolean).join(' '));
 }
 /* Řádek historie je „datum · kdo · co se stalo". Hledá se a označuje jen datum, jméno a skutečné hodnoty (stavy, jména
    přiřazených); šablonová slova („upravil příkaz", „založil příkaz", „přiřazeno:", „stav … →", „díl objednán"…) ne. */
@@ -1785,7 +1798,7 @@ function trHTML(o){
     <span class="tc">${udCanEdit(o)?`<span class="r2-obs editable" role="button" tabindex="0" data-a="obor-open" data-v="${esc(o._id)}" title="Změnit obor">`:'<span class="r2-obs">'}${obory.length?obory.map(x=>`<span class="r2-ob">${esc(x)}</span>`).join(''):'<span class="dash">–</span>'}</span></span>
     <span class="tc" title="${esc(names.join(', '))}">${r2Who(names,o._id,udAssignLevel(o)!=='none')}</span>
     <span class="tc">${hasProstoj(o)?`<span class="r2-pj${o.status==='hotovo'?' off':''}">${SVG_CLOCK}${(()=>{ const m=minBetween(o.prostojOd,o.prostojDo); return isNaN(m)||m<0?'ANO':esc(fmtMin(m)); })()}</span>`:''}</span>
-    <span class="tc"><span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv" title="Vytvořil">${esc(pn(o.authorName))}</span>`:''}</span>
+    <span class="tc"><span class="r2-rel" title="${esc(createdTip(o))}">${esc(createdDate(o))}</span>${o.authorName?`<span class="r2-sub hv" title="${esc(createdTip(o))}">${esc(pn(o.authorName))}</span>`:''}</span>
   </button>`;
 }
 function colMenuHTML(){
@@ -1963,7 +1976,7 @@ function listView(){
               <span class="badge typ-${typOf(o)==='EM'?'havarijní':'standardní'}">${typOf(o)}</span>
               ${extraBadges(o)}
               <span class="spacer"></span>
-              <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(o.created))}</span>
+              <span class="muted">${esc(o.cislo||'')} · ${esc(dateCz(createdAt(o).d))}</span>
             </div>
             <h3 class="oi-title">${esc(o.nazev||'')}</h3>
             <div class="oi-meta">${o.linka?`${esc(o.linka)}${o.stroj?' / '+esc(o.stroj):''}`:'bez linky'} · → ${assignedNames(o).length?`<span class="hv">${esc(assignedNames(o).map(pn).join(', '))}</span>`:'nepřiřazeno'} · zadal <span class="hv">${esc(pn(o.authorName)||'')}</span></div>
@@ -2310,7 +2323,7 @@ function histTimelineHtml(o){
 function histSummaryHtml(o){
   const evs=(o.hist||[]).map(histEvent), done=o.status==='hotovo', p2=n=>String(n).padStart(2,'0'), d0=new Date();
   const tNow=`${d0.getFullYear()}-${p2(d0.getMonth()+1)}-${p2(d0.getDate())}`;
-  const created=String(o.created||'').slice(0,10), end=done?String(o.doneAt||tNow).slice(0,10):tNow;
+  const created=createdAt(o).d, end=done?String(o.doneAt||tNow).slice(0,10):tNow;
   const tiles=[], tile=(label,val,sub)=>tiles.push(ipTile(label,(Array.isArray(val)?val:[val]).map(v=>`<span class="tl-sv">${esc(v)}</span>`).join(''),sub?{sub:esc(sub)}:undefined));
   if(created) tile(done?'Vyřízeno za':'Otevřeno', plDays(Math.max(0,dayNum(end)-dayNum(created))), `od ${dateCz(created).replace(/\.$/,'')}`);
   const wt=workTotals(o).total;
@@ -2375,7 +2388,7 @@ function modalView(){
         ${ipTile('Přiřazeno',r2Who(assignedNames(o).map(pn),o._id,false))}
         ${o.nd?ipTile('Náhradní díl',r2Part(o.nd)):''}
         ${prostojTile(o)}
-        ${ipTile('Vytvořeno',`<span class="r2-rel">${esc(dateCz(o.created).replace(/\.$/,''))}</span>${o.authorName?`<span class="r2-sub hv">${esc(pn(o.authorName))}</span>`:''}`,{cls:'col'})}
+        ${ipTile('Vytvořeno',`<span class="r2-when"><span class="r2-rel">${esc(createdDate(o))}</span>${createdAt(o).t?`<span class="r2-time">${esc(createdAt(o).t)}</span>`:''}</span>${o.authorName?`<span class="r2-sub hv">${esc(pn(o.authorName))}</span>`:''}`,{cls:'col'})}
       </div>
     </div>`}
     ${modalTab==='historie' ? `
