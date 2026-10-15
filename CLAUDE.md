@@ -509,6 +509,9 @@ až se zeptá. Zkušební větev NENÍ důvod nic z toho vynechat.
    ať „Latest" zůstane na verzi z `main`. `gh` viz sekce Verzování níž.
 5. **`docs/pro-davida.md` doplnit** (lidsky, bez techniky, krátce) a po
    zápisu si ho znovu přečíst — viz sekce „Dokumentace pro Davida" níž.
+   **A také `docs/vykaz-prace.md`** (Martinův soukromý výkaz práce): přidej řádek
+   do „Deníku" na konci (datum · verze — co se změnilo, krátce) a změň
+   „Poslední doplnění" nahoře. Viz sekce „Výkaz práce" níž.
 6. **Tenhle `CLAUDE.md` aktualizovat** — nejen přidat, ale OPRAVIT
    zastaralé body, které se změnou přestaly platit.
 7. **Nasadit na Firebase Hosting** (ukázkový web pro Martinovy nadřízené, viz sekce „Firebase Hosting" níž):
@@ -1954,6 +1957,23 @@ soubory pořád popisovaly starou zkrácenou podobu jména v hlavičce
 ("M. Smrž"), ačkoliv kód dávno (commit `774f27a`) přešel na celé jméno
 ("Martin Smrž") — dokumentace tím zůstala zavádějící, i když nikdo nic
 nezapomněl zapsat.
+
+## Výkaz práce (`docs/vykaz-prace.md`) — JEN NA DISKU, není v gitu
+
+Martinův soukromý podklad k výkazu práce (2026-10-15, na jeho přání). Není pro Davida
+ani pro web — je v `.gitignore` a v `firebase.json` (`docs/**`) se nenahrává.
+- **Dvě části:** nahoře „Souhrn po obdobích" (po týdnech/fázích, lidsky), dole „Deník"
+  s řádky `datum · verze — co se změnilo`. Značky ✔ = doloženo gitem/soubory,
+  ≈ = odhad (mimo git, Martin potvrdí).
+- **Po KAŽDÉ vydané verzi** (i jen dokumentační nebo sloučení Davida) přidej řádek
+  do Deníku a změň „Poslední doplnění". Datum z `git log`, ne odhadem. Žádné hodiny
+  si nevymýšlej — ty si doplňuje Martin sám.
+- **Souhrn po obdobích** přepiš do nového období, když se nasbírá víc řádků deníku
+  (např. po týdnu), ať nejsou dva paralelní seznamy. Nevymýšlej práci, kterou
+  nedokládá git, soubory ani konverzace — nejisté označ ≈.
+- Nepiš tam technické detaily ani hesla. Je to výpis „co jsme dělali", ne dokumentace kódu.
+- Pokud soubor chybí (nový počítač), založ ho znovu z `git log` a z historie původní
+  appky v `..\pracovni-prikazy\` (git, 9.–10. 9. 2026) a řekni to Martinovi.
 
 ## Kde je víc kontextu
 

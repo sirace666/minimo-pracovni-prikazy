@@ -2,5 +2,8 @@
 # to natrvalo v historii repa (skončí to jako popis PR na GitHubu).
 docs/pro-davida.md
 
+# Martinův soukromý výkaz práce — jen na disku, nesmí do gitu ani na web.
+docs/vykaz-prace.md
+
 # cache Firebase CLI (vzniká při nasazení hostingu)
 .firebase/
