@@ -349,13 +349,18 @@ onAuthStateChanged(auth, async (user)=>{
   ready=true; render();
 });
 
+/* Zkušební účty (@minimo.local) jsou v seznamu vždy úplně nahoře, v pevném pořadí: admin, údržbář, PE, tool setter.
+   Další účty z @minimo.local jdou hned za nimi, ostatní lidé pak abecedně podle jména. */
+const TEST_ORDER = ['admin.test@minimo.local','udrzbar@minimo.local','process.engineer@minimo.local','tool.setter@minimo.local'];
+const userRank = u => { const e=String(u.email||'').trim().toLowerCase(), i=TEST_ORDER.indexOf(e);
+  return i>=0 ? i : (e.endsWith('@minimo.local') ? TEST_ORDER.length : TEST_ORDER.length+1); };
 function subscribe(){
   unsub = onSnapshot(collection(db,'users'), s=>{
     users = s.docs.map(d=>{ const u={uid:d.id, ...d.data()};
         // "karel.pistek" → "Karel Pistek" (auto-založené účty ukládaly jméno
         // rovnou z e-mailu, needitované) — Info/Práva/seznam vždycky pěkně.
         u.name = window.minimoDisplayName ? window.minimoDisplayName(u) : (u.name||u.uid); return u; })
-      .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'cs'));
+      .sort((a,b)=>userRank(a)-userRank(b) || String(a.name||'').localeCompare(String(b.name||''),'cs'));
     render();
   }, e=>toast('Chyba načítání uživatelů: '+e.message,'err'));
 }
