@@ -650,8 +650,8 @@
     .sb-clear:hover{background:transparent}
     .sb-switch{font-size:14.5px;font-weight:600;color:#1c1b17;gap:10px;padding:0}
     .sb-switch .tr{width:40px;height:24px;background:#d4d0c6}
-    .sb-switch .tr::after{top:3px;left:3px;width:18px;height:18px}
-    .sb-switch[aria-checked="true"] .tr{background:#e8590c}
+    .sb-switch .tr::after{top:3px;left:3px;width:18px;height:18px;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .sb-switch[aria-checked="true"] .tr{background:oklch(0.64 0.14 50)}   /* barva zapnutého přepínače přesně z návrhu (≈ #ce6f33, tlumenější než #e8590c) */
     .sb-switch[aria-checked="true"] .tr::after{left:19px}
     .tbl{min-width:1300px;--cols:148px 50px 118px 112px minmax(0,2.4fr) 130px 150px minmax(0,1.5fr) 112px 120px}
     .thd,.trow{column-gap:14px;padding:0 17px}
