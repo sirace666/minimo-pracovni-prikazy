@@ -1643,6 +1643,26 @@ protože:
     vč. hotových): použité mají v oranžovém odznaku číslo (`.fvs-used`, třída `.fv-used`), zatím nepoužité jsou šedé bez čísla (`.fv-unused`). Všechny čtyři sekce mají vždy pole Hledat
     (`data-favq`; porovnává se jen text položky, ne číslo) a vysvětlivku. **Menu sloupců v tabulce se NEmění** — tam se dál nabízí jen to, co v příkazech je (`whoOptions`/`autorOptions`).
     Řádky v seznamech mají všude stejnou výšku (`flex:none`), dlouhý seznam se posouvá (dřív se položky stlačovaly). Test: `t-fav3.js`.
+- **Ochrana Super Adminů — „VIP účty" (2026-10-16, v0.18.44)** — Martin chtěl kolegu Davida Muze (`david.muze@yfai.cz`) jako Warehouse Admina „hned pod sebou":
+  smí dávat práva, ale nesmí sáhnout na Martina. Do té doby měl `wadmin` v pravidlech stejná práva jako Super Admin a mohl upravit, povýšit nebo smazat kohokoli.
+  - **Pravidlo:** **Super Admin = VIP účet** (`level:'superadmin'`, nebo starší účet s `role:'admin'` BEZ `level` — stejně to čte `levelOf()` v Nastavení).
+    Upravit ho, smazat ho nebo na Super Admina někoho povýšit smí **jen Super Admin** (za Super Admina se bere i `isEmailAdmin()`). Warehouse Admin a níž dál
+    upravují všechny ostatní, včetně jiných Warehouse Adminů. Vlastní jméno a fotku si dál každý změní sám.
+  - **Pravidla Firestore** (`firestore.rules`, funkce `isVipDoc(d)` a `isSuperAdmin()`, blok `match /users/{uid}`):
+    `update` = `isAdmin() && (isSuperAdmin() || (!isVipDoc(resource.data) && !isVipDoc(request.resource.data)))` — druhá část brání povýšení (nový dokument nesmí být VIP)
+    i „povýšení smazáním levelu" (role admin bez levelu); `delete` = `isAdmin() && (isSuperAdmin() || !isVipDoc(resource.data))`. Používá se `d.get('level','')`,
+    ne `d.level`, aby chybějící pole nehodilo chybu. **Ověřeno 28 skutečnými dotazy pod 9 dočasnými účty** (`%TEMP%\test-vip-rules.js`: Warehouse Admin proti obyčejným
+    i VIP účtům, Super Admin, starší správce bez levelu, obyčejný uživatel) a znovu prošlo 49 starších kontrol pravidel Údržby. Nasazeno na TESTOVACÍ projekt; Davidovi
+    je nutné pravidla nasadit ručně (viz checklist PR).
+  - **UI v Nastavení (`nastaveni.html`):** `isVip(u)`, `iAmSuper()`, `canTouchUser(u)`, `VIP_HINT`. VIP účet má u jména zlatý štítek „★ VIP" (`.vip-tag`) a lehce žlutý řádek
+    (`tr.is-vip`) — vidí ho každý, kdo smí do Nastavení. Kdo není Super Admin, má u VIP řádků místo Upravit / Smazat zámek 🔒 s vysvětlením (`.vip-lock`), v okně uživatele
+    nemá v nabídce úrovní „Super Admin" (`lvlOpts`) a `openEdit` / `saveUser` / `removeUser` mají pojistku i v kódu. Popis úrovně Super Admin v legendě to říká také.
+  - **Pozor:** přísnost UI je jen pohodlí, skutečná ochrana je v pravidlech. **Zůstává známý nález** (viz „BEZPEČNOSTNÍ NÁLEZ" výš): kdo ještě nemá profil, si ho může při prvním
+    přihlášení založit s libovolným `level` — VIP ochrana chrání EXISTUJÍCÍ účty, ne zakládání nových. Opravit by to chtělo změnu `allow create` (jen `basic`/`zadavatel`),
+    ale první přihlášení Davidových správců podle e-mailu (`OWNERS`) tím nesmí spadnout, proto se na to nesahalo bez vyžádání.
+  - **Nastavení Davida Muze (dělá Martin ručně v konzoli):** `level:'wadmin'`, `role:'admin'`, `modules.nastaveni:'write'` (a podle potřeby `modules.shopfloor`, `positions`).
+    Kdo smí do Nastavení, určuje `resolveModule` — výchozí je jen Super Admin, Warehouse Admin to musí mít v `modules` zapsané.
+  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf" a starší správce bez levelu; 27 kontrol).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
@@ -1980,7 +2000,8 @@ tady). Před otevřením PR:
 4. PR obsahuje jen: `udrzba.html`, `profil.html`, `instalace.html`, diff v
    `header.js` + `header.css` + `index.html` + `firestore.rules` + **`nastaveni.html` (sekce „Práva v Údržbě")** — NIC z
    nakup/dovolenky/opravy/engineering krom té jedné řádky s `photoURL` (a v `opravy.html` NIC). **Davidovy ruční kroky:** publikovat nová
-   pravidla Firestore (funkce `ud…` a blok `match /udrzba`) a upozornit ho na bezpečnostní nález níž.
+   pravidla Firestore (funkce `ud…` a blok `match /udrzba`, od 0.18.44 i ochrana Super Adminů v bloku `match /users` — funkce `isVipDoc`/`isSuperAdmin`)
+   a upozornit ho na bezpečnostní nález níž.
 
 ## Verzování (na Martinovo přání, stejně jako appka Pracovní příkazy)
 

@@ -69,6 +69,10 @@
   td.nm{font-weight:600;white-space:nowrap}
   td.uid{font-size:10.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
   .me-tag{font-size:10px;color:#2563a8;font-weight:700;margin-left:6px}
+  .vip-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;background:linear-gradient(135deg,#f6d36b,#dca11f);color:#4a3200;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 1px rgba(184,126,12,.35)}
+  .vip-lock{display:inline-block;font-size:13px;opacity:.55;cursor:not-allowed}
+  tbody tr.is-vip td{background:#fffaf0}
+  tbody tr.is-vip:hover td{background:#fff3da}
   .new-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;background:#e8590c;color:#fff;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
   tbody tr.is-new td{background:#fff5ec}
   tbody tr.is-new:hover td{background:#ffedd9}
@@ -159,7 +163,7 @@ const LEVELS = [
   {key:'warehouse',  label:'Warehouse',       rank:2, color:'#2563a8', desc:'+ mění stavy a údaje ve skladových věcech.'},
   {key:'approver',   label:'Approver',        rank:3, color:'#b7791f', desc:'+ schvaluje a zamítá.'},
   {key:'wadmin',     label:'Warehouse Admin', rank:4, color:'#6b46c1', desc:'+ spravuje číselníky a nastavení modulů.'},
-  {key:'superadmin', label:'Super Admin',     rank:5, color:'#1f9254', desc:'Vše + správa uživatelů a levelů.'},
+  {key:'superadmin', label:'Super Admin',     rank:5, color:'#1f9254', desc:'Vše + správa uživatelů a levelů. VIP účet – nikdo níže ho nemůže upravit ani smazat.'},
 ];
 const LEVEL_BY = Object.fromEntries(LEVELS.map(l=>[l.key,l]));
 /* Můstek na staré role nákupní appky (aby nákupy jely dál). */
@@ -167,6 +171,11 @@ const ROLE2LEVEL = {zadavatel:'basic', skladnik:'warehouse', schvalovatel:'appro
 const LEVEL2ROLE = {basic:'zadavatel', warehouse:'skladnik', approver:'schvalovatel', wadmin:'admin', superadmin:'admin'};
 const levelOf = d => (d && d.level && LEVEL_BY[d.level]) ? d.level : ((d && ROLE2LEVEL[d.role]) || 'basic');
 const rankOf = key => (LEVEL_BY[key]||LEVEL_BY.basic).rank;
+/* VIP účet = Super Admin. Smí ho upravit, smazat nebo na něj někoho povýšit jen Super Admin (stejně to hlídají pravidla Firestore). */
+const isVip = u => levelOf(u)==='superadmin';
+const iAmSuper = () => myLevel==='superadmin';
+const canTouchUser = u => iAmSuper() || !isVip(u);
+const VIP_HINT = 'VIP účet – upravit nebo smazat ho smí jen Super Admin';
 
 /* ===== Práva v modulu Plánování (pro každou sekci zvlášť) =====
    4 stavy + „výchozí". Výchozí se odvodí z levelu (Approver a výše = vše, ostatní = jen sebe). */
@@ -375,7 +384,7 @@ function subscribe(){
 
 function editUserView(){
   const u=uedit;
-  const lvlOpts=LEVELS.map(l=>`<option value="${l.key}" ${u.level===l.key?'selected':''}>${esc(l.label)}</option>`).join('');
+  const lvlOpts=LEVELS.filter(l=>iAmSuper()||l.key!=='superadmin').map(l=>`<option value="${l.key}" ${u.level===l.key?'selected':''}>${esc(l.label)}</option>`).join('');
   const posOpts=SECTIONS.map(s=>`<optgroup label="${esc(s.label)}">${s.positions
     .map(p=>`<option value="${esc(p)}" ${u.positions.includes(p)?'disabled':''}>${esc(p)}</option>`).join('')}</optgroup>`).join('');
   const chips=u.positions.length
@@ -456,6 +465,7 @@ function editUserView(){
 }
 function openEdit(uid){
   const u=users.find(x=>x.uid===uid); if(!u) return;
+  if(!canTouchUser(u)){ toast(VIP_HINT+'.','err'); return; }
   uedit={uid, name:u.name||uid, email:u.email||'', level:levelOf(u), team:u.team||'',
     positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{}),
     udSpecialOpen:false, udrzba:udNorm(u.udrzba), udAccess:(((u.modules||{}).udrzba==='write')||((u.modules||{}).udrzba==='read'))?'show':'hidden'};
@@ -465,6 +475,8 @@ async function saveUser(){
   if(!canWriteSettings()){ toast('Nemáte právo měnit uživatele.','err'); return; }
   const u=uedit;
   const sel=document.getElementById('ue-level'); if(sel) u.level=sel.value;
+  const tgt=users.find(x=>x.uid===u.uid);
+  if(!iAmSuper() && ((tgt&&isVip(tgt)) || u.level==='superadmin')){ toast('Super Admina (VIP účet) smí měnit a přidělovat jen Super Admin.','err'); return; }
   try{
     if(u.udAccess==='show') u.modules.udrzba='write'; else delete u.modules.udrzba;   // přístup k Údržbě = users.modules.udrzba (čte ho i hlavička a rozcestník)
     const patch={level:u.level, role:LEVEL2ROLE[u.level], positions:u.positions, perms:u.perms, modules:u.modules, udrzba:udNorm(u.udrzba)};
@@ -477,6 +489,7 @@ async function saveUser(){
 async function removeUser(uid, name){
   if(!canWriteSettings()){ toast('Nemáte právo mazat uživatele.','err'); return; }
   if(uid===me.uid){ toast('Sebe nelze smazat.','err'); return; }
+  { const tgt=users.find(x=>x.uid===uid); if(tgt && !canTouchUser(tgt)){ toast(VIP_HINT+'.','err'); return; } }
   if(!confirm(`Smazat uživatele „${name}" ze seznamu?\n\nOdstraní se jeho profil a level. Přihlašovací účet ve Firebase Authentication tím NEZMIZÍ – když se znovu přihlásí, objeví se tu opět jako Basic. Pro úplné odebrání smaž účet i ve Firebase → Authentication.`)) return;
   try{
     await deleteDoc(doc(db,'users',uid));
@@ -506,19 +519,23 @@ function view(){
   const rows = users.length ? users.map(u=>{
     const lvl=levelOf(u);
     const meMark = u.uid===me.uid ? '<span class="me-tag">(vy)</span>' : '';
+    const vip = isVip(u), locked = !canTouchUser(u);
+    const lockTag = `<span class="vip-lock" title="${VIP_HINT}">🔒</span>`;
     const delBtn = u.uid===me.uid
       ? `<span class="uid" title="Sebe nelze smazat">—</span>`
+      : locked ? lockTag
       : `<button class="udel" data-del="${u.uid}" data-name="${esc(u.name||u.uid)}" title="Smazat uživatele">✕</button>`;
     const chips = (u.positions||[]).length
       ? (u.positions||[]).map(p=>`<span class="pchip">${esc(p)}</span>`).join(' ')
       : '<span style="color:var(--muted)">—</span>';
     const isNew = u.needsReview===true;
     const newTag = isNew ? '<span class="new-tag" title="Nový uživatel — nastav mu úroveň, pozice a přístup a ulož">NOVÝ</span>' : '';
-    return `<tr${isNew?' class="is-new"':''}>
-      <td class="nm">${esc(u.name||'—')}${meMark}${newTag}</td>
+    const trCls=[isNew?'is-new':'', vip?'is-vip':''].filter(Boolean).join(' ');
+    return `<tr${trCls?` class="${trCls}"`:''}>
+      <td class="nm">${esc(u.name||'—')}${meMark}${vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
       <td>${badge(lvl)}</td>
       <td class="pos">${chips}</td>
-      ${rw?`<td class="ta-c"><button class="btn-edit" data-edit="${u.uid}">Upravit</button></td>
+      ${rw?`<td class="ta-c">${locked?lockTag:`<button class="btn-edit" data-edit="${u.uid}">Upravit</button>`}</td>
       <td class="ta-c">${delBtn}</td>`:''}
     </tr>`;
   }).join('') : `<tr><td colspan="${rw?5:3}" style="text-align:center;color:var(--muted);padding:22px">Zatím žádní uživatelé. Objeví se tu každý, kdo se přihlásí do portálu.</td></tr>`;
