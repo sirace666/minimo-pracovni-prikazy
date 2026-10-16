@@ -73,6 +73,11 @@
   .vip-lock{display:inline-block;font-size:13px;opacity:.55;cursor:not-allowed}
   tbody tr.is-vip td{background:#fffaf0}
   tbody tr.is-vip:hover td{background:#fff3da}
+  .owner-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,#2b1a5e,#5b2a9e);color:#ffd45c;border-radius:999px;padding:2px 10px 2px 8px;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 1.5px #e0a21a,0 2px 8px rgba(91,42,158,.35)}
+  tbody tr.is-owner td{background:#ffeeb8}
+  tbody tr.is-owner:hover td{background:#ffe599}
+  tbody tr.is-owner td:first-child{box-shadow:inset 5px 0 0 #e0a21a}
+  tbody tr.is-owner td.nm{font-weight:800}
   .new-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;background:#e8590c;color:#fff;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
   tbody tr.is-new td{background:#fff5ec}
   tbody tr.is-new:hover td{background:#ffedd9}
@@ -176,6 +181,11 @@ const isVip = u => levelOf(u)==='superadmin';
 const iAmSuper = () => myLevel==='superadmin';
 const canTouchUser = u => iAmSuper() || !isVip(u);
 const VIP_HINT = 'VIP účet – upravit nebo smazat ho smí jen Super Admin';
+/* MAJITEL = Martinův účet v testovací databázi, označený výrazněji než ostatní VIP.
+   TODO před PR Davidovi: odebrat (jen označení, pravidla na tom nezávisí). */
+const OWNER_MAILS = ['admin.test@minimo.local'];
+const isOwner = u => OWNER_MAILS.includes(String((u&&u.email)||'').toLowerCase());
+const OWNER_HINT = 'MAJITEL – nejvyšší účet (VIP). Upravit nebo smazat ho smí jen Super Admin';
 
 /* ===== Práva v modulu Plánování (pro každou sekci zvlášť) =====
    4 stavy + „výchozí". Výchozí se odvodí z levelu (Approver a výše = vše, ostatní = jen sebe). */
@@ -519,8 +529,8 @@ function view(){
   const rows = users.length ? users.map(u=>{
     const lvl=levelOf(u);
     const meMark = u.uid===me.uid ? '<span class="me-tag">(vy)</span>' : '';
-    const vip = isVip(u), locked = !canTouchUser(u);
-    const lockTag = `<span class="vip-lock" title="${VIP_HINT}">🔒</span>`;
+    const vip = isVip(u), owner = isOwner(u), locked = !canTouchUser(u);
+    const lockTag = `<span class="vip-lock" title="${owner?OWNER_HINT:VIP_HINT}">🔒</span>`;
     const delBtn = u.uid===me.uid
       ? `<span class="uid" title="Sebe nelze smazat">—</span>`
       : locked ? lockTag
@@ -530,9 +540,9 @@ function view(){
       : '<span style="color:var(--muted)">—</span>';
     const isNew = u.needsReview===true;
     const newTag = isNew ? '<span class="new-tag" title="Nový uživatel — nastav mu úroveň, pozice a přístup a ulož">NOVÝ</span>' : '';
-    const trCls=[isNew?'is-new':'', vip?'is-vip':''].filter(Boolean).join(' ');
+    const trCls=[isNew?'is-new':'', vip?'is-vip':'', owner?'is-owner':''].filter(Boolean).join(' ');
     return `<tr${trCls?` class="${trCls}"`:''}>
-      <td class="nm">${esc(u.name||'—')}${meMark}${vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
+      <td class="nm">${esc(u.name||'—')}${meMark}${owner?`<span class="owner-tag" title="${OWNER_HINT}">👑 MAJITEL</span>`:vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
       <td>${badge(lvl)}</td>
       <td class="pos">${chips}</td>
       ${rw?`<td class="ta-c">${locked?lockTag:`<button class="btn-edit" data-edit="${u.uid}">Upravit</button>`}</td>

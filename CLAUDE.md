@@ -1662,7 +1662,11 @@ protože:
     ale první přihlášení Davidových správců podle e-mailu (`OWNERS`) tím nesmí spadnout, proto se na to nesahalo bez vyžádání.
   - **Nastavení Davida Muze (dělá Martin ručně v konzoli):** `level:'wadmin'`, `role:'admin'`, `modules.nastaveni:'write'` (a podle potřeby `modules.shopfloor`, `positions`).
     Kdo smí do Nastavení, určuje `resolveModule` — výchozí je jen Super Admin, Warehouse Admin to musí mít v `modules` zapsané.
-  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf" a starší správce bez levelu; 27 kontrol).
+  - **MAJITEL (0.18.45, Martin: „Super Admina v naší testovací označ ještě víc než ostatní — tím myslím mě"):** účet `admin.test@minimo.local` má místo „★ VIP" tmavě fialový štítek
+    „👑 MAJITEL" se zlatým písmem a obrysem (`.owner-tag`), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Je to jen OZNAČENÍ: pravidla ani práva se kvůli
+    tomu nezměnily (MAJITEL je dál „jen" Super Admin = VIP, může ho měnit jiný Super Admin). Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) — **TODO před PR Davidovi:
+    odebrat** (stejně jako ostatní testovací e-maily). Účet je díky řazení zkušebních účtů vždy úplně nahoře.
+  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 29 kontrol).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).
