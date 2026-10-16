@@ -1666,7 +1666,12 @@ protože:
     „👑 MAJITEL" se zlatým písmem a obrysem (`.owner-tag`), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Je to jen OZNAČENÍ: pravidla ani práva se kvůli
     tomu nezměnily (MAJITEL je dál „jen" Super Admin = VIP, může ho měnit jiný Super Admin). Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) — **TODO před PR Davidovi:
     odebrat** (stejně jako ostatní testovací e-maily). Účet je díky řazení zkušebních účtů vždy úplně nahoře.
-  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 29 kontrol).
+  - **Vykřičník s „hrozbami" (0.18.46, Martin: nenápadný vykřičník, na který bude chtít každý kliknout, rozbalí se připomenutí pro kolegu — bez jména, jen hrozby):**
+    malé kolečko „!" hned za nadpisem „👥 Uživatelé" v Nastavení (`#warn-bang`, `.warn-bang`, bez popisku, aby nebylo nápadné). Klik rozbalí plovoucí okénko `.threat-pop`
+    s 8 žertovnými upozorněními pro správce (`THREATS`, např. „Kdo rozdá práva po lopatě, o svoje přijde."); zavře se druhým klikem, klikem mimo, Esc nebo posunem stránky.
+    Texty jsou schválně žertovné a **nic nepředstírají** (žádné „všechno se loguje" — log aktivity zatím neexistuje). Žádné jméno v nich není. Okénko se kreslí do `body`
+    (`renderThreats()`, jako toast), protože `.panel` má `overflow:hidden`. **TODO před PR Davidovi: odebrat** (vykřičník, `THREATS`, `renderThreats`, CSS `.warn-bang`/`.threat-pop`).
+  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 49 kontrol včetně vykřičníku).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

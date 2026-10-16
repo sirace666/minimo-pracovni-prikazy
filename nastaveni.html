@@ -78,6 +78,15 @@
   tbody tr.is-owner:hover td{background:#ffe599}
   tbody tr.is-owner td:first-child{box-shadow:inset 5px 0 0 #e0a21a}
   tbody tr.is-owner td.nm{font-weight:800}
+  .warn-bang{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:10px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:transparent;color:rgba(255,255,255,.65);font-family:inherit;font-size:11px;font-weight:800;line-height:1;cursor:pointer;padding:0;vertical-align:middle;opacity:.7;transition:opacity .15s,background .15s}
+  .warn-bang:hover{opacity:1;background:rgba(255,255,255,.18)}
+  .threat-pop{position:fixed;z-index:90;width:340px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #f0b4a8;border-top:4px solid #c0392b;border-radius:12px;box-shadow:0 12px 32px rgba(15,47,95,.28);padding:12px 14px;font-size:13px;color:#1f2a44}
+  .threat-pop h4{margin:0 0 8px;font-size:13px;color:#c0392b;font-weight:800}
+  .threat-pop ul{margin:0;padding:0;list-style:none}
+  .threat-pop li{padding:6px 0 6px 22px;position:relative;line-height:1.35;border-top:1px solid #f4e4e0}
+  .threat-pop li:first-child{border-top:none}
+  .threat-pop li::before{content:"⚠";position:absolute;left:0;top:6px;color:#c0392b;font-size:12px}
+  .threat-pop .foot{margin-top:8px;font-size:11px;color:#8a93a6;font-style:italic}
   .new-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;background:#e8590c;color:#fff;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
   tbody tr.is-new td{background:#fff5ec}
   tbody tr.is-new:hover td{background:#ffedd9}
@@ -511,7 +520,7 @@ function render(){
   if(!ready){ return; }
   if(myAccess()==='none'){ appEl.innerHTML=denyView(); return; }
   const cOld=document.querySelector('#ue-wrap .c'), cTop=cOld?cOld.scrollTop:0;   // okno uživatele se při změně volby nesmí vracet nahoru
-  appEl.innerHTML = view(); wire(); renderToast();
+  appEl.innerHTML = view(); wire(); renderToast(); renderThreats();
   if(cTop){ const cNew=document.querySelector('#ue-wrap .c'); if(cNew) cNew.scrollTop=cTop; }
 }
 
@@ -561,7 +570,7 @@ function view(){
         👁️ Máte modul Nastavení <b>jen pro čtení</b> – uživatele vidíte, ale nemůžete je upravovat ani mazat.</p>`;
   return `${uh}
   <main>
-    <div class="panel"><h2>👥 Uživatelé <span class="right">${users.length} účtů${(()=>{ const n=users.filter(u=>u.needsReview===true).length; return n?` · <b class="new-count">${newUsersText(n)}</b>`:''; })()}</span></h2><div class="body">
+    <div class="panel"><h2>👥 Uživatelé<button class="warn-bang" id="warn-bang" type="button" aria-label="Upozornění">!</button> <span class="right">${users.length} účtů${(()=>{ const n=users.filter(u=>u.needsReview===true).length; return n?` · <b class="new-count">${newUsersText(n)}</b>`:''; })()}</span></h2><div class="body">
       ${roNote}
       <p style="margin:0 0 12px;font-size:12px;color:var(--muted);background:#eef3fb;border:1px solid #d6e2f3;border-radius:8px;padding:9px 11px">
         ℹ️ Účet se tu objeví, až se jím člověk <b>poprvé přihlásí</b> do portálu (profil se vytvoří automaticky).
@@ -588,6 +597,7 @@ function view(){
 
 function wire(){
   document.getElementById('btn-logout')?.addEventListener('click',()=>signOut(auth));
+  document.getElementById('warn-bang')?.addEventListener('click',e=>{ e.stopPropagation(); threatOpen=!threatOpen; renderThreats(); });
   document.getElementById('eg-save')?.addEventListener('click',saveEngcfg);
   document.querySelectorAll('button[data-edit]').forEach(b=>
     b.addEventListener('click',()=>openEdit(b.getAttribute('data-edit'))));
@@ -635,6 +645,32 @@ function wire(){
 }
 
 function toast(m,k=''){ toastMsg=m; toastKind=k; renderToast(); clearTimeout(toast._t); toast._t=setTimeout(()=>{toastMsg=null;renderToast();},3000); }
+/* Nenápadný vykřičník u nadpisu „Uživatelé“: po kliknutí se rozbalí žertovné upozornění pro správce.
+   TODO před PR Davidovi: odebrat (jen oživení testovací verze, na funkci to nemá vliv). */
+let threatOpen=false;
+const THREATS=[
+  'Kdo rozdá práva po lopatě, o svoje přijde.',
+  'Super Admin vidí celý seznam lidí i jejich práva. Každého.',
+  'Zamčený VIP účet se neotevře. Zkoušet to můžeš, bavit se budeme my.',
+  'Smazání účtu je na jedno kliknutí. A nebude to tvoje kliknutí.',
+  'Jedno divné nastavení a z Warehouse Admina je zase Basic.',
+  'Kdo povýší sám sebe, nepovýší už nikdy nikoho.',
+  'Pravidla na serveru si nevymluvíš, ani když se budeš hodně snažit.',
+  'Heslo Super Admina nedáváme nikomu. Ani když hezky poprosíš.'
+];
+function renderThreats(){
+  document.querySelectorAll('.threat-pop').forEach(n=>n.remove());
+  const btn=document.getElementById('warn-bang');
+  if(!threatOpen || !btn) return;
+  const r=btn.getBoundingClientRect(), w=Math.min(340,window.innerWidth-24);
+  const left=Math.max(12,Math.min(r.left-8,window.innerWidth-w-12));
+  const el=document.createElement('div'); el.className='threat-pop'; el.style.left=left+'px'; el.style.top=(r.bottom+8)+'px';
+  el.innerHTML='<h4>⚠️ Upozornění pro správce</h4><ul>'+THREATS.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul><div class="foot">Nic osobního. Jen připomínka.</div>';
+  document.body.appendChild(el);
+}
+document.addEventListener('click',e=>{ if(threatOpen && !e.target.closest('.threat-pop') && !e.target.closest('#warn-bang')){ threatOpen=false; renderThreats(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && threatOpen){ threatOpen=false; renderThreats(); } });
+window.addEventListener('scroll',()=>{ if(threatOpen){ threatOpen=false; renderThreats(); } },{passive:true});
 function renderToast(){
   document.querySelectorAll('.toast').forEach(t=>t.remove());
   if(!toastMsg) return;
