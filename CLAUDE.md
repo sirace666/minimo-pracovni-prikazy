@@ -1451,6 +1451,11 @@ protože:
     (`.vt-nds`, popisky `.vt-sub` jen na počítači). Logika pohledů, `filters.view` i rozbalovací panel beze změny.
   - **Hledání je na počítači vždy vidět** (`.search-wrap.d-only`, lupa `.m-only` na mobilu); klik mimo ho na počítači
     NEzavírá ani nemaže (listener kontroluje `matchMedia('(min-width:861px)')`).
+  - **Ukázkový soubor pro Claude Design (2026-10-16):** `C:\Users\N3MESiX_NTB\Downloads\udrzba-ukazka-pro-design.html` je JEDEN samostatný soubor (stránka Údržba + falešný Firebase
+    s ukázkovými daty uvnitř, header.css/js vložené), který se otevře dvojklikem bez přihlášení; Martin ho posílá do Claude Design jako podklad (spolu se screenshoty). Sestavuje ho skript
+    `%TEMP%\build-ukazka.js` ze `stub-nast.js` (`%TEMP%\minimo-test3`); po změně vzhledu ho **sestav znovu**. Když skript chybí: vezmi `udrzba.html`, vlož inline `header.css` a `header.js`,
+    odstraň tři `import … from "https://www.gstatic.com/firebasejs/…"` a na začátek modulového skriptu vlož falešný Firebase zabalený do funkce (exporty přes destrukturování), výchozí uživatel
+    admin (`p=admin`), `fetch('VERSION')` nahraď konstantou. Do repa se nedává.
   - **Zkoušení bez přihlášení:** kopie stránky s falešným `stub.js` místo Firebase leží v `%TEMP%\minimo-test2` (server na
     8092, skript Playwright přes Chrome). Pole přiřazených jmen se jmenuje `assignedToNames` (množné číslo!).
   - Návrh obsahuje i stav „Pozastaveno" a typ PM — v datech Údržby NEJSOU, nepřidáno.
