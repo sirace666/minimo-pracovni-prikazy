@@ -7,3 +7,6 @@ docs/vykaz-prace.md
 
 # cache Firebase CLI (vzniká při nasazení hostingu)
 .firebase/
+
+# Ukázkový soubor pro Claude Design (sestavuje se skriptem, jen na disku)
+docs/udrzba-ukazka-pro-design.html
