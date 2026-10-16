@@ -190,11 +190,11 @@ const isVip = u => levelOf(u)==='superadmin';
 const iAmSuper = () => myLevel==='superadmin';
 const canTouchUser = u => iAmSuper() || !isVip(u);
 const VIP_HINT = 'VIP účet – upravit nebo smazat ho smí jen Super Admin';
-/* MAJITEL = Martinův účet v testovací databázi, označený výrazněji než ostatní VIP.
+/* ŠÉF = Martinův účet v testovací databázi, označený výrazněji než ostatní VIP.
    TODO před PR Davidovi: odebrat (jen označení, pravidla na tom nezávisí). */
 const OWNER_MAILS = ['admin.test@minimo.local'];
 const isOwner = u => OWNER_MAILS.includes(String((u&&u.email)||'').toLowerCase());
-const OWNER_HINT = 'MAJITEL – nejvyšší účet (VIP). Upravit nebo smazat ho smí jen Super Admin';
+const OWNER_HINT = 'ŠÉF – hlavní účet (VIP). Upravit nebo smazat ho smí jen Super Admin';
 
 /* ===== Práva v modulu Plánování (pro každou sekci zvlášť) =====
    4 stavy + „výchozí". Výchozí se odvodí z levelu (Approver a výše = vše, ostatní = jen sebe). */
@@ -551,7 +551,7 @@ function view(){
     const newTag = isNew ? '<span class="new-tag" title="Nový uživatel — nastav mu úroveň, pozice a přístup a ulož">NOVÝ</span>' : '';
     const trCls=[isNew?'is-new':'', vip?'is-vip':'', owner?'is-owner':''].filter(Boolean).join(' ');
     return `<tr${trCls?` class="${trCls}"`:''}>
-      <td class="nm">${esc(u.name||'—')}${meMark}${owner?`<span class="owner-tag" title="${OWNER_HINT}">👑 MAJITEL</span>`:vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
+      <td class="nm">${esc(u.name||'—')}${meMark}${owner?`<span class="owner-tag" title="${OWNER_HINT}">👑 ŠÉF</span>`:vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
       <td>${badge(lvl)}</td>
       <td class="pos">${chips}</td>
       ${rw?`<td class="ta-c">${locked?lockTag:`<button class="btn-edit" data-edit="${u.uid}">Upravit</button>`}</td>

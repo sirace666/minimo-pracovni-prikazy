@@ -1662,9 +1662,9 @@ protože:
     ale první přihlášení Davidových správců podle e-mailu (`OWNERS`) tím nesmí spadnout, proto se na to nesahalo bez vyžádání.
   - **Nastavení Davida Muze (dělá Martin ručně v konzoli):** `level:'wadmin'`, `role:'admin'`, `modules.nastaveni:'write'` (a podle potřeby `modules.shopfloor`, `positions`).
     Kdo smí do Nastavení, určuje `resolveModule` — výchozí je jen Super Admin, Warehouse Admin to musí mít v `modules` zapsané.
-  - **MAJITEL (0.18.45, Martin: „Super Admina v naší testovací označ ještě víc než ostatní — tím myslím mě"):** účet `admin.test@minimo.local` má místo „★ VIP" tmavě fialový štítek
-    „👑 MAJITEL" se zlatým písmem a obrysem (`.owner-tag`), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Je to jen OZNAČENÍ: pravidla ani práva se kvůli
-    tomu nezměnily (MAJITEL je dál „jen" Super Admin = VIP, může ho měnit jiný Super Admin). Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) — **TODO před PR Davidovi:
+  - **ŠÉF (0.18.45, slovo změněno v 0.18.47 — Martin: „místo majitel něco míň agresivního, ale aby věděl, kdo je pan"; původně: „Super Admina v naší testovací označ ještě víc než ostatní — tím myslím mě"):** účet `admin.test@minimo.local` má místo „★ VIP" tmavě fialový štítek
+    „👑 ŠÉF" se zlatým písmem a obrysem (`.owner-tag`), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Je to jen OZNAČENÍ: pravidla ani práva se kvůli
+    tomu nezměnily (ŠÉF je dál „jen" Super Admin = VIP, může ho měnit jiný Super Admin). Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) — **TODO před PR Davidovi:
     odebrat** (stejně jako ostatní testovací e-maily). Účet je díky řazení zkušebních účtů vždy úplně nahoře.
   - **Vykřičník s „hrozbami" (0.18.46, Martin: nenápadný vykřičník, na který bude chtít každý kliknout, rozbalí se připomenutí pro kolegu — bez jména, jen hrozby):**
     malé kolečko „!" hned za nadpisem „👥 Uživatelé" v Nastavení (`#warn-bang`, `.warn-bang`, bez popisku, aby nebylo nápadné). Klik rozbalí plovoucí okénko `.threat-pop`
