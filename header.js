@@ -73,7 +73,7 @@
     // Externí opravy zatím vidí v menu jen správce (podle e-mailu)
     // TODO před PR Davidovi: odebrat testovací e-mail admin.test.
     var OPRAVY_OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-      'admin.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local'];
+      'admin.test@minimo.local','mistr@minimo.local','udrzbar@minimo.local','kocum.smrz@mimo.official'];   // kocum.smrz = testovací účet (TODO před PR: odebrat)
     function opravyLink(){
       var who = String(o.email||o.user||'').trim().toLowerCase();
       if(OPRAVY_OWNERS.indexOf(who)<0) return '';

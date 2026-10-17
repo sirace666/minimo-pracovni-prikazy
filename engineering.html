@@ -460,7 +460,7 @@ const SCRAP_URL = 'https://uhanm056.github.io/Quality-loss-report-Scrap/';
    index.html a v pravidlech Firestore — když ho měníš, uprav ho všude.
    TODO před PR Davidovi: odebrat testovací e-mail admin.test. */
 const OWNERS = ['david.varhan@yanfeng.com','varhan@minimo.yfai','varhandavid19@gmail.com',
-  'admin.test@minimo.local'];
+  'admin.test@minimo.local','kocum.smrz@mimo.official'];   // kocum.smrz = testovací účet (TODO před PR: odebrat)
 const ENG_POSITIONS = ['IMM PE','SLUSH PE','FOAM PE','ASSY PE','GB/DP PE','PE coordinator'];
 const isOwner = e => OWNERS.includes(String(e||'').trim().toLowerCase());
 const hasEngPosition = pos => (pos||[]).some(p=>ENG_POSITIONS.includes(String(p).trim()));

@@ -1679,7 +1679,15 @@ protože:
     s 8 žertovnými upozorněními pro správce (`THREATS`, např. „Kdo rozdá práva po lopatě, o svoje přijde."); zavře se druhým klikem, klikem mimo, Esc nebo posunem stránky.
     Texty jsou schválně žertovné a **nic nepředstírají** (žádné „všechno se loguje" — log aktivity zatím neexistuje). Žádné jméno v nich není. Okénko se kreslí do `body`
     (`renderThreats()`, jako toast), protože `.panel` má `overflow:hidden`. **TODO před PR Davidovi: odebrat** (vykřičník, `THREATS`, `renderThreats`, CSS `.warn-bang`/`.threat-pop`).
-  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 56 kontrol včetně vykřičníku a nedotknutelného ŠÉFa).
+  - **Vysvětlivky v Nastavení + e-mail Kocum Smrz (0.18.49, Martin nechápal: u Admina „Přístup k modulu = Skrytý" a přesto vidí Údržbu; u Kocum Smrz „vše povoleno" a přesto chybí moduly):**
+    **Příčina 1:** správce (Warehouse Admin, Super Admin, nebo e-mail v `UDRZBA_OWNERS`) vidí Údržbu VŽDY a smí v ní všechno, přepínač „Práva v Údržbě" se u něj nepoužije. Teď to okno uživatele
+    říká: u úrovní `wadmin`/`superadmin` je v sekci Práva v Údržbě fialová poznámka `.adm-note` a sekce je ztlumená (`.ud-off`, nejde klikat); po přepnutí zpět na nižší úroveň zmizí.
+    **Příčina 2:** **Engineering** a **Externí opravy** NEMAJÍ přepínač v Nastavení — Engineering vidí e-mail z `OPRAVY_OWNERS` nebo pozice PE / PE coordinator (`isEngPerson()`), Externí opravy jen
+    e-mail z `OPRAVY_OWNERS` (Davidova logika, Super Admin tam „vidí vše" neplatí). Pod seznamem modulů v okně uživatele je proto vysvětlivka. Do `OPRAVY_OWNERS` (`index.html`, `header.js`,
+    `opravy.html`) a `OWNERS` (`engineering.html`) přibyl `kocum.smrz@mimo.official` — uvidí Externí opravy, Engineering a (výchozí pravidlo) Shopfloor walk. Je to testovací účet
+    — **TODO před PR Davidovi: odebrat** (komentář `kocum.smrz = testovací účet` u každého seznamu). Kdyby Martin chtěl, aby Super Admin viděl VŠECHNY moduly automaticky, musí se sáhnout do Davidových
+    seznamů na čtyřech místech (index, header, opravy, engineering); zatím nezvoleno.
+  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 71 kontrol včetně vykřičníku, nedotknutelného ŠÉFa, vysvětlivek a dlaždic rozcestníku).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

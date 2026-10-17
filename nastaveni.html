@@ -115,6 +115,8 @@
   .dlg .fld label{display:block;font-size:12px;font-weight:700;color:#41506b;margin-bottom:5px}
   .dlg .fld select{width:100%}
   .dlg .hintx{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .dlg .adm-note{font-size:12px;background:#f3eefc;border:1px solid #d9cdf2;color:#4a2f84;border-radius:8px;padding:8px 10px;margin:4px 0 8px;line-height:1.5}
+  .dlg .ud-off .perms{opacity:.45;pointer-events:none}
   .perms{display:flex;flex-direction:column;gap:7px}
   .ud-spec-toggle{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:#f4f5fa;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;color:#41506b;cursor:pointer}
   .ud-spec-toggle:hover{background:#eceefb}
@@ -433,7 +435,9 @@ function editUserView(){
   const sel=(cls,data,cur,opts)=>'<select class="ue-ud" data-ud="'+data+'">'+opts.map(o=>'<option value="'+o.key+'" '+(cur===o.key?'selected':'')+'>'+esc(o.label)+'</option>').join('')+'</select>';
   const udRow=(label,html)=>'<div class="permrow wide"><span class="permlbl">'+esc(label)+'</span>'+html+'</div>';
   const presetKey=udPresetOf(ud);
-  const udHtml = '<div class="fld" style="margin-top:14px"><label>Práva v Údržbě</label><div class="perms">'
+  const udAdmin=['wadmin','superadmin'].includes(u.level);   // správce vidí Údržbu vždy a smí v ní všechno, tohle nastavení se u něj nepoužije
+  const udNote=udAdmin?'<div class="adm-note">👑 Správce (Warehouse Admin a Super Admin) vidí Údržbu <b>vždy</b> a smí v ní všechno — tohle nastavení se u něj <b>nepoužije</b>. Platí jen pro ostatní úrovně.</div>':'';
+  const udHtml = '<div class="fld'+(udAdmin?' ud-off':'')+'" style="margin-top:14px"><label>Práva v Údržbě</label>'+udNote+'<div class="perms">'
     + udRow('Přístup k modulu', sel('', 'access', u.udAccess, [{key:'hidden',label:'Skrytý'},{key:'show',label:'Zobrazit'}]))
     + (udShow
       ? udRow('Předvolba', '<select id="ue-udpreset"><option value="custom" '+(presetKey==='custom'?'selected':'')+'>Vlastní nastavení</option>'
@@ -467,6 +471,7 @@ function editUserView(){
         <div class="hintx"><b>Skryté</b> = modul v menu ani na hlavní stránce neuvidí ·
           <b>Jen číst</b> = otevře a prohlíží, needituje · <b>Zapisovat</b> = plný přístup (podle levelu/role).<br>
           „Výchozí" = Nastavení jen Super Admin, ostatní moduly přístupné všem.</div>
+        <div class="hintx"><b>Engineering</b> a <b>Externí opravy</b> tu přepínač nemají: Engineering vidí lidé s pozicí PE nebo PE coordinator (viz Pozice výše), Externí opravy jen vybraní správci podle e-mailu v kódu. <b>Údržba</b> má vlastní sekci níž.</div>
       </div>
       <div class="fld" style="margin-top:14px"><label>Práva v Plánování směn a přítomnosti (po sekcích)</label>
         <div class="perms">${permRows}</div>
