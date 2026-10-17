@@ -188,13 +188,14 @@ const rankOf = key => (LEVEL_BY[key]||LEVEL_BY.basic).rank;
 /* VIP účet = Super Admin. Smí ho upravit, smazat nebo na něj někoho povýšit jen Super Admin (stejně to hlídají pravidla Firestore). */
 const isVip = u => levelOf(u)==='superadmin';
 const iAmSuper = () => myLevel==='superadmin';
-const canTouchUser = u => iAmSuper() || !isVip(u);
+const canTouchUser = u => !isOwner(u) && (iAmSuper() || !isVip(u));   // účet ŠÉF nesmí upravit ani smazat nikdo, ani on sám
 const VIP_HINT = 'VIP účet – upravit nebo smazat ho smí jen Super Admin';
 /* ŠÉF = Martinův účet v testovací databázi, označený výrazněji než ostatní VIP.
    TODO před PR Davidovi: odebrat (jen označení, pravidla na tom nezávisí). */
 const OWNER_MAILS = ['admin.test@minimo.local'];
 const isOwner = u => OWNER_MAILS.includes(String((u&&u.email)||'').toLowerCase());
-const OWNER_HINT = 'ŠÉF – hlavní účet (VIP). Upravit nebo smazat ho smí jen Super Admin';
+const OWNER_HINT = 'ŠÉF – nejvyšší účet. Nikdo ho nemůže upravit ani smazat';
+const lockHint = u => isOwner(u) ? OWNER_HINT : VIP_HINT;
 
 /* ===== Práva v modulu Plánování (pro každou sekci zvlášť) =====
    4 stavy + „výchozí". Výchozí se odvodí z levelu (Approver a výše = vše, ostatní = jen sebe). */
@@ -484,7 +485,7 @@ function editUserView(){
 }
 function openEdit(uid){
   const u=users.find(x=>x.uid===uid); if(!u) return;
-  if(!canTouchUser(u)){ toast(VIP_HINT+'.','err'); return; }
+  if(!canTouchUser(u)){ toast(lockHint(u)+'.','err'); return; }
   uedit={uid, name:u.name||uid, email:u.email||'', level:levelOf(u), team:u.team||'',
     positions:(u.positions||[]).slice(), perms:Object.assign({}, u.perms||{}), modules:Object.assign({}, u.modules||{}),
     udSpecialOpen:false, udrzba:udNorm(u.udrzba), udAccess:(((u.modules||{}).udrzba==='write')||((u.modules||{}).udrzba==='read'))?'show':'hidden'};
@@ -495,6 +496,7 @@ async function saveUser(){
   const u=uedit;
   const sel=document.getElementById('ue-level'); if(sel) u.level=sel.value;
   const tgt=users.find(x=>x.uid===u.uid);
+  if(tgt && isOwner(tgt)){ toast(OWNER_HINT+'.','err'); return; }
   if(!iAmSuper() && ((tgt&&isVip(tgt)) || u.level==='superadmin')){ toast('Super Admina (VIP účet) smí měnit a přidělovat jen Super Admin.','err'); return; }
   try{
     if(u.udAccess==='show') u.modules.udrzba='write'; else delete u.modules.udrzba;   // přístup k Údržbě = users.modules.udrzba (čte ho i hlavička a rozcestník)
@@ -508,7 +510,7 @@ async function saveUser(){
 async function removeUser(uid, name){
   if(!canWriteSettings()){ toast('Nemáte právo mazat uživatele.','err'); return; }
   if(uid===me.uid){ toast('Sebe nelze smazat.','err'); return; }
-  { const tgt=users.find(x=>x.uid===uid); if(tgt && !canTouchUser(tgt)){ toast(VIP_HINT+'.','err'); return; } }
+  { const tgt=users.find(x=>x.uid===uid); if(tgt && !canTouchUser(tgt)){ toast(lockHint(tgt)+'.','err'); return; } }
   if(!confirm(`Smazat uživatele „${name}" ze seznamu?\n\nOdstraní se jeho profil a level. Přihlašovací účet ve Firebase Authentication tím NEZMIZÍ – když se znovu přihlásí, objeví se tu opět jako Basic. Pro úplné odebrání smaž účet i ve Firebase → Authentication.`)) return;
   try{
     await deleteDoc(doc(db,'users',uid));

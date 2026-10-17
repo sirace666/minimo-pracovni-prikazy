@@ -37,6 +37,12 @@ service cloud.firestore {
     function isSuperAdmin() {
       return isEmailAdmin() || (signedIn() && isVipDoc(get(/databases/$(database)/documents/users/$(request.auth.uid)).data));
     }
+    // Hlavní účet (ŠÉF) je nedotknutelný: nikdo ho nesmí smazat ani mu měnit práva — ani jiný
+    // Super Admin, ani on sám. Sám si smí jen upravit jméno a fotku (viz pravidlo `update` níž).
+    // Pozná se podle e-mailu v profilu. Nikdo také nesmí tenhle e-mail přepsat do cizího profilu,
+    // ani si s ním založit vlastní profil (tím by vznikl neodstranitelný falešný záznam).
+    function isTopMail(m) { return m == 'admin.test@minimo.local'; }
+    function isTopDoc(d) { return isTopMail(d.get('email', '').lower()); }
     // Engineering: procesní inženýři a PE koordinátoři. Seznam pozic se drží
     // shodně s klientem (header.js, index.html, engineering.html).
     function myPositions() {
@@ -126,13 +132,16 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+                    && (!isTopDoc(request.resource.data)
+                        || ('email' in request.auth.token && isTopMail(request.auth.token.email.lower())));
       // Vlastní jméno a fotku (Můj profil) si smí každý upravit sám; cokoliv
       // dalšího (role, level, positions, perms, modules…) jen admin.
-      allow update: if (isAdmin() && (isSuperAdmin() || (!isVipDoc(resource.data) && !isVipDoc(request.resource.data))))
+      allow update: if (isAdmin() && !isTopDoc(resource.data) && !isTopDoc(request.resource.data)
+                        && (isSuperAdmin() || (!isVipDoc(resource.data) && !isVipDoc(request.resource.data))))
                     || (signedIn() && request.auth.uid == uid
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','firstName','lastName','photoURL','updatedAt']));
-      allow delete: if isAdmin() && (isSuperAdmin() || !isVipDoc(resource.data));
+      allow delete: if isAdmin() && !isTopDoc(resource.data) && (isSuperAdmin() || !isVipDoc(resource.data));
     }
 
     match /meta/config {
