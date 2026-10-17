@@ -1654,7 +1654,7 @@ protože:
     ne `d.level`, aby chybějící pole nehodilo chybu. **Ověřeno 28 skutečnými dotazy pod 9 dočasnými účty** (`%TEMP%\test-vip-rules.js`: Warehouse Admin proti obyčejným
     i VIP účtům, Super Admin, starší správce bez levelu, obyčejný uživatel) a znovu prošlo 49 starších kontrol pravidel Údržby. Nasazeno na TESTOVACÍ projekt; Davidovi
     je nutné pravidla nasadit ručně (viz checklist PR; od 0.18.48 i nedotknutelný účet ŠÉF — `isTopMail`).
-  - **UI v Nastavení (`nastaveni.html`):** `isVip(u)`, `iAmSuper()`, `canTouchUser(u)`, `VIP_HINT`. VIP účet má u jména zlatý štítek „★ VIP" (`.vip-tag`) a lehce žlutý řádek
+  - **UI v Nastavení (`nastaveni.html`):** `isVip(u)`, `iAmSuper()`, `canTouchUser(u)`, `VIP_HINT`. VIP účet má u jména zlatou kulatou ikonu s hvězdou (`.vip-tag`, od 0.18.50 BEZ textu) a lehce žlutý řádek
     (`tr.is-vip`) — vidí ho každý, kdo smí do Nastavení. Kdo není Super Admin, má u VIP řádků místo Upravit / Smazat zámek 🔒 s vysvětlením (`.vip-lock`), v okně uživatele
     nemá v nabídce úrovní „Super Admin" (`lvlOpts`) a `openEdit` / `saveUser` / `removeUser` mají pojistku i v kódu. Popis úrovně Super Admin v legendě to říká také.
   - **Pozor:** přísnost UI je jen pohodlí, skutečná ochrana je v pravidlech. **Zůstává známý nález** (viz „BEZPEČNOSTNÍ NÁLEZ" výš): kdo ještě nemá profil, si ho může při prvním
@@ -1662,8 +1662,8 @@ protože:
     ale první přihlášení Davidových správců podle e-mailu (`OWNERS`) tím nesmí spadnout, proto se na to nesahalo bez vyžádání.
   - **Nastavení Davida Muze (dělá Martin ručně v konzoli):** `level:'wadmin'`, `role:'admin'`, `modules.nastaveni:'write'` (a podle potřeby `modules.shopfloor`, `positions`).
     Kdo smí do Nastavení, určuje `resolveModule` — výchozí je jen Super Admin, Warehouse Admin to musí mít v `modules` zapsané.
-  - **ŠÉF (0.18.45, slovo změněno v 0.18.47 — Martin: „místo majitel něco míň agresivního, ale aby věděl, kdo je pan"; původně: „Super Admina v naší testovací označ ještě víc než ostatní — tím myslím mě"):** účet `admin.test@minimo.local` má místo „★ VIP" tmavě fialový štítek
-    „👑 ŠÉF" se zlatým písmem a obrysem (`.owner-tag`), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Účet je díky řazení zkušebních účtů vždy úplně nahoře. Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) a `isTopMail()` (`firestore.rules`) — **TODO před PR Davidovi:
+  - **ŠÉF (0.18.45, slovo změněno v 0.18.47 — Martin: „místo majitel něco míň agresivního, ale aby věděl, kdo je pan"; původně: „Super Admina v naší testovací označ ještě víc než ostatní — tím myslím mě"):** účet `admin.test@minimo.local` má místo hvězdy tmavě fialovou kulatou ikonu
+    s korunkou a zlatým obrysem (`.owner-tag`, od 0.18.50 BEZ textu; dřív štítek „👑 ŠÉF"), výrazně žlutý řádek se zlatým pruhem vlevo (`tr.is-owner`) a tučné jméno. Účet je díky řazení zkušebních účtů vždy úplně nahoře. Pozná se podle e-mailu v `OWNER_MAILS` (`nastaveni.html`) a `isTopMail()` (`firestore.rules`) — **TODO před PR Davidovi:
     odebrat** (stejně jako ostatní testovací e-maily).
   - **ŠÉF je NEDOTKNUTELNÝ (0.18.48, Martin: „admin.test@minimo.local ať nikdo nemůže smazat ani upravit práva, je nejvýš nad vším"):** na rozdíl od VIP účtů ho nesmí smazat ani mu měnit práva
     NIKDO — ani jiný Super Admin, ani on sám. Sám si smí upravit jen jméno a fotku (Můj profil). Pravidla Firestore (`isTopMail`, `isTopDoc(d)`, blok `match /users/{uid}`): `update` a `delete`
@@ -1687,7 +1687,10 @@ protože:
     `opravy.html`) a `OWNERS` (`engineering.html`) přibyl `kocum.smrz@mimo.official` — uvidí Externí opravy, Engineering a (výchozí pravidlo) Shopfloor walk. Je to testovací účet
     — **TODO před PR Davidovi: odebrat** (komentář `kocum.smrz = testovací účet` u každého seznamu). Kdyby Martin chtěl, aby Super Admin viděl VŠECHNY moduly automaticky, musí se sáhnout do Davidových
     seznamů na čtyřech místech (index, header, opravy, engineering); zatím nezvoleno.
-  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 71 kontrol včetně vykřičníku, nedotknutelného ŠÉFa, vysvětlivek a dlaždic rozcestníku).
+  - **Ikony místo textu u Super Adminů (0.18.50, Martin: „u super adminů udělej jen nějaké ikony bez textu"):** štítky „VIP" a „ŠÉF" jsou jen inline SVG ikony (`ICO_STAR` zlatá hvězda, `ICO_CROWN` koruna;
+    ŠÉF je větší, tmavě fialový se zlatým kroužkem), bez textu, s `role="img"`, `aria-label` a vysvětlením v `title` po najetí myší. Zbytek (zvýrazněný řádek, zámek, sloupec Level s textem „Super Admin")
+    beze změny — úroveň u člověka zůstává čitelná slovem. Kdyby Martin myslel i sloupec Level, je to jen `badge()`.
+  - **Test:** `t-vip.js` (falešný Firebase, `make-vip.js`: `?p=wadmin` = přihlášený Warehouse Admin, navíc Super Admin „Petr Šéf", starší správce bez levelu a účet `admin.test`; 72 kontrol včetně vykřičníku, nedotknutelného ŠÉFa, vysvětlivek a dlaždic rozcestníku).
 - **`profil.html`** — nová **sdílená** stránka „Můj profil" (jméno+příjmení
   ve dvou samostatných polích, heslo, fotka). Otevírá se **jen kliknutím na
   fotku/jméno v hlavičce** — v ☰ menu záměrně NENÍ (bylo by to duplicitní).

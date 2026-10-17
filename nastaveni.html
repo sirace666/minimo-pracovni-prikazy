@@ -69,11 +69,13 @@
   td.nm{font-weight:600;white-space:nowrap}
   td.uid{font-size:10.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
   .me-tag{font-size:10px;color:#2563a8;font-weight:700;margin-left:6px}
-  .vip-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;background:linear-gradient(135deg,#f6d36b,#dca11f);color:#4a3200;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 1px rgba(184,126,12,.35)}
+  .vip-tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#f6d36b,#dca11f);color:#4a3200;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 1px rgba(184,126,12,.4)}
+  .vip-tag svg{width:12px;height:12px;fill:currentColor}
   .vip-lock{display:inline-block;font-size:13px;opacity:.55;cursor:not-allowed}
   tbody tr.is-vip td{background:#fffaf0}
   tbody tr.is-vip:hover td{background:#fff3da}
-  .owner-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,#2b1a5e,#5b2a9e);color:#ffd45c;border-radius:999px;padding:2px 10px 2px 8px;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 1.5px #e0a21a,0 2px 8px rgba(91,42,158,.35)}
+  .owner-tag{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2b1a5e,#5b2a9e);color:#ffd45c;margin-left:8px;vertical-align:middle;box-shadow:0 0 0 2px #e0a21a,0 2px 8px rgba(91,42,158,.4)}
+  .owner-tag svg{width:15px;height:15px;fill:currentColor}
   tbody tr.is-owner td{background:#ffeeb8}
   tbody tr.is-owner:hover td{background:#ffe599}
   tbody tr.is-owner td:first-child{box-shadow:inset 5px 0 0 #e0a21a}
@@ -198,6 +200,9 @@ const OWNER_MAILS = ['admin.test@minimo.local'];
 const isOwner = u => OWNER_MAILS.includes(String((u&&u.email)||'').toLowerCase());
 const OWNER_HINT = 'ŠÉF – nejvyšší účet. Nikdo ho nemůže upravit ani smazat';
 const lockHint = u => isOwner(u) ? OWNER_HINT : VIP_HINT;
+/* Štítky Super Adminů jsou jen ikony bez textu (vysvětlení je v popisku po najetí myší). */
+const ICO_CROWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18 4 7l5 5 3-7 3 7 5-5 2 11z"/><rect x="3" y="19.5" width="18" height="2" rx="1"/></svg>';
+const ICO_STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg>';
 
 /* ===== Práva v modulu Plánování (pro každou sekci zvlášť) =====
    4 stavy + „výchozí". Výchozí se odvodí z levelu (Approver a výše = vše, ostatní = jen sebe). */
@@ -558,7 +563,7 @@ function view(){
     const newTag = isNew ? '<span class="new-tag" title="Nový uživatel — nastav mu úroveň, pozice a přístup a ulož">NOVÝ</span>' : '';
     const trCls=[isNew?'is-new':'', vip?'is-vip':'', owner?'is-owner':''].filter(Boolean).join(' ');
     return `<tr${trCls?` class="${trCls}"`:''}>
-      <td class="nm">${esc(u.name||'—')}${meMark}${owner?`<span class="owner-tag" title="${OWNER_HINT}">👑 ŠÉF</span>`:vip?`<span class="vip-tag" title="${VIP_HINT}">★ VIP</span>`:''}${newTag}</td>
+      <td class="nm">${esc(u.name||'—')}${meMark}${owner?`<span class="owner-tag" role="img" aria-label="ŠÉF" title="${OWNER_HINT}">${ICO_CROWN}</span>`:vip?`<span class="vip-tag" role="img" aria-label="VIP účet" title="${VIP_HINT}">${ICO_STAR}</span>`:''}${newTag}</td>
       <td>${badge(lvl)}</td>
       <td class="pos">${chips}</td>
       ${rw?`<td class="ta-c">${locked?lockTag:`<button class="btn-edit" data-edit="${u.uid}">Upravit</button>`}</td>
